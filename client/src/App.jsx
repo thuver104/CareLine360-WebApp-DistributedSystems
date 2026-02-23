@@ -25,10 +25,12 @@ import PatientNavbar from "./pages/patient/PatientNavbar";
 import DashboardPage from "./pages/doctor/DashboardPage";
 
 // Admin / Monitoring Pages
-import Dashboard from "./pages/Dashboard";
-import ManageUsers from "./pages/ManageUsers";
-import EmergencyMonitoring from "./pages/EmergencyMonitoring";
-import Analytics from "./pages/Analytics";
+import Dashboard from "./pages/admin/Dashboard";
+import ManageUsers from "./pages/admin/ManageUsers";
+import EmergencyMonitoring from "./pages/admin/EmergencyMonitoring";
+import Analytics from "./pages/admin/Analytics";
+import MeetAssign from "./pages/admin/MeetAssign";
+
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -69,11 +71,27 @@ export default function App() {
           </Route>
 
           {/* Admin / Monitoring Layout */}
-          <Route path="/admin" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="users" element={<ManageUsers />} />
-            <Route path="emergencies" element={<EmergencyMonitoring />} />
-            <Route path="analytics" element={<Analytics />} />
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard" element={<MainLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="users" element={<ManageUsers />} />
+              <Route path="meet-assign" element={<MeetAssign />} />
+              <Route path="analytics" element={<Analytics />} />
+            </Route>
+          </Route>
+
+          {/* Emergencies tab for admin and responder */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "responder"]} />}>
+            <Route path="/admin/dashboard/emergencies" element={<MainLayout />}>
+              <Route index element={<EmergencyMonitoring />} />
+            </Route>
+          </Route>
+
+          {/* Emergencies tab for admin and responder */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "responder"]} />}>
+            <Route path="/admin/dashboard/emergencies" element={<MainLayout />}>
+              <Route index element={<EmergencyMonitoring />} />
+            </Route>
           </Route>
         </Routes>
       </Router>

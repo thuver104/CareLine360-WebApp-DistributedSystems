@@ -2,8 +2,9 @@ const adminService = require('../services/admin.service');
 
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await adminService.getAllUsers();
-        res.status(200).json({ success: true, data: users });
+        const { page, limit, search, role } = req.query;
+        const result = await adminService.getAllUsers({ page, limit, search, role });
+        res.status(200).json({ success: true, data: result });
     } catch (error) {
         next(error);
     }

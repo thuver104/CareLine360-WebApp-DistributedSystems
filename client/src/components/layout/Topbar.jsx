@@ -53,7 +53,7 @@ export default function Topbar({ pageTitle }) {
 
         {/* Avatar / profile */}
         <button className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl glass-btn transition-colors">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-teal-400/30 shrink-0">
+          <div className="h-8 w-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
             {DOCTOR_INFO.initials}
           </div>
           <span className="hidden lg:block text-sm font-medium text-gray-700 dark:text-gray-200">

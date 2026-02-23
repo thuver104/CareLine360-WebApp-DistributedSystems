@@ -37,6 +37,7 @@ const registerUser = async ({ identifier, password, fullName, role }) => {
   const user = await User.create({
     role,
     status: role === "doctor" ? "PENDING" : "ACTIVE",
+    fullName,
     email,
     phone,
     passwordHash,
@@ -67,7 +68,7 @@ const registerUser = async ({ identifier, password, fullName, role }) => {
     status: 201,
     data: {
       message: "Registered successfully",
-      user: { id: user._id, role: user.role, email: user.email, phone: user.phone, isVerified: user.isVerified },
+      user: { id: user._id, role: user.role, email: user.email, phone: user.phone, fullName: user.fullName, isVerified: user.isVerified },
       patientId,
       accessToken,
       refreshToken,
@@ -111,7 +112,7 @@ const loginUser = async ({ identifier, password }) => {
     status: 200,
     data: {
       message: "Login success",
-      user: { id: user._id, role: user.role, email: user.email, phone: user.phone, isVerified: user.isVerified },
+      user: { id: user._id, role: user.role, email: user.email, phone: user.phone, fullName: user.fullName, isVerified: user.isVerified },
       accessToken,
       refreshToken,
     },
@@ -285,11 +286,13 @@ const resetPasswordWithOtp = async ({ identifier, otp, newPassword }) => {
 };
 
 
-module.exports = { registerUser, 
-          loginUser, 
-          refreshAccessToken, 
-          logoutUser , 
-          sendEmailVerificationOtp, 
-          verifyEmailOtp, 
-          sendPasswordResetOtp, 
-          resetPasswordWithOtp };
+module.exports = {
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  logoutUser,
+  sendEmailVerificationOtp,
+  verifyEmailOtp,
+  sendPasswordResetOtp,
+  resetPasswordWithOtp
+};

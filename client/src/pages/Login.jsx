@@ -29,6 +29,7 @@ export default function Login() {
       if (role === "patient") nav("/patient/dashboard");
       else if (role === "doctor") nav("/doctor/dashboard");
       else if (role === "admin") nav("/admin/dashboard");
+      else if (role === "responder") nav("/admin/dashboard/emergencies");
       else nav("/");
     } catch (err) {
       const apiMsg = err.response?.data?.message;

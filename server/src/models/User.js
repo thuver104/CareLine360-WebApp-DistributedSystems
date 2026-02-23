@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
     {
-        name: {
+        fullName: {
             type: String,
-            required: true,
+            trim: true,
         },
         email: {
             type: String,
@@ -22,8 +22,8 @@ const userSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'inactive'],
-            default: 'active',
+            enum: ['ACTIVE', 'PENDING', 'REJECTED', 'SUSPENDED'],
+            default: 'ACTIVE',
         }
     },
     {
