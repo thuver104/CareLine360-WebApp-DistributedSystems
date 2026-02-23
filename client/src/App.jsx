@@ -1,35 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import BookAppointment from "./pages/BookAppointment";
+import ViewAppointments from "./pages/ViewAppointments";
+import AppointmentDetail from "./pages/AppointmentDetail";
+import ChatPage from "./pages/ChatPage";
+import PaymentPage from "./pages/PaymentPage";
+import AppointmentHistory from "./pages/AppointmentHistory";
+import NotFound from "./pages/NotFound";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Navigate to="/appointments/book" replace />} />
+        <Route path="/appointments/book" element={<BookAppointment />} />
+        <Route path="/appointments/history" element={<AppointmentHistory />} />
+        <Route path="/appointments/:id/payment" element={<PaymentPage />} />
+        <Route path="/appointments/:id/chat" element={<ChatPage />} />
+        <Route path="/appointments/:id" element={<AppointmentDetail />} />
+        <Route path="/appointments" element={<ViewAppointments />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;

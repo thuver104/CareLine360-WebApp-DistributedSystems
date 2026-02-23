@@ -12,7 +12,11 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:6000',
+      '/api': 'http://localhost:8080',
+      '/socket.io': {
+        target: 'http://localhost:8080',
+        ws: true,
+      },
     },
   },
 })
