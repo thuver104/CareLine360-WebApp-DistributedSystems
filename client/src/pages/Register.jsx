@@ -16,7 +16,12 @@ export default function Register() {
     setMsg("");
 
     try {
-      const res = await api.post("/auth/register", { role, fullName, identifier: identifier.trim(), password });
+      const res = await api.post("/auth/register", {
+        role,
+        fullName,
+        identifier: identifier.trim(),
+        password,
+      });
 
       // Doctor: no tokens (PENDING)
       if (role === "doctor") {
@@ -27,9 +32,13 @@ export default function Register() {
 
       // Patient: tokens returned
       setAuth(res.data);
-      nav("/patient/dashboard");
+      nav("/login");
     } catch (err) {
-      setMsg(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || "Register failed");
+      setMsg(
+        err.response?.data?.message ||
+          err.response?.data?.errors?.[0]?.msg ||
+          "Register failed",
+      );
     }
   };
 
@@ -40,16 +49,38 @@ export default function Register() {
       {msg && <div className="mb-3 text-sm text-red-600">{msg}</div>}
 
       <form onSubmit={submit} className="space-y-3">
-        <select className="w-full border p-2" value={role} onChange={(e) => setRole(e.target.value)}>
+        <select
+          className="w-full border p-2"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
           <option value="patient">Patient</option>
           <option value="doctor">Doctor</option>
         </select>
 
-        <input className="w-full border p-2" placeholder="Full Name" value={fullName} onChange={(e)=>setFullName(e.target.value)} />
-        <input className="w-full border p-2" placeholder="Email or Phone" value={identifier} onChange={(e)=>setIdentifier(e.target.value)} />
-        <input className="w-full border p-2" placeholder="Password (e.g., Test@1234)" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+        <input
+          className="w-full border p-2"
+          placeholder="Full Name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
+        <input
+          className="w-full border p-2"
+          placeholder="Email or Phone"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+        />
+        <input
+          className="w-full border p-2"
+          placeholder="Password (e.g., Test@1234)"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-        <button className="w-full bg-black text-white p-2">Create Account</button>
+        <button className="w-full bg-black text-white p-2">
+          Create Account
+        </button>
       </form>
     </div>
   );

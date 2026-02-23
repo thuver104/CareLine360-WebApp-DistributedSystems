@@ -1,48 +1,82 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
+
+// Layouts
+import MainLayout from "./layouts/MainLayout";
+import DashboardLayout from "./components/layout/DashboardLayout";
+
+// Landing
+import LandingPage from "./pages/LandingPage";
+
+// Auth Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+
+// Patient Pages
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import Profile from "./pages/patient/Profile";
 import Documents from "./pages/patient/Documents";
 import PatientNavbar from "./pages/patient/PatientNavbar";
 
+// Doctor Pages
+import DashboardPage from "./pages/doctor/DashboardPage";
 
+// Admin / Monitoring Pages
+import Dashboard from "./pages/Dashboard";
+import ManageUsers from "./pages/ManageUsers";
+import EmergencyMonitoring from "./pages/EmergencyMonitoring";
+import Analytics from "./pages/Analytics";
 
-// import DoctorDashboard from "./pages/doctor/DoctorDashboard";
-// import AdminDashboard from "./pages/admin/AdminDashboard";
+// Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<div className="p-6">Landing</div>} />
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          {/* Landing */}
+          <Route path="/" element={<LandingPage />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+          {/* Auth */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Patient Protected Routes */}
+          <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
+            <Route path="/patient/dashboard" element={<PatientDashboard />} />
+            <Route path="/patient/profile" element={<Profile />} />
+            <Route path="/patient/documents" element={<Documents />} />
+            <Route path="/patient/navbar" element={<PatientNavbar />} />
+          </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/profile" element={<Profile />} />
-          <Route path="/patient/documents" element={<Documents />} />
-          <Route path="/patient/PatientNavbar" element={<PatientNavbar />} />
-        </Route>
+          {/* Doctor Dashboard */}
+          <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
+            <Route
+              path="/doctor/dashboard"
+              element={
+                <DashboardLayout>
+                  <DashboardPage />
+                </DashboardLayout>
+              }
+            />
+          </Route>
 
-        {/* <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        </Route> */}
-      </Routes>
-    </BrowserRouter>
+          {/* Admin / Monitoring Layout */}
+          <Route path="/admin" element={<MainLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<ManageUsers />} />
+            <Route path="emergencies" element={<EmergencyMonitoring />} />
+            <Route path="analytics" element={<Analytics />} />
+          </Route>
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
