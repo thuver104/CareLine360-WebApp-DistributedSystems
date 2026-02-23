@@ -61,6 +61,9 @@ const appointmentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    meetingUrl: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

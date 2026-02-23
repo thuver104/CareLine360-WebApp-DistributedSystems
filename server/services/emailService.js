@@ -137,6 +137,7 @@ const sendAppointmentReminder = async (appointment, patient, doctor) => {
 };
 
 module.exports = {
+  sendEmail,
   sendAppointmentCreated,
   sendAppointmentConfirmed,
   sendAppointmentRescheduled,
