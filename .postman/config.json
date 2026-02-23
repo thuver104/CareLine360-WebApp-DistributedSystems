@@ -1,0 +1,15 @@
+{
+  "workspace": {
+    "id": "ec15b8cb-8377-482a-8c70-45aa75302ffc"
+  },
+  "entities": {
+    "environments": [],
+    "flows": [],
+    "globals": [],
+    "mocks": [],
+    "specs": [],
+    "collections": [
+      "..\\APIDocs\\API.json"
+    ]
+  }
+}
