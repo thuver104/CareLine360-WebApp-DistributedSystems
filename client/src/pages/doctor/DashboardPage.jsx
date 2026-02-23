@@ -192,14 +192,37 @@ export default function DashboardPage() {
           {tab === "Appointments" && (
             <div className="space-y-4">
               <div className="flex flex-wrap gap-3">
-                <select value={apptFilter.status} onChange={(e) => setApptFilter((p) => ({ ...p, status: e.target.value }))}
-                  className="px-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                  <option value="">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                {/* Status filter — styled dropdown with colour-coded options */}
+                <div className="relative">
+                  <select
+                    value={apptFilter.status}
+                    onChange={(e) => setApptFilter((p) => ({ ...p, status: e.target.value }))}
+                    className={`
+                      appearance-none pl-3 pr-8 py-2 rounded-xl text-sm font-medium cursor-pointer
+                      border-2 focus:outline-none focus:ring-2 transition-all
+                      ${apptFilter.status === ""          ? "border-teal-500   bg-teal-900/40   text-teal-300   focus:ring-teal-500"   : ""}
+                      ${apptFilter.status === "pending"   ? "border-amber-500  bg-amber-900/40  text-amber-300  focus:ring-amber-500"  : ""}
+                      ${apptFilter.status === "confirmed" ? "border-blue-500   bg-blue-900/40   text-blue-300   focus:ring-blue-500"   : ""}
+                      ${apptFilter.status === "completed" ? "border-emerald-500 bg-emerald-900/40 text-emerald-300 focus:ring-emerald-500" : ""}
+                      ${apptFilter.status === "cancelled" ? "border-rose-500   bg-rose-900/40   text-rose-300   focus:ring-rose-500"   : ""}
+                    `}
+                    style={{ minWidth: "140px" }}
+                  >
+                    <option value=""          style={{ background: "#0d2b29", color: "#5eead4" }}>All Status</option>
+                    <option value="pending"   style={{ background: "#2d1c07", color: "#fbbf24" }}>🟡 Pending</option>
+                    <option value="confirmed" style={{ background: "#0c1f3d", color: "#60a5fa" }}>🔵 Confirmed</option>
+                    <option value="completed" style={{ background: "#092b18", color: "#4ade80" }}>🟢 Completed</option>
+                    <option value="cancelled" style={{ background: "#2d0a14", color: "#fb7185" }}>🔴 Cancelled</option>
+                  </select>
+                  {/* Custom chevron */}
+                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-current opacity-70">
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </div>
+
+
                 <input type="date" value={apptFilter.date} onChange={(e) => setApptFilter((p) => ({ ...p, date: e.target.value }))}
                   className="px-3 py-2 rounded-xl text-sm border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500" />
                 <input type="text" placeholder="Search patient…" value={apptFilter.search} onChange={(e) => setApptFilter((p) => ({ ...p, search: e.target.value }))}

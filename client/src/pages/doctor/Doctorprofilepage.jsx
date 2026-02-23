@@ -56,6 +56,7 @@ export default function DoctorProfilePage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [saveError, setSaveError] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
+  const [formErrors, setFormErrors] = useState({});
   const [form, setForm] = useState({
     fullName: "", specialization: "", qualifications: "",
     experience: "", bio: "", licenseNumber: "", consultationFee: "", phone: "",
@@ -82,7 +83,41 @@ export default function DoctorProfilePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ── Validation ──────────────────────────────────────────────────────────────
+  // Phone: optional country code (+XX or 00XX) followed by exactly 10 digits
+  // e.g. +94771234567, 0771234567, +1 800 123 4567 (spaces stripped)
+  const validateForm = () => {
+    const errors = {};
+    const phone = form.phone.trim();
+    if (phone) {
+      // Strip spaces/dashes for counting after optional country-code prefix
+      const stripped = phone.replace(/[\s\-().]/g, "");
+      // Allow optional leading + or 00, then exactly 10 digits
+      const phoneRx = /^(\+|00)?\d{10,12}$/;
+      if (!phoneRx.test(stripped)) {
+        errors.phone = "Enter a valid phone number with country code (e.g. +94771234567 — 10 digits)";
+      }
+    }
+    const exp = Number(form.experience);
+    if (form.experience !== "" && (isNaN(exp) || exp < 0)) {
+      errors.experience = "Years of experience cannot be negative.";
+    } else if (form.experience !== "" && exp > 40) {
+      errors.experience = "Years of experience cannot exceed 40 years.";
+    }
+    const fee = Number(form.consultationFee);
+    if (form.consultationFee !== "") {
+      if (isNaN(fee) || fee < 0) {
+        errors.consultationFee = "Consultation fee cannot be negative.";
+      } else if (fee > 0 && fee < 1500) {
+        errors.consultationFee = "Consultation fee must be at least LKR 1,500.";
+      }
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) return;           // block save if validation fails
     setSaving(true); setSaveMsg(""); setSaveError("");
     try {
       await updateDoctorProfile({
@@ -100,7 +135,11 @@ export default function DoctorProfilePage() {
     } finally { setSaving(false); }
   };
 
-  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  // Clear field error on change
+  const set = (key) => (e) => {
+    setForm((p) => ({ ...p, [key]: e.target.value }));
+    if (formErrors[key]) setFormErrors((p) => { const n = { ...p }; delete n[key]; return n; });
+  };
 
   if (loading) {
     return (
@@ -198,7 +237,23 @@ export default function DoctorProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <Field label="Full Name"><input type="text" value={form.fullName} onChange={set("fullName")} className={INPUT} /></Field>
-                <Field label="Phone Number"><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+94 77 123 4567" className={INPUT} /></Field>
+
+                {/* Phone with validation */}
+                <Field label="Phone Number">
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={set("phone")}
+                    placeholder="+94 77 123 4567"
+                    className={`${INPUT} ${formErrors.phone ? "border-red-400 dark:border-red-500 focus:ring-red-400" : ""}`}
+                  />
+                  {formErrors.phone && (
+                    <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3 shrink-0" />{formErrors.phone}
+                    </p>
+                  )}
+                </Field>
+
                 <Field label="Specialization">
                   <select value={form.specialization} onChange={set("specialization")} className={INPUT}>
                     <option value="">Select specialization</option>
@@ -206,8 +261,40 @@ export default function DoctorProfilePage() {
                   </select>
                 </Field>
                 <Field label="License Number"><input type="text" value={form.licenseNumber} onChange={set("licenseNumber")} className={INPUT} /></Field>
-                <Field label="Years of Experience"><input type="number" value={form.experience} onChange={set("experience")} min={0} className={INPUT} /></Field>
-                <Field label="Consultation Fee (LKR)"><input type="number" value={form.consultationFee} onChange={set("consultationFee")} min={0} className={INPUT} /></Field>
+
+                {/* Experience with validation */}
+                <Field label="Years of Experience">
+                  <input
+                    type="number"
+                    value={form.experience}
+                    onChange={set("experience")}
+                    min={0}
+                    max={40}
+                    className={`${INPUT} ${formErrors.experience ? "border-red-400 dark:border-red-500 focus:ring-red-400" : ""}`}
+                  />
+                  {formErrors.experience && (
+                    <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3 shrink-0" />{formErrors.experience}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Consultation Fee with validation */}
+                <Field label="Consultation Fee (LKR)">
+                  <input
+                    type="number"
+                    value={form.consultationFee}
+                    onChange={set("consultationFee")}
+                    min={0}
+                    className={`${INPUT} ${formErrors.consultationFee ? "border-red-400 dark:border-red-500 focus:ring-red-400" : ""}`}
+                  />
+                  {formErrors.consultationFee && (
+                    <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3 shrink-0" />{formErrors.consultationFee}
+                    </p>
+                  )}
+                </Field>
+
                 <div className="md:col-span-2">
                   <Field label="Qualifications (comma-separated)">
                     <input type="text" value={form.qualifications} onChange={set("qualifications")} placeholder="MBBS, MD, MRCP" className={INPUT} />
