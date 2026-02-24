@@ -10,9 +10,9 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': 'http://localhost:1111',
       '/socket.io': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:1111',
         ws: true,
       },
     },
