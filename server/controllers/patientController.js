@@ -1,5 +1,6 @@
 const Patient = require("../models/Patient");
 const User = require("../models/User");
+const MedicalRecord = require("../models/MedicalRecord");
 const { calcPatientProfileStrength } = require("../services/profileStrength");
 
 const getMyProfile = async (req, res) => {
@@ -280,5 +281,39 @@ const deactivateMyAccount = async (req, res) => {
   }
 };
 
+const medicalRecord = async (req, res) => {
+  try {
+    const userId = req.user.userId;
 
-module.exports = { getMyProfile, updateMyProfile , uploadAvatar , deactivateMyAccount};
+    // 1) find patient profile (because medicalrecords uses patientId = Patient._id)
+    const patient = await Patient.findOne({
+      userId,
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+    });
+
+    if (!patient) return res.status(404).json({ message: "Patient profile not found" });
+
+    // 2) fetch medical records
+    const histories = await MedicalRecord.find({
+      patientId: patient._id,
+      isDeleted: false,
+    })
+      .populate("doctorId")          // returns Doctor document (fullName, specialization, etc.)
+      .populate("appointmentId")     // if linked later
+      .populate("prescriptionId")    // if linked later
+      .sort({ visitDate: -1 });
+
+    return res.json({ histories });
+  } catch (e) {
+    console.error("MEDICAL HISTORY ERROR:", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { 
+  getMyProfile, 
+  updateMyProfile , 
+  uploadAvatar , 
+  deactivateMyAccount, 
+  medicalRecord
+};

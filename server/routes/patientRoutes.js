@@ -1,6 +1,12 @@
 const express = require("express");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
-const { getMyProfile , updateMyProfile , uploadAvatar, deactivateMyAccount} = require("../controllers/patientController");
+const { 
+  getMyProfile , 
+  updateMyProfile , 
+  uploadAvatar, 
+  deactivateMyAccount , 
+  medicalRecord 
+} = require("../controllers/patientController");
 const { imageUpload } = require("../middleware/upload");
 
 const router = express.Router();
@@ -32,6 +38,14 @@ router.patch(
   authMiddleware,
   roleMiddleware(["patient"]),
   deactivateMyAccount
+);
+
+// NEW ROUTE: Get my medical history (for patients)
+router.get(
+  "/me/medical-record", 
+  authMiddleware,
+  roleMiddleware(["patient"]),
+  medicalRecord
 );
 
 module.exports = router;

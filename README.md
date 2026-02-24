@@ -16,6 +16,10 @@ http://localhost:5000/api/auth/login
   "identifier":"kyalini2001@gmail.com",
   "password": "Vanai@2001"
 }
-
+<!-- Patient ID -->
+GET
 http://localhost:5000/api/patients/me
+
+<!-- Get medical history -->
+http://localhost:5000/api/patients/me/medical-history
 
