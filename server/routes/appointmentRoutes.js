@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 const validateRequest = require("../middleware/validateRequest");
 const {
   createAppointmentRules,
@@ -19,12 +20,15 @@ const {
   cancelAppointment,
 } = require("../controllers/appointmentController");
 
-router.post("/", createAppointmentRules, validateRequest, createAppointment);
+// All appointment routes require authentication
+router.use(authMiddleware);
+
+router.post("/", roleMiddleware(["patient"]), createAppointmentRules, validateRequest, createAppointment);
 router.get("/", getAppointments);
 router.get("/:id", getAppointmentById);
 router.put("/:id", updateAppointmentRules, validateRequest, updateAppointment);
 router.delete("/:id", deleteAppointment);
-router.patch("/:id/status", statusTransitionRules, validateRequest, transitionStatus);
+router.patch("/:id/status", roleMiddleware(["doctor"]), statusTransitionRules, validateRequest, transitionStatus);
 router.patch("/:id/reschedule", rescheduleRules, validateRequest, rescheduleAppointment);
 router.patch("/:id/cancel", cancelRules, validateRequest, cancelAppointment);
 
