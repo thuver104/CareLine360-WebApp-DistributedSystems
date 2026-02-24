@@ -1,6 +1,7 @@
 const Patient = require("../models/Patient");
 const User = require("../models/User");
 const MedicalRecord = require("../models/MedicalRecord");
+const Prescription = require("../models/Prescription");
 const { calcPatientProfileStrength } = require("../services/profileStrength");
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -357,6 +358,62 @@ const explainMedicalText = async (req, res) => {
   }
 };
 
+
+/**
+ * GET /api/patient/me/medical-records
+ * Patient fetch their own medical records
+ */
+const getMyMedicalRecords = async (req, res) => {
+  try {
+    const patientId = req.user.userId; // from authMiddleware
+
+    const records = await MedicalRecord.find({
+      patientId,
+      isDeleted: false,
+    })
+      .sort({ createdAt: -1 });
+
+    return res.json({ count: records.length, records });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch medical records", error: err.message });
+  }
+};
+
+/**
+ * GET /api/patient/me/prescriptions
+ * Patient fetch their own prescriptions
+ */
+const getMyPrescriptions = async (req, res) => {
+  try {
+    const patientId = req.user.userId;
+
+    const prescriptions = await Prescription.find({ patientId })
+      .sort({ createdAt: -1 });
+
+    return res.json({ count: prescriptions.length, prescriptions });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch prescriptions", error: err.message });
+  }
+};
+
+/**
+ * GET /api/patient/doctors
+ * Patient fetch all doctors (users with role doctor)
+ */
+const getAllDoctorsForPatient = async (req, res) => {
+  try {
+    const doctors = await User.find({ role: "doctor" })
+      .select("_id name email status avatar specialty") // keep what you have
+      .sort({ createdAt: -1 });
+
+    return res.json({ count: doctors.length, doctors });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch doctors", error: err.message });
+  }
+};
+
+
+
 module.exports = { 
   getMyProfile, 
   updateMyProfile , 
@@ -364,4 +421,7 @@ module.exports = {
   deactivateMyAccount, 
   medicalRecord,
   explainMedicalText,
+  getMyMedicalRecords,
+  getMyPrescriptions,
+  getAllDoctorsForPatient,
 };

@@ -6,7 +6,12 @@ const {
   uploadAvatar, 
   deactivateMyAccount , 
   medicalRecord,
-  explainMedicalText
+  explainMedicalText,
+
+
+  getMyMedicalRecords,
+  getMyPrescriptions,
+  getAllDoctorsForPatient,
 } = require("../controllers/patientController");
 const { imageUpload } = require("../middleware/upload");
 
@@ -41,19 +46,61 @@ router.patch(
   deactivateMyAccount
 );
 
-// NEW ROUTE: Get my medical history (for patients)
+// Existing
 router.get(
   "/me/medical-record", 
-  authMiddleware,
-  roleMiddleware(["patient"]),
+  authMiddleware, 
+  roleMiddleware(["patient"]), 
   medicalRecord
 );
 
 router.post(
-  "/me/ai-explain",
-  authMiddleware,
-  roleMiddleware(["patient"]),
+  "/me/ai-explain", 
+  authMiddleware, 
+  roleMiddleware(["patient"]), 
   explainMedicalText
 );
+
+// ✅ NEW: Patient view own medical records
+router.get(
+  "/me/medical-record", 
+  authMiddleware, 
+  roleMiddleware(["patient"]), 
+  getMyMedicalRecords
+);
+
+// ✅ NEW: Patient view own prescriptions
+router.get(
+  "/me/prescription", 
+  authMiddleware, 
+  roleMiddleware(["patient"]), 
+  getMyPrescriptions
+);
+
+// ✅ NEW: Patient get all doctors list
+router.get(
+  "/doctor", 
+  authMiddleware, 
+  roleMiddleware(["patient"]), 
+  getAllDoctorsForPatient
+);
+
+// Get appointments for a specific patient (for doctors)
+// router.get(
+//   "/:patientId/appointment",
+//   authMiddleware,
+//   roleMiddleware(["doctor"]),
+//   getAllPatientAppointments
+// );
+
+// Get ratings for a specific patient (for doctors)
+// router.get(
+//   "/:patientId/rating",
+//   authMiddleware,
+//   roleMiddleware(["doctor"]),
+//   getPatientRatings
+// );
+
+
 
 module.exports = router;
