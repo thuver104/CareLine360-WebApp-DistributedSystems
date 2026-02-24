@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 
 // Layouts
@@ -45,7 +45,6 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 export default function App() {
   return (
     <ThemeProvider>
-      <Router>
         <Routes>
           {/* Landing */}
           <Route path="/" element={<LandingPage />} />
@@ -102,7 +101,6 @@ export default function App() {
           <Route path="/appointments/:id" element={<AppointmentDetail />} />
           <Route path="/appointments" element={<ViewAppointments />} />
         </Routes>
-      </Router>
     </ThemeProvider>
   );
 }
