@@ -1,7 +1,7 @@
 const { body, param } = require("express-validator");
 
 const createAppointmentRules = [
-  body("patient").notEmpty().withMessage("Patient ID is required").isMongoId().withMessage("Invalid patient ID"),
+  // patient is set server-side from JWT (req.user.userId)
   body("doctor").notEmpty().withMessage("Doctor ID is required").isMongoId().withMessage("Invalid doctor ID"),
   body("date").notEmpty().withMessage("Date is required").isISO8601().withMessage("Invalid date format"),
   body("time").notEmpty().withMessage("Time is required").trim(),
