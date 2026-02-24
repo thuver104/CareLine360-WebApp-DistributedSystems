@@ -2,6 +2,7 @@ const appointmentService = require("../services/appointmentService");
 
 const createAppointment = async (req, res, next) => {
   try {
+    req.body.patient = req.user.userId;
     const appointment = await appointmentService.createAppointment(req.body);
     res.status(201).json({ success: true, data: appointment });
   } catch (error) {
