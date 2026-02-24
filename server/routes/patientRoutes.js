@@ -5,7 +5,8 @@ const {
   updateMyProfile , 
   uploadAvatar, 
   deactivateMyAccount , 
-  medicalRecord 
+  medicalRecord,
+  explainMedicalText
 } = require("../controllers/patientController");
 const { imageUpload } = require("../middleware/upload");
 
@@ -46,6 +47,13 @@ router.get(
   authMiddleware,
   roleMiddleware(["patient"]),
   medicalRecord
+);
+
+router.post(
+  "/me/ai-explain",
+  authMiddleware,
+  roleMiddleware(["patient"]),
+  explainMedicalText
 );
 
 module.exports = router;

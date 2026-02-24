@@ -3,6 +3,14 @@ const User = require("../models/User");
 const MedicalRecord = require("../models/MedicalRecord");
 const { calcPatientProfileStrength } = require("../services/profileStrength");
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "models/gemini-flash-latest"
+});
+
 const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -310,10 +318,43 @@ const medicalRecord = async (req, res) => {
   }
 };
 
+const explainMedicalText = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ message: "Text is required" });
+
+    const model = genAI.getGenerativeModel({
+      model: "models/gemini-flash-latest"
+    });
+
+    const result = await model.generateContent(
+      `Explain this medical information in simple language for a patient.
+      
+      Do NOT use markdown formatting.
+      Do NOT use headings.
+      Do NOT use bold text.
+      Return clean plain text only.
+
+      ${text}`
+    );
+
+    const response = result.response.text();
+
+    res.json({
+      explanation: response
+    });
+
+  } catch (error) {
+    console.error("GEMINI ERROR:", error);
+    res.status(500).json({ message: "AI service error" });
+  }
+};
+
 module.exports = { 
   getMyProfile, 
   updateMyProfile , 
   uploadAvatar , 
   deactivateMyAccount, 
-  medicalRecord
+  medicalRecord,
+  explainMedicalText,
 };
