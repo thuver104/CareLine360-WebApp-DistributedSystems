@@ -4,6 +4,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 // Layouts
 import MainLayout from "./layouts/MainLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
+import AppointmentLayout from "./layouts/AppointmentLayout";
 
 // Landing
 import LandingPage from "./pages/LandingPage";
@@ -93,13 +94,17 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Appointment Routes */}
-          <Route path="/appointments/book" element={<BookAppointment />} />
-          <Route path="/appointments/history" element={<AppointmentHistory />} />
-          <Route path="/appointments/:id/payment" element={<PaymentPage />} />
-          <Route path="/appointments/:id/chat" element={<ChatPage />} />
-          <Route path="/appointments/:id" element={<AppointmentDetail />} />
-          <Route path="/appointments" element={<ViewAppointments />} />
+          {/* Appointment Routes (protected, with layout) */}
+          <Route element={<ProtectedRoute allowedRoles={["patient", "doctor"]} />}>
+            <Route element={<AppointmentLayout />}>
+              <Route path="/appointments/book" element={<BookAppointment />} />
+              <Route path="/appointments/history" element={<AppointmentHistory />} />
+              <Route path="/appointments/:id/payment" element={<PaymentPage />} />
+              <Route path="/appointments/:id/chat" element={<ChatPage />} />
+              <Route path="/appointments/:id" element={<AppointmentDetail />} />
+              <Route path="/appointments" element={<ViewAppointments />} />
+            </Route>
+          </Route>
         </Routes>
     </ThemeProvider>
   );
