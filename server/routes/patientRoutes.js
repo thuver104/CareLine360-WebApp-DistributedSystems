@@ -1,6 +1,6 @@
 const express = require("express");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
-const { getMyProfile , updateMyProfile , uploadAvatar} = require("../controllers/patientController");
+const { getMyProfile, updateMyProfile, uploadAvatar, getPatientStats, generatePatientReport } = require("../controllers/patientController");
 const { imageUpload } = require("../middleware/upload");
 
 const router = express.Router();
@@ -25,6 +25,22 @@ router.patch(
   roleMiddleware(["patient"]),
   imageUpload.single("avatar"),
   uploadAvatar
+);
+
+// Stats endpoint for patient analytics
+router.get(
+  "/me/stats",
+  authMiddleware,
+  roleMiddleware(["patient"]),
+  getPatientStats
+);
+
+// Report generation endpoint for patients
+router.post(
+  "/reports/generate",
+  authMiddleware,
+  roleMiddleware(["patient"]),
+  generatePatientReport
 );
 
 module.exports = router;

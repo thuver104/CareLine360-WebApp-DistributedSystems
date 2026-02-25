@@ -4,6 +4,7 @@ const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
 const EmergencyCase = require("../models/EmergencyCase");
 const Appointment = require("../models/Appointment");
+const { sendEmail } = require("./emailService");
 
 
 const listPendingDoctors = async () => {
@@ -187,6 +188,69 @@ const updateUserStatus = async ({ userId, status }) => {
   );
   if (!user) return { status: 404, data: { message: "User not found" } };
 
+  // Send email notification to doctor when status changes from PENDING to ACTIVE (verification)
+  if (user.role === "doctor" && status === "ACTIVE" && user.email) {
+    try {
+      const verificationEmailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2c5aa0; margin: 0;">🏥 CareLine360</h1>
+              <h2 style="color: #28a745; margin: 10px 0;">🎉 Account Verified!</h2>
+            </div>
+            
+            <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Dear Dr. ${user.fullName || 'Doctor'},</p>
+            
+            <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+              <h3 style="color: #155724; margin-top: 0;">✅ Congratulations!</h3>
+              <p style="font-size: 16px; color: #155724; line-height: 1.6; margin: 0;">Your doctor account has been successfully <strong>verified and activated</strong> by our admin team.</p>
+            </div>
+            
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">You can now access all doctor features on the CareLine360 platform, including:</p>
+            
+            <div style="background-color: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <ul style="color: #2c5aa0; margin: 0; padding-left: 20px;">
+                <li style="margin: 8px 0;">📅 <strong>Manage Appointments</strong> - View and handle patient consultations</li>
+                <li style="margin: 8px 0;">🎥 <strong>Video Consultations</strong> - Conduct remote appointments</li>
+                <li style="margin: 8px 0;">📝 <strong>Patient Records</strong> - Access and update medical records</li>
+                <li style="margin: 8px 0;">📊 <strong>Dashboard Access</strong> - Full doctor portal functionality</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="display: inline-block; background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Login to Your Account</a>
+            </div>
+            
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px; color: #856404;"><strong>Next Steps:</strong></p>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #856404; font-size: 14px;">
+                <li>Complete your doctor profile with specialization and bio</li>
+                <li>Set your availability schedule</li>
+                <li>Review platform guidelines and policies</li>
+              </ul>
+            </div>
+            
+            <p style="font-size: 16px; color: #333; margin-top: 20px;">If you have any questions or need assistance getting started, please don't hesitate to contact our support team.</p>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+              <p style="font-size: 14px; color: #6c757d; margin: 0;">Welcome to the CareLine360 family!<br><strong>CareLine360 Admin Team</strong></p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      await sendEmail({
+        to: user.email,
+        subject: `🎉 Your CareLine360 Doctor Account is Now Active!`,
+        html: verificationEmailHtml
+      });
+
+    } catch (emailError) {
+      console.error('Failed to send doctor verification email:', emailError);
+      // Don't fail the main operation if email fails
+    }
+  }
+
   return { status: 200, data: { message: "Status updated", user } };
 };
 
@@ -238,6 +302,121 @@ const createMeetingLink = async (appointmentId) => {
     .populate("doctor", "fullName email phone specialty");
 
   if (!appt) return { status: 404, data: { message: "Appointment not found" } };
+
+  // Send email notifications to both patient and doctor
+  try {
+    const appointmentDate = new Date(appt.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const appointmentTime = appt.time;
+
+    const emailSubject = `Meeting Link Created - Appointment on ${appointmentDate}`;
+
+    // Email template for patient
+    const patientEmailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c5aa0; margin: 0;">🏥 CareLine360</h1>
+            <h2 style="color: #28a745; margin: 10px 0;">Meeting Link Created!</h2>
+          </div>
+          
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Dear ${appt.patient?.fullName || 'Patient'},</p>
+          
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">Your video consultation meeting link has been created. Please use the details below to join your appointment:</p>
+          
+          <div style="background-color: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #2c5aa0; margin-top: 0;">📅 Appointment Details</h3>
+            <p style="margin: 5px 0;"><strong>Date:</strong> ${appointmentDate}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${appointmentTime}</p>
+            <p style="margin: 5px 0;"><strong>Doctor:</strong> Dr. ${appt.doctor?.fullName || 'TBD'}</p>
+            <p style="margin: 5px 0;"><strong>Consultation Type:</strong> ${appt.consultationType}</p>
+          </div>
+          
+          <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <h3 style="color: #155724; margin-top: 0;">🎥 Join Meeting</h3>
+            <p style="margin-bottom: 15px; color: #155724;">Click the button below to join your video consultation:</p>
+            <a href="${meetingUrl}" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Join Video Call</a>
+            <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">Meeting Link: <a href="${meetingUrl}" style="color: #007bff;">${meetingUrl}</a></p>
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #856404;"><strong>Note:</strong> Please join the meeting 5-10 minutes early. Make sure you have a stable internet connection and your camera/microphone are working properly.</p>
+          </div>
+          
+          <p style="font-size: 16px; color: #333; margin-top: 20px;">If you have any questions or need to reschedule, please contact us immediately.</p>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+            <p style="font-size: 14px; color: #6c757d; margin: 0;">Best regards,<br><strong>CareLine360 Team</strong></p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Email template for doctor
+    const doctorEmailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c5aa0; margin: 0;">🏥 CareLine360</h1>
+            <h2 style="color: #17a2b8; margin: 10px 0;">Meeting Link Ready!</h2>
+          </div>
+          
+          <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Dear Dr. ${appt.doctor?.fullName || 'Doctor'},</p>
+          
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">A video consultation meeting link has been created for your upcoming appointment. Here are the details:</p>
+          
+          <div style="background-color: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #2c5aa0; margin-top: 0;">📋 Appointment Details</h3>
+            <p style="margin: 5px 0;"><strong>Patient:</strong> ${appt.patient?.fullName || 'Patient'}</p>
+            <p style="margin: 5px 0;"><strong>Date:</strong> ${appointmentDate}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${appointmentTime}</p>
+            <p style="margin: 5px 0;"><strong>Consultation Type:</strong> ${appt.consultationType}</p>
+          </div>
+          
+          <div style="background-color: #cce5ff; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <h3 style="color: #0056b3; margin-top: 0;">🎥 Join Consultation</h3>
+            <p style="margin-bottom: 15px; color: #0056b3;">Click the button below to start the video consultation:</p>
+            <a href="${meetingUrl}" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Start Consultation</a>
+            <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">Meeting Link: <a href="${meetingUrl}" style="color: #007bff;">${meetingUrl}</a></p>
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #856404;"><strong>Reminder:</strong> Please be ready to join the meeting at the scheduled time. The patient will receive the same meeting link.</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+            <p style="font-size: 14px; color: #6c757d; margin: 0;">Professional regards,<br><strong>CareLine360 Admin Team</strong></p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Send email to patient
+    if (appt.patient?.email) {
+      await sendEmail({
+        to: appt.patient.email,
+        subject: emailSubject,
+        html: patientEmailHtml
+      });
+    }
+
+    // Send email to doctor
+    if (appt.doctor?.email) {
+      await sendEmail({
+        to: appt.doctor.email,
+        subject: emailSubject,
+        html: doctorEmailHtml
+      });
+    }
+
+  } catch (emailError) {
+    console.error('Failed to send meeting link emails:', emailError);
+    // Don't fail the main operation if email fails
+  }
 
   return { status: 200, data: appt };
 };

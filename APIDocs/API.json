@@ -43,32 +43,6 @@
         },
         {
           "name": "Create User",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "ca2a37d9-4a96-4784-a2e2-e18394a02dcb",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "b8c0b5a5-6096-4016-a776-ee131d3b17f6",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "e2a8fe15-5959-43a0-9c04-61818f8bdb27",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -105,32 +79,6 @@
         },
         {
           "name": "Update User Status",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "f345e239-35b9-4650-a0a7-d6325897f20c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "19966dcc-d763-4f48-9901-f4092145e993",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "b6c895b4-eb47-4e05-bab6-fb2e587034db",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -164,7 +112,6 @@
               ],
               "variable": [
                 {
-                  "id": "22076629-6912-45dd-8fd8-0a3f538ec9a5",
                   "key": "id"
                 }
               ]
@@ -175,32 +122,6 @@
         },
         {
           "name": "Delete User",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "b63de448-3a83-453e-8c6c-e56e2c3787a9",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "08ba3a15-3d49-4f6c-8f11-892c3178958d",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "c3dd2157-547c-4c5c-b045-d291abb315b6",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -229,7 +150,6 @@
               ],
               "variable": [
                 {
-                  "id": "eecfec2b-394b-417c-b4a9-a23a53863494",
                   "key": "id"
                 }
               ]
@@ -240,32 +160,6 @@
         },
         {
           "name": "Get Stats",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "085119ce-2f06-4d90-bdb3-6ed8676e7aeb",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "8219440f-e582-4301-8b49-f71941633e7c",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "dc8155c7-ce1a-42ab-9516-abf72a5647cd",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -298,32 +192,6 @@
         },
         {
           "name": "Get All Emergencies",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "41bca85f-3cad-4e7c-a48a-864a7c1f46d1",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "cd02be2e-0f3c-49cb-bcb4-f76519da5408",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "a87b4f53-24a4-492e-bc27-7f1829cfd1a2",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -356,32 +224,6 @@
         },
         {
           "name": "Get Emergency By ID",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "7fcf43b3-0513-43fa-bf13-c144bcaf74c4",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "f413ca78-0743-4213-8be6-4b00b8239c22",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "c58c93f6-ba2c-426e-83f7-3d1e8869528e",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -410,7 +252,6 @@
               ],
               "variable": [
                 {
-                  "id": "2b6b5ab0-3969-428b-8e2c-72375a0d9701",
                   "key": "id"
                 }
               ]
@@ -421,32 +262,6 @@
         },
         {
           "name": "Update Emergency Status",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "97c31f0e-0416-4ff3-8935-27d3168258ca",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "6c7d3a4d-f03e-45ba-892f-afd3a5cfb2da",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "713b36ac-0746-4da2-839d-1a78ff765118",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -480,7 +295,6 @@
               ],
               "variable": [
                 {
-                  "id": "e932291e-141f-4601-834f-0c93bb408d7e",
                   "key": "id"
                 }
               ]
@@ -491,32 +305,6 @@
         },
         {
           "name": "Get Nearest Hospital",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "id": "e0633abc-1e62-4185-a9ef-2bebc0fcc74a",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "id": "8809ba80-e3fb-4510-a8f8-3bcf5098ae9e",
-                "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "id": "da9ca23b-4f29-49fb-80f8-547173300bc5",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -546,7 +334,6 @@
               ],
               "variable": [
                 {
-                  "id": "28bd749f-d3e2-4f26-b041-b8920c33f943",
                   "key": "id"
                 }
               ]
@@ -560,32 +347,6 @@
     },
     {
       "name": "LoginRBAc",
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "id": "d96428c7-ae7e-42d9-9ff6-95b1198c64bd",
-            "exec": [
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        },
-        {
-          "listen": "test",
-          "script": {
-            "id": "4f7ee483-01cd-45f9-a3d9-f9e3fdf9cb14",
-            "exec": [
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
       "id": "00325be3-76f8-4cba-9925-2fc89f6966a9",
       "protocolProfileBehavior": {
         "disableBodyPruning": true

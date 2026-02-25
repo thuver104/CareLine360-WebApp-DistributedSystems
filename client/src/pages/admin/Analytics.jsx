@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Activity } from 'lucide-react';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Activity, BarChart3, Users, Stethoscope } from 'lucide-react';
+import { Line, Doughnut } from 'react-chartjs-2';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import {
@@ -15,6 +15,7 @@ import {
     Legend,
     Filler
 } from 'chart.js';
+import ReportGeneration from '../../components/dashboard/ReportGeneration';
 
 ChartJS.register(
     CategoryScale,
@@ -91,10 +92,13 @@ const Analytics = () => {
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">System Analytics</h2>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Advanced intelligence metrics and responder demographic distribution</p>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">System Analytics & Reports</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Advanced intelligence metrics, demographic distribution and comprehensive report generation</p>
                 </div>
             </div>
+
+            {/* Report Generation Section */}
+            <ReportGeneration />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <AnalyticsCard title="User Demographics">
@@ -139,6 +143,49 @@ const Analytics = () => {
                         />
                     </div>
                 </AnalyticsCard>
+            </div>
+
+            {/* Quick Report Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-blue-100 font-medium text-sm">Total Patients</p>
+                            <h3 className="text-3xl font-bold mt-1">{stats?.totalPatients || 0}</h3>
+                        </div>
+                        <Users className="text-blue-200" size={32} />
+                    </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-green-100 font-medium text-sm">Active Doctors</p>
+                            <h3 className="text-3xl font-bold mt-1">{stats?.totalDoctors || 0}</h3>
+                        </div>
+                        <Stethoscope className="text-green-200" size={32} />
+                    </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-2xl text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-purple-100 font-medium text-sm">Total Emergencies</p>
+                            <h3 className="text-3xl font-bold mt-1">{stats?.totalEmergencies || 0}</h3>
+                        </div>
+                        <Activity className="text-purple-200" size={32} />
+                    </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-2xl text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-orange-100 font-medium text-sm">Avg Response</p>
+                            <h3 className="text-3xl font-bold mt-1">{stats?.avgResponseTime || 0}min</h3>
+                        </div>
+                        <BarChart3 className="text-orange-200" size={32} />
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">

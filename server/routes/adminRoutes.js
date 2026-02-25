@@ -11,8 +11,7 @@ const {
   getStats,
   getAppointments,
   createMeetingLink
-} = require("../controllers/adminController");
-
+} = require("../controllers/adminController");const { generateReportController } = require("../controllers/reportController");
 const router = express.Router();
 
 // admin-only for most routes
@@ -33,6 +32,9 @@ router.post("/appointments/:id/meeting", roleMiddleware(["admin"]), createMeetin
 router.patch("/users/:id/toggle-status", roleMiddleware(["admin"]), toggleUserStatus);
 router.delete("/users/:id", roleMiddleware(["admin"]), deleteUser);
 router.get("/stats", roleMiddleware(["admin"]), getStats);
+
+// Report generation routes
+router.post("/reports/generate", roleMiddleware(["admin"]), generateReportController);
 
 router.patch(
   "/users/:id/status",
