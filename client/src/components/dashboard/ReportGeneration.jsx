@@ -9,8 +9,54 @@ import toast from 'react-hot-toast';
 
 const REPORT_TABS = [
     {
+        id: 'appointments',
+        label: 'Appointments',
+        icon: Calendar,
+        color: 'indigo',
+        gradient: 'from-indigo-500 to-indigo-700',
+        lightBg: 'bg-indigo-500/5',
+        border: 'border-indigo-500/20',
+        activeBorder: 'border-indigo-500',
+        iconColor: 'text-indigo-500',
+        badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+        description: 'Meeting scheduled analytics, consultation types, and completion telemetry',
+        includes: [
+            'Total appointments scheduled',
+            'Consultation type breakdown (Video/In-person)',
+            'Completion & Cancellation rates',
+            'Daily booking trends & analytics',
+        ],
+        stats: [
+            { label: 'Metrics', value: '8+', icon: BarChart3 },
+            { label: 'Daily Data', value: 'Yes', icon: Clock },
+        ]
+    },
+    {
+        id: 'emergencies',
+        label: 'Emergencies',
+        icon: AlertCircle,
+        color: 'rose',
+        gradient: 'from-rose-500 to-rose-700',
+        lightBg: 'bg-rose-500/5',
+        border: 'border-rose-500/20',
+        activeBorder: 'border-rose-500',
+        iconColor: 'text-rose-500',
+        badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+        description: 'District-wise emergency cases, resolution times, and responder performance',
+        includes: [
+            'Emergency case frequency by district',
+            'Average & max resolution times',
+            'Critical case distribution',
+            'Responder telemetry & arrival stats',
+        ],
+        stats: [
+            { label: 'Districts', value: 'All', icon: Activity },
+            { label: 'Response', value: 'Real-time', icon: Clock },
+        ]
+    },
+    {
         id: 'patients',
-        label: 'For Patients',
+        label: 'Patients',
         icon: Users,
         color: 'blue',
         gradient: 'from-blue-500 to-blue-700',
@@ -19,12 +65,12 @@ const REPORT_TABS = [
         activeBorder: 'border-blue-500',
         iconColor: 'text-blue-500',
         badgeColor: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-        description: 'Comprehensive patient demographics, appointment history, and health outcome analytics',
+        description: 'Comprehensive patient demographics and historical medical telemetry',
         includes: [
-            'Patient demographics & registration stats',
-            'Appointment history & completion rates',
-            'Emergency case records & outcomes',
-            'Medical conditions & treatment trends',
+            'Patient registration demographics',
+            'Gender & Age distribution',
+            'District distribution of patients',
+            'Account status & profile strength',
         ],
         stats: [
             { label: 'Data Points', value: '12+', icon: BarChart3 },
@@ -33,7 +79,7 @@ const REPORT_TABS = [
     },
     {
         id: 'doctors',
-        label: 'For Doctors',
+        label: 'Doctors',
         icon: Stethoscope,
         color: 'green',
         gradient: 'from-green-500 to-teal-600',
@@ -42,16 +88,39 @@ const REPORT_TABS = [
         activeBorder: 'border-teal-500',
         iconColor: 'text-teal-500',
         badgeColor: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',
-        description: 'Doctor performance metrics, specialization breakdown, and appointment analytics',
+        description: 'Doctor performance, specialization metrics and consult analytics',
         includes: [
-            'Doctor profiles & specializations',
-            'Performance metrics & appointment stats',
-            'Completion & cancellation rates',
-            'Active vs pending doctor status',
+            'Specialization distribution',
+            'Appointment completion frequency',
+            'Performance ratings & telemetry',
+            'Active medical personnel status',
         ],
         stats: [
-            { label: 'Data Points', value: '10+', icon: BarChart3 },
-            { label: 'Sections', value: '3', icon: FileText },
+            { label: 'Metrics', value: '10+', icon: BarChart3 },
+            { label: 'Profile', value: 'Full', icon: FileText },
+        ]
+    },
+    {
+        id: 'projections',
+        label: 'Future Trends',
+        icon: TrendingUp,
+        color: 'amber',
+        gradient: 'from-amber-500 to-amber-700',
+        lightBg: 'bg-amber-500/5',
+        border: 'border-amber-500/20',
+        activeBorder: 'border-amber-500',
+        iconColor: 'text-amber-500',
+        badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        description: 'Predictive analytics for future case volumes and growth margins',
+        includes: [
+            'Next 3-month volume projections',
+            'Historical growth rate (margins)',
+            'Emerging case hotspots',
+            'Resource allocation forecasts',
+        ],
+        stats: [
+            { label: 'Projection', value: '90D', icon: TrendingUp },
+            { label: 'Accuracy', value: 'Dynamic', icon: Activity },
         ]
     }
 ];
@@ -98,7 +167,7 @@ const getDateRange = (days) => {
 };
 
 const ReportGeneration = () => {
-    const [activeTab, setActiveTab] = useState('patients');
+    const [activeTab, setActiveTab] = useState('appointments');
     const [reportFormat, setReportFormat] = useState('pdf');
     const [dateRange, setDateRange] = useState(getDateRange(30));
     const [generatingReport, setGeneratingReport] = useState(false);
