@@ -5,7 +5,7 @@ const prescriptionSchema = new mongoose.Schema(
     medicalRecordId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MedicalRecord",
-      required: true,
+      default: null,   // optional — prescriptions can exist without a linked record
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -3,19 +3,38 @@ const { body } = require("express-validator");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
 
 const {
-  createProfile, getProfile, updateProfile, updateAvatar,
-  getDashboard, getAnalytics,
-  getAvailability, addSlots, deleteSlot, updateSlot,
-  getAppointments, updateAppointment,
-  getPatients, getPatientDetail,
-  createRecord, getRecordsByPatient, updateRecord,
-  savePrescription, getPrescriptions,
+  createProfile,
+  getProfile,
+  updateProfile,
+  updateAvatar,
+  getDashboard,
+  getAnalytics,
+  getAvailability,
+  addSlots,
+  deleteSlot,
+  updateSlot,
+  getAppointments,
+  updateAppointment,
+  deleteAppointment,
+  getPatients,
+  getPatientDetail,
+  createRecord,
+  getRecordsByPatient,
+  updateRecord,
+  savePrescription,
+  getPrescriptions,
+  downloadPrescription,
   getRatings,
   listDoctors,
   deactivateAccount,
+  getMeetings,
+  triggerReminder,
+  sendTestEmail,
 } = require("../controllers/doctorController");
 
-const { generatePrescriptionPdf } = require("../controllers/prescriptionController");
+const {
+  generatePrescriptionPdf,
+} = require("../controllers/prescriptionController");
 
 const router = express.Router();
 
@@ -26,9 +45,11 @@ router.get("/public", listDoctors);
 const doctorAuth = [authMiddleware, roleMiddleware(["doctor"])];
 
 // Profile
-router.post("/profile", doctorAuth,
+router.post(
+  "/profile",
+  doctorAuth,
   [body("fullName").notEmpty(), body("specialization").notEmpty()],
-  createProfile
+  createProfile,
 );
 router.get("/profile", doctorAuth, getProfile);
 router.put("/profile", doctorAuth, updateProfile);
@@ -37,9 +58,11 @@ router.put("/profile", doctorAuth, updateProfile);
 router.delete("/account", doctorAuth, deactivateAccount);
 
 // Avatar — base64 via JSON body: { image: "data:image/jpeg;base64,..." }
-router.put("/profile/avatar", doctorAuth,
+router.put(
+  "/profile/avatar",
+  doctorAuth,
   [body("image").notEmpty().withMessage("image (base64) is required")],
-  updateAvatar
+  updateAvatar,
 );
 
 // Dashboard & analytics
@@ -48,19 +71,31 @@ router.get("/analytics", doctorAuth, getAnalytics);
 
 // Availability
 router.get("/availability", doctorAuth, getAvailability);
-router.post("/availability", doctorAuth,
+router.post(
+  "/availability",
+  doctorAuth,
   [body("slots").isArray({ min: 1 })],
-  addSlots
+  addSlots,
 );
 router.delete("/availability/:slotId", doctorAuth, deleteSlot);
-router.put("/availability/:slotId", doctorAuth,
+router.put(
+  "/availability/:slotId",
+  doctorAuth,
   [body("startTime").notEmpty(), body("endTime").notEmpty()],
-  updateSlot
+  updateSlot,
 );
 
 // Appointments
 router.get("/appointments", doctorAuth, getAppointments);
 router.patch("/appointments/:appointmentId", doctorAuth, updateAppointment);
+router.delete("/appointments/:appointmentId", doctorAuth, deleteAppointment);
+
+// Meetings (video-call appointments)
+router.get("/meetings", doctorAuth, getMeetings);
+
+// Debug / test routes (doctor-auth protected)
+router.get("/trigger-reminder", doctorAuth, triggerReminder);
+router.post("/test-email", doctorAuth, sendTestEmail);
 
 // Patients
 router.get("/patients", doctorAuth, getPatients);
@@ -75,6 +110,7 @@ router.put("/records/:recordId", doctorAuth, updateRecord);
 router.post("/prescriptions/generate", doctorAuth, generatePrescriptionPdf);
 router.post("/prescriptions", doctorAuth, savePrescription);
 router.get("/prescriptions", doctorAuth, getPrescriptions);
+router.get("/prescriptions/download", doctorAuth, downloadPrescription);
 
 // Ratings
 router.get("/ratings", doctorAuth, getRatings);
