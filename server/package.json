@@ -36,13 +36,6 @@
   },
   "devDependencies": {
     "jest": "^30.2.0",
-    "mongodb-memory-server": "^11.0.1",
-    "nodemailer": "^8.0.1",
-    "openai": "^6.24.0",
-    "pdfkit": "^0.17.2"
-  },
-  "devDependencies": {
-    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
     "supertest": "^7.2.2"
   }

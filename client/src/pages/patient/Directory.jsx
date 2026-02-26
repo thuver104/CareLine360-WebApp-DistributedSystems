@@ -162,6 +162,20 @@ export default function Directory() {
     });
   }, [doctors, q]);
 
+  const Spinner = ({ size = 28 }) => (
+    <div className="flex flex-col items-center justify-center py-12">
+        <div
+        className="rounded-full border-3 border-gray-200 border-t-black animate-spin"
+        style={{ width: size, height: size }}
+        aria-label="Loading"
+        />
+
+        <div className="text-sm text-gray-500 animate-pulse">
+        Loading data...
+      </div>
+    </div>
+  );
+
   const list = tab === "hospitals" ? filteredHospitals : filteredDoctors;
   const active = tab === "hospitals" ? selectedHospital : selectedDoctor;
 
@@ -201,10 +215,11 @@ export default function Directory() {
         </div>
 
         {loading ? (
-          <div className="grid lg:grid-cols-12 gap-5">
-            <div className="lg:col-span-5 h-[600px] rounded-3xl bg-white shadow-sm" />
-            <div className="lg:col-span-7 h-[600px] rounded-3xl bg-white shadow-sm" />
-          </div>
+            <Spinner size={38} />
+        //   <div className="grid lg:grid-cols-12 gap-5">
+        //     <div className="lg:col-span-5 h-[600px] rounded-3xl bg-white shadow-sm" />
+        //     <div className="lg:col-span-7 h-[600px] rounded-3xl bg-white shadow-sm" />
+        //   </div>
         ) : (
           <div className="grid lg:grid-cols-12 gap-5">
             {/* LEFT */}
