@@ -24,6 +24,7 @@ export default function Documents() {
   const navItems = useMemo(
     () => [
       { label: "Overview", href: "/patient/dashboard" },
+      { label: "Appointments", href: "/appointments" },
       { label: "Documents", href: "/patient/documents" },
       { label: "Medical History", href: "/patient/medical-history" },
       { label: "AI Chat", href: "/patient/messages" },

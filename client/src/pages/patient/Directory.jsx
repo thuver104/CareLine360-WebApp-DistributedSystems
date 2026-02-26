@@ -187,7 +187,7 @@ export default function Directory() {
     <div className="min-h-screen bg-gradient-to-b from-[#f6fbff] to-white bg-[url('/')] bg-cover bg-center p-6">
         <PatientNavbar />
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto mt-6">
         <AnimatePresence>
           {err && (
             <motion.div
