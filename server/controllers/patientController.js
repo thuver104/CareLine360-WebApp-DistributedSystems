@@ -403,45 +403,75 @@ const getMyPrescriptions = async (req, res) => {
  * Patient fetch all doctors (users with role doctor)
  */
 const getAllDoctorsForPatient = async (req, res) => {
-  const { q = "", hospitalId = "" } = req.query;
+  try {
+    const { q = "" } = req.query;
 
-  const filter = { isDeleted: { $ne: true } };
+    const filter = { isDeleted: { $ne: true } };
 
-  if (hospitalId) filter.hospitalId = hospitalId;
+    if (q) {
+      filter.$or = [
+        { fullName: { $regex: q, $options: "i" } },
+        { specialization: { $regex: q, $options: "i" } },
+      ];
+    }
 
-  if (q) {
-    filter.$or = [
-      { fullName: { $regex: q, $options: "i" } },
-      { specialization: { $regex: q, $options: "i" } },
-    ];
+    const doctors = await Doctor.find(filter)
+      .select("fullName specialization phone avatarUrl qualifications experience bio consultationFee rating totalRatings availabilitySlots doctorId licenseNumber")
+      .sort({ fullName: 1 });
+
+    return res.json(doctors);
+  } catch (e) {
+    return res.status(500).json({ message: "Failed to fetch doctors" });
   }
-
-  const doctors = await Doctor.find(filter)
-    .populate("hospitalId", "name city") // needs hospitalId field
-    .select("fullName specialization email phone hospitalId avatarUrl")
-    .sort({ fullName: 1 });
-
-  res.json(doctors);
 };
 
 const getDoctorDetailsForPatient = async (req, res) => {
-  const doc = await Doctor.findById(req.params.id)
-    .populate("hospitalId", "name address city phone email website")
-  if (!doc) return res.status(404).json({ message: "Doctor not found" });
-  res.json(doc);
+  try {
+    const doc = await Doctor.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
+
+    if (!doc) return res.status(404).json({ message: "Doctor not found" });
+
+    return res.json(doc);
+  } catch (e) {
+    return res.status(500).json({ message: "Failed to fetch doctor details" });
+  }
 };
 
 const getAllHospitalsForPatient = async (req, res) => {
-  const hospitals = await Hospital.find({ isActive: true })
-    .select("name address city phone email website departments imageUrl")
-    .sort({ name: 1 });
-  res.json(hospitals);
+  try {
+    const { q = "" } = req.query;
+
+    const filter = { isActive: true };
+
+    if (q) {
+      filter.$or = [
+        { name: { $regex: q, $options: "i" } },
+        { address: { $regex: q, $options: "i" } },
+        { contact: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    const hospitals = await Hospital.find(filter)
+      .select("name address contact lat lng isActive")
+      .sort({ name: 1 });
+
+    res.json(hospitals);
+  } catch (e) {
+    res.status(500).json({ message: "Failed to fetch hospitals" });
+  }
 };
 
 const getHospitalDetailsForPatient = async (req, res) => {
-  const hospital = await Hospital.findOne({ _id: req.params.id, isActive: true });
-  if (!hospital) return res.status(404).json({ message: "Hospital not found" });
-  res.json(hospital);
+  try {
+    const hospital = await Hospital.findOne({ _id: req.params.id, isActive: true })
+      .select("name address contact lat lng isActive");
+
+    if (!hospital) return res.status(404).json({ message: "Hospital not found" });
+
+    res.json(hospital);
+  } catch (e) {
+    res.status(500).json({ message: "Failed to fetch hospital details" });
+  }
 };
 
 

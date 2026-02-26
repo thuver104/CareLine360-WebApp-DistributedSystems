@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import jsPDF from "jspdf";
 import { api } from "../../api/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import PatientNavbar from "./components/PatientNavbar";
@@ -54,6 +55,124 @@ export default function PatientMedicalHistory() {
 
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfFileName, setPdfFileName] = useState("medical-history.pdf");
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const buildPdfBlob = () => {
+    if (!selected) return null;
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 14;
+    let y = 16;
+
+    const line = (text, size = 11, bold = false) => {
+      pdf.setFont("helvetica", bold ? "bold" : "normal");
+      pdf.setFontSize(size);
+
+      const lines = pdf.splitTextToSize(String(text || ""), pageWidth - margin * 2);
+      lines.forEach((l) => {
+        if (y > 285) {
+          pdf.addPage();
+          y = 16;
+        }
+        pdf.text(l, margin, y);
+        y += 6;
+      });
+      y += 2;
+    };
+
+    // Title
+    line("CareLine360 - Medical History", 16, true);
+    line(`Generated: ${new Date().toLocaleString()}`, 10, false);
+    y += 4;
+
+    // Visit Info
+    line("Visit Details", 13, true);
+    line(`Visit Date: ${selected.visitDate ? new Date(selected.visitDate).toLocaleDateString() : "-"}`);
+    line(`Visit Type: ${selected.visitType || "-"}`);
+    line(`Chief Complaint: ${selected.chiefComplaint || "-"}`);
+    line(`Diagnosis: ${selected.diagnosis || "-"}`);
+
+    if (selected.icdCode) line(`ICD Code: ${selected.icdCode}`);
+    if (selected.notes) line(`Notes: ${selected.notes}`);
+    if (selected.treatmentPlan) line(`Treatment Plan: ${selected.treatmentPlan}`);
+
+    if (selected.symptoms?.length) {
+      line("Symptoms", 13, true);
+      line(selected.symptoms.join(", "));
+    }
+
+    if (selected.secondaryDiagnosis?.length) {
+      line("Secondary Diagnosis", 13, true);
+      line(selected.secondaryDiagnosis.join(", "));
+    }
+
+    if (selected.vitals) {
+      const v = selected.vitals;
+      line("Vitals", 13, true);
+      line(`Blood Pressure: ${v.bloodPressure || "-"}`);
+      line(`Heart Rate: ${v.heartRate ?? "-"}`);
+      line(`Temperature: ${v.temperature ?? "-"}`);
+      line(`Weight: ${v.weight ?? "-"}`);
+      line(`Height: ${v.height ?? "-"}`);
+      line(`Oxygen Sat: ${v.oxygenSat ?? "-"}`);
+    }
+
+    if (selected.attachments?.length) {
+      line("Attachments", 13, true);
+      selected.attachments.forEach((a, idx) => line(`${idx + 1}. ${a}`, 10));
+    }
+
+    // ✅ Return blob for preview
+    return pdf.output("blob");
+  };
+
+  const openPdfPreview = async () => {
+    if (!selected) return;
+
+    setPdfLoading(true);
+
+    // cleanup old URL
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+
+    const blob = buildPdfBlob();
+    if (!blob) {
+      setPdfLoading(false);
+      return;
+    }
+
+    const date = selected.visitDate
+      ? new Date(selected.visitDate).toISOString().slice(0, 10)
+      : "record";
+
+    const fileName = `medical-history-${date}.pdf`;
+
+    const url = URL.createObjectURL(blob);
+    setPdfFileName(fileName);
+    setPdfUrl(url);
+    setPdfOpen(true);
+    setPdfLoading(false);
+  };
+
+  const downloadFromPreview = () => {
+    if (!pdfUrl) return;
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = pdfFileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   useEffect(() => {
     const run = async () => {
@@ -144,7 +263,7 @@ export default function PatientMedicalHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f6fbff] to-white bg-[url('/')] bg-cover bg-center p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
         <PatientNavbar />
       <div className="max-w-7xl mx-auto mt-6">
         <AnimatePresence>
@@ -168,12 +287,22 @@ export default function PatientMedicalHistory() {
             </p>
           </div>
 
-          <a
-            href="/patient/dashboard"
-            className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95"
-          >
-            Back
-          </a>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openPdfPreview}
+              disabled={!selected || pdfLoading}
+              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95 disabled:opacity-50"
+            >
+              {pdfLoading ? "Preparing..." : "Preview PDF"}
+            </button>
+
+            <a
+              href="/patient/dashboard"
+              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95"
+            >
+              Back
+            </a>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-5">
@@ -269,6 +398,7 @@ export default function PatientMedicalHistory() {
             animate="visible"
             custom={1}
           >
+            <div className="max-h-[520px] overflow-auto pr-1">
             {!selected ? (
               <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 text-sm text-gray-600">
                 Select a record to view details.
@@ -406,9 +536,46 @@ export default function PatientMedicalHistory() {
                 </div>
               </>
             )}
+            </div>
           </motion.div>
         </div>
       </div>
+
+      {pdfOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <div className="font-semibold text-sm">PDF Preview</div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={downloadFromPreview}
+                  className="px-4 py-2 rounded-xl bg-black text-white text-sm hover:opacity-95"
+                >
+                  Download
+                </button>
+
+                <button
+                  onClick={() => setPdfOpen(false)}
+                  className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div className="h-[75vh] bg-gray-100">
+              {pdfUrl ? (
+                <iframe title="PDF Preview" src={pdfUrl} className="w-full h-full" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-600">
+                  No preview available
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

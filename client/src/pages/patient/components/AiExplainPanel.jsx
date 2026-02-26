@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "../../../api/axios";
 
-const ThinkingDots = ({ dotSize = 10 }) => {
+const ThinkingDots = ({ dotSize = 4 }) => {
   const s = `${dotSize}px`;
   return (
     <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function AiExplainPanel({ initialText = "" }) {
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 inline-flex items-center gap-3 bg-gray-50 border rounded-2xl px-4 py-3"
         >
-          <span className="text-sm text-gray-600">AI is thinking</span>
+          <span className="text-sm text-black">AI is thinking</span>
           <ThinkingDots />
         </motion.div>
       )}

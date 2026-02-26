@@ -54,6 +54,17 @@ function Tag({ children }) {
   );
 }
 
+const Spinner = ({ size = 38, text = "Loading data..." }) => (
+  <div className="flex flex-col items-center justify-center py-12 min-h-[60vh] gap-4">
+    <div
+      className="rounded-full border-4 border-gray-200 border-t-black animate-spin"
+      style={{ width: size, height: size }}
+      aria-label="Loading"
+    />
+    <div className="text-sm text-gray-500 animate-pulse">{text}</div>
+  </div>
+);
+
 export default function Directory() {
   const [tab, setTab] = useState("hospitals"); // hospitals | doctors
   const [loading, setLoading] = useState(true);
@@ -102,6 +113,7 @@ export default function Directory() {
   const openHospital = async (h) => {
     setSelectedHospital(h);
     setDetailLoading(true);
+    setErr("");
     try {
       const id = h?._id || h?.id;
       const res = await api.get(`/patients/hospital/${id}`);
@@ -116,6 +128,7 @@ export default function Directory() {
   const openDoctor = async (d) => {
     setSelectedDoctor(d);
     setDetailLoading(true);
+    setErr("");
     try {
       const id = d?._id || d?.id;
       const res = await api.get(`/patients/doctor/${id}`);
@@ -127,16 +140,12 @@ export default function Directory() {
     }
   };
 
+  // ✅ Hospital schema fields: name, address, contact, lat, lng
   const filteredHospitals = useMemo(() => {
     const qq = q.trim().toLowerCase();
     if (!qq) return hospitals;
     return hospitals.filter((h) => {
-      const hay = [
-        h?.name,
-        h?.city,
-        h?.address,
-        (h?.departments || []).join(" "),
-      ]
+      const hay = [h?.name, h?.address, h?.contact]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -162,30 +171,21 @@ export default function Directory() {
     });
   }, [doctors, q]);
 
-  const Spinner = ({ size = 28 }) => (
-    <div className="flex flex-col items-center justify-center py-12 min-h-[60vh] gap-4">
-        <div
-        className="rounded-full border-3 border-gray-200 border-t-black animate-spin"
-        style={{ width: size, height: size }}
-        aria-label="Loading"
-        />
-
-        <div className="text-sm text-gray-500 animate-pulse">
-        Loading data...
-      </div>
-    </div>
-  );
-
   const list = tab === "hospitals" ? filteredHospitals : filteredDoctors;
   const active = tab === "hospitals" ? selectedHospital : selectedDoctor;
 
   const title = tab === "hospitals" ? active?.name || "Hospital" : active?.fullName || "Doctor";
-  const subtitle = tab === "hospitals" ? active?.city || "" : active?.specialization || "";
-  const imageUrl = active?.avatarUrl || "";
+  const subtitle =
+    tab === "hospitals"
+      ? safeStr(active?.address) ? "Tap to view details" : ""
+      : active?.specialization || "";
+
+  // Hospital model has no avatarUrl, so always show emoji for hospitals
+  const imageUrl = tab === "doctors" ? active?.avatarUrl || "" : "";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f6fbff] to-white bg-[url('/')] bg-cover bg-center p-6">
-        <PatientNavbar />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
+      <PatientNavbar />
 
       <div className="max-w-7xl mx-auto mt-6">
         <AnimatePresence>
@@ -194,7 +194,7 @@ export default function Directory() {
               initial={{ opacity: 0, scale: 0.985 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="mb-4 mt-3 p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100 shadow "
+              className="mb-4 mt-3 p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100 shadow"
             >
               {err}
             </motion.div>
@@ -215,11 +215,7 @@ export default function Directory() {
         </div>
 
         {loading ? (
-            <Spinner size={38} />
-        //   <div className="grid lg:grid-cols-12 gap-5">
-        //     <div className="lg:col-span-5 h-[600px] rounded-3xl bg-white shadow-sm" />
-        //     <div className="lg:col-span-7 h-[600px] rounded-3xl bg-white shadow-sm" />
-        //   </div>
+          <Spinner />
         ) : (
           <div className="grid lg:grid-cols-12 gap-5">
             {/* LEFT */}
@@ -285,11 +281,11 @@ export default function Directory() {
                       >
                         <div className="text-sm font-semibold">{h?.name || "Hospital"}</div>
                         <div className={"text-xs mt-1 " + (isActive ? "text-white/70" : "text-gray-500")}>
-                          {h?.city || "—"}
+                          {h?.address ? h.address : "—"}
                         </div>
-                        {h?.phone ? (
+                        {h?.contact ? (
                           <div className={"text-xs mt-2 " + (isActive ? "text-white/70" : "text-gray-600")}>
-                            📞 {h.phone}
+                            📞 {h.contact}
                           </div>
                         ) : null}
                       </button>
@@ -373,30 +369,23 @@ export default function Directory() {
                   <div className="mt-5 border-t pt-4">
                     {tab === "hospitals" ? (
                       <>
-                        <InfoRow label="Hospital ID" value={active?.hospitalId} />
+                        <InfoRow label="Name" value={active?.name} />
                         <InfoRow label="Address" value={active?.address} />
-                        <InfoRow label="City" value={active?.city} />
-                        <InfoRow label="Phone" value={active?.phone} />
-                        <InfoRow label="Email" value={active?.email} />
-                        <InfoRow label="Website" value={active?.website} link={active?.website} />
+                        <InfoRow label="Contact" value={active?.contact} />
+                        <InfoRow label="Latitude" value={active?.lat != null ? String(active.lat) : ""} />
+                        <InfoRow label="Longitude" value={active?.lng != null ? String(active.lng) : ""} />
 
-                        {safeStr(active?.description) ? (
-                          <div className="mt-4 p-4 rounded-3xl bg-gray-50 border border-gray-100">
-                            <div className="text-sm font-semibold text-gray-900">About</div>
-                            <div className="text-sm text-gray-700 mt-2 whitespace-pre-line">
-                              {active.description}
-                            </div>
-                          </div>
-                        ) : null}
-
-                        {(active?.departments || []).length ? (
+                        {/* Optional: show Google Maps link */}
+                        {active?.lat != null && active?.lng != null ? (
                           <div className="mt-4">
-                            <div className="text-sm font-semibold text-gray-900">Departments</div>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {active.departments.map((dep, idx) => (
-                                <Tag key={idx}>{dep}</Tag>
-                              ))}
-                            </div>
+                            <a
+                              target="_blank"
+                              rel="noreferrer"
+                              href={`https://www.google.com/maps?q=${active.lat},${active.lng}`}
+                              className="inline-flex px-4 py-2 rounded-2xl bg-black text-white text-sm hover:opacity-95"
+                            >
+                              Open in Maps
+                            </a>
                           </div>
                         ) : null}
                       </>
@@ -458,7 +447,7 @@ export default function Directory() {
 
                         <div className="mt-6">
                           <a
-                            href={`/patient/book-appointment?doctorId=${active?._id}`}
+                            href={`/appointments/book?doctorId=${active?._id}`}
                             className="inline-flex px-4 py-2 rounded-2xl bg-black text-white text-sm hover:opacity-95"
                           >
                             Book Appointment

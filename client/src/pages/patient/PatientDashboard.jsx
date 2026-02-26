@@ -103,7 +103,7 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f6fbff] to-white bg-[url('/')] bg-cover bg-center p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
       {/* Top Nav */}
       <div className="sticky top-0 z-10 backdrop-blur bg-white">
         <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
