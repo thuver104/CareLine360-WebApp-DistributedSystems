@@ -16,10 +16,10 @@ const safeFormatDate = (dateStr, formatStr) => {
 
 const StatusBadge = ({ status }) => {
     const styles = {
-        PENDING: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30',
-        DISPATCHED: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30',
-        ARRIVED: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-900/30',
-        RESOLVED: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30',
+        PENDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+        DISPATCHED: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+        ARRIVED: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',
+        RESOLVED: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
     };
 
     return (
@@ -130,36 +130,36 @@ const EmergencyMonitoring = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Emergency Dispatch Hub</h2>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Real-time situational awareness and responder orchestration</p>
+                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Emergency Dispatch Hub</h2>
+                    <p className="text-[var(--text-secondary)] font-medium mt-1">Real-time situational awareness and responder orchestration</p>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-600 rounded-xl border border-emerald-500/20 shadow-sm">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-xs font-bold uppercase tracking-widest">Live Feed Active</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Feed Active</span>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className={`px-4 py-2 rounded-lg cursor-pointer ${activeTab === 'monitor' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`} onClick={() => setActiveTab('monitor')}>Monitor</div>
-                <div className={`px-4 py-2 rounded-lg cursor-pointer ${activeTab === 'config' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`} onClick={() => setActiveTab('config')}>Config</div>
+            <div className="flex items-center gap-2 p-1.5 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl w-fit">
+                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'monitor' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`} onClick={() => setActiveTab('monitor')}>Monitor</button>
+                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'config' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`} onClick={() => setActiveTab('config')}>Config</button>
             </div>
 
             {activeTab === 'monitor' && (
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left">
+                <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm overflow-hidden text-left">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+                            <thead className="bg-[var(--bg-subtle)] border-b border-[var(--border)] text-[var(--text-muted)] text-[9px] font-black uppercase tracking-[0.25em]">
                                 <tr>
-                                    <th className="py-4 px-6">Case Subject</th>
-                                    <th className="py-4 px-6">Registry Timestamp</th>
-                                    <th className="py-4 px-6">Condition</th>
-                                    <th className="py-4 px-6">Spatial Node</th>
-                                    <th className="py-4 px-6 text-right">Dispatch Actions</th>
+                                    <th className="py-5 px-8">Case Subject</th>
+                                    <th className="py-5 px-8">Registry Timestamp</th>
+                                    <th className="py-5 px-8">Condition</th>
+                                    <th className="py-5 px-8">Spatial Node</th>
+                                    <th className="py-5 px-8 text-right">Dispatch Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tbody className="divide-y divide-[var(--border)]">
                                 {emergencies.length === 0 ? (
                                     <tr>
                                         <td colSpan="5" className="py-20 text-center text-slate-500 italic font-medium">No active or historical emergency cases discovered.</td>
@@ -167,7 +167,7 @@ const EmergencyMonitoring = () => {
                                 ) : emergencies.map((e) => (
                                     <tr
                                         key={e._id}
-                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                                        className="hover:bg-[var(--bg-subtle)] transition-all duration-300 cursor-pointer"
                                         onClick={() => openModal(e)}
                                     >
                                         <td className="py-5 px-6">
@@ -175,8 +175,8 @@ const EmergencyMonitoring = () => {
                                             <div className="text-xs text-slate-500 dark:text-slate-500 font-medium max-w-[280px] truncate italic">"{e.description}"</div>
                                         </td>
                                         <td className="py-5 px-6">
-                                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                                                <Calendar size={14} className="text-slate-400" />
+                                            <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)]">
+                                                <Calendar size={14} className="text-teal-500" />
                                                 {safeFormatDate(e.triggeredAt, 'HH:mm — MMM dd')}
                                             </div>
                                         </td>
@@ -193,7 +193,7 @@ const EmergencyMonitoring = () => {
                                             <select
                                                 value={e.status}
                                                 onChange={(event) => updateStatus(e._id, event.target.value)}
-                                                className="text-[11px] font-bold border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 outline-none bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer"
+                                                className="text-[11px] font-black border border-[var(--border)] rounded-xl px-3 py-1.5 outline-none bg-[var(--bg-surface)] text-[var(--text-primary)] focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer shadow-sm"
                                             >
                                                 <option value="PENDING">SET PENDING</option>
                                                 <option value="DISPATCHED">DISPATCH HELP</option>
@@ -210,12 +210,12 @@ const EmergencyMonitoring = () => {
             )}
 
             {activeTab === 'config' && (
-                <div className="space-y-6 text-left">
+                <div className="space-y-8 text-left">
                     {/* Add Hospital Form */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
-                        <div className="mb-5">
-                            <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-widest">Register New Hospital</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Add a hospital node to the emergency dispatch network</p>
+                    <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm p-8">
+                        <div className="mb-6 flex items-center gap-2">
+                            <div className="w-1.5 h-6 bg-teal-500 rounded-full"></div>
+                            <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-[0.2em]">Register New Hospital</h3>
                         </div>
                         <form onSubmit={handleAddHospital} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1">
@@ -224,7 +224,7 @@ const EmergencyMonitoring = () => {
                                     value={newHospital.name}
                                     onChange={(e) => handleNewHospitalChange('name', e.target.value)}
                                     placeholder="e.g. City General Hospital"
-                                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -233,7 +233,7 @@ const EmergencyMonitoring = () => {
                                     value={newHospital.contact}
                                     onChange={(e) => handleNewHospitalChange('contact', e.target.value)}
                                     placeholder="e.g. +94 11 234 5678"
-                                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1 md:col-span-2">
@@ -242,7 +242,7 @@ const EmergencyMonitoring = () => {
                                     value={newHospital.address}
                                     onChange={(e) => handleNewHospitalChange('address', e.target.value)}
                                     placeholder="e.g. 25 Kynsey Road, Colombo 08"
-                                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -251,7 +251,7 @@ const EmergencyMonitoring = () => {
                                     value={newHospital.lat}
                                     onChange={(e) => handleNewHospitalChange('lat', e.target.value)}
                                     placeholder="e.g. 6.92714"
-                                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -260,7 +260,7 @@ const EmergencyMonitoring = () => {
                                     value={newHospital.lng}
                                     onChange={(e) => handleNewHospitalChange('lng', e.target.value)}
                                     placeholder="e.g. 79.86120"
-                                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
+                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
                                 />
                             </div>
                             <div className="flex items-center gap-3 md:col-span-2 pt-1">
@@ -289,11 +289,11 @@ const EmergencyMonitoring = () => {
                     </div>
 
                     {/* Hospital List */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-5">
-                            <div>
-                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-widest">Registered Hospitals</h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{hospitals.length} node{hospitals.length !== 1 ? 's' : ''} in dispatch network</p>
+                    <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm p-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-6 bg-teal-500 rounded-full"></div>
+                                <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-[0.2em]">Registered Hospitals</h3>
                             </div>
                         </div>
                         {hospitals.length === 0 ? (
@@ -304,22 +304,22 @@ const EmergencyMonitoring = () => {
                         ) : (
                             <ul className="space-y-3">
                                 {hospitals.map(h => (
-                                    <li key={h._id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl flex justify-between items-center transition-all hover:shadow-md">
+                                    <li key={h._id} className="p-4 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl flex justify-between items-center transition-all hover:shadow-md">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center font-bold text-lg shrink-0">
+                                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center font-bold text-lg shrink-0 border border-teal-500/20">
                                                 🏥
                                             </div>
                                             <div>
-                                                <div className="font-bold text-slate-900 dark:text-white leading-tight">{h.name}</div>
+                                                <div className="font-black text-[var(--text-primary)] leading-tight">{h.name}</div>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
+                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-[var(--text-secondary)]">
                                                         <MapPin size={10} className="text-teal-500" /> {h.address || 'No Address Listed'}
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
+                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-[var(--text-secondary)]">
                                                         <Phone size={10} className="text-teal-500" /> {h.contact || 'No Contact Listed'}
                                                     </div>
                                                 </div>
-                                                <div className="text-[9px] font-mono text-slate-400 mt-1 uppercase tracking-tighter">
+                                                <div className="text-[9px] font-mono font-black text-teal-600/60 dark:text-teal-500/60 mt-1 uppercase tracking-tighter">
                                                     Node: {h.lat?.toFixed ? h.lat.toFixed(5) : h.lat}, {h.lng?.toFixed ? h.lng.toFixed(5) : h.lng}
                                                 </div>
                                             </div>

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api/axios";
-import PatientNavbar from "./PatientNavbar";
 
 /**
  * Try to get name/email from whatever you saved at login.
@@ -197,11 +196,13 @@ export default function Profile() {
 
   const inputClass = (key) => {
     const base =
-      "w-full rounded-xl px-3 py-2 outline-none transition bg-white " +
-      "focus:ring-2 focus:ring-blue-200";
+      "w-full rounded-xl px-3 py-2 outline-none transition " +
+      "bg-white dark:bg-slate-800 text-gray-900 dark:text-white " +
+      "placeholder-gray-400 dark:placeholder-gray-500 " +
+      "focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800";
     return errors[key]
-      ? base + " ring-1 ring-red-300 focus:ring-red-200"
-      : base + " ring-1 ring-gray-200";
+      ? base + " border border-red-300 dark:border-red-700"
+      : base + " border border-gray-200 dark:border-slate-700";
   };
 
   const validate = () => {
@@ -297,178 +298,129 @@ export default function Profile() {
 
   const msgClass =
     msgType === "success"
-      ? "bg-green-50 text-green-800 ring-1 ring-green-100"
+      ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 ring-1 ring-green-100 dark:ring-green-900/30"
       : msgType === "error"
-      ? "bg-red-50 text-red-800 ring-1 ring-red-100"
-      : "bg-blue-50 text-blue-800 ring-1 ring-blue-100";
+      ? "bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 ring-1 ring-red-100 dark:ring-red-900/30"
+      : "bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 ring-1 ring-blue-100 dark:ring-blue-900/30";
 
   const ErrorText = ({ k }) =>
     errors[k] ? <p className="text-xs text-red-600 mt-1">{errors[k]}</p> : null;
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6 text-gray-500 dark:text-gray-400">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f6fbff] to-white bg-[url('/')] bg-cover bg-center p-6">
-      <PatientNavbar />
-      <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">My Profile</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              View your details. Click <b>Edit Profile</b> to update.
-            </p>
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">My Profile</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            View your details. Click <b>Edit Profile</b> to update.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <a
+            href="/patient/dashboard"
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
+          >
+            Back
+          </a>
+
+          {!editMode ? (
+            <button
+              onClick={() => { setMsg(""); setMsgType(""); setEditMode(true); }}
+              className="px-4 py-2 rounded-xl bg-teal-600 dark:bg-teal-700 text-white text-sm hover:bg-teal-700 dark:hover:bg-teal-600 transition"
+            >
+              Edit Profile
+            </button>
+          ) : (
+            <button
+              onClick={() => { setMsg(""); setMsgType(""); setErrors({}); setEditMode(false); }}
+              className="px-4 py-2 rounded-xl bg-gray-900 dark:bg-slate-700 text-white text-sm hover:opacity-95 transition"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+
+      {msg && <div className={`mb-4 p-3 rounded-xl text-sm ${msgClass}`}>{msg}</div>}
+
+      {/* Avatar card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm mb-5">
+        <div className="flex items-center gap-5">
+          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center">
+            {avatar ? (
+              <img src={avatar || form.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-3xl">👤</span>
+            )}
           </div>
 
-          <div className="flex gap-2">
-            <a
-              href="/patient/dashboard"
-              className="px-4 py-2 rounded-xl bg-white ring-1 ring-gray-200 text-sm hover:bg-gray-50 transition"
-            >
-              Back
-            </a>
+          <div className="flex-1">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Profile Photo</div>
+            <div className="text-base font-semibold text-gray-900 dark:text-white mt-1">
+              {form.fullName || "Patient"}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{form.email || "—"}</div>
 
-            {!editMode ? (
-              <button
-                onClick={() => {
-                  setMsg("");
-                  setMsgType("");
-                  setEditMode(true);
-                }}
-                className="px-4 py-2 rounded-xl bg-black text-white text-sm hover:opacity-95 transition"
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setMsg("");
-                  setMsgType("");
-                  setErrors({});
-                  setEditMode(false);
-                }}
-                className="px-4 py-2 rounded-xl bg-gray-900 text-white text-sm hover:opacity-95 transition"
-              >
-                Cancel
-              </button>
+            {editMode && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <label className="px-4 py-2 rounded-xl bg-teal-600 dark:bg-teal-700 text-white text-sm font-medium cursor-pointer hover:bg-teal-700 dark:hover:bg-teal-600 transition">
+                  Upload Photo
+                  <input type="file" accept="image/*" className="hidden" onChange={onPickAvatar} />
+                </label>
+
+                {avatar && (
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
+                    onClick={removeAvatar}
+                  >
+                    Remove
+                  </button>
+                )}
+
+                <div className="text-xs text-gray-500 dark:text-gray-400">JPG/PNG/WebP • Max 2MB</div>
+              </div>
             )}
           </div>
         </div>
-
-        {msg && <div className={`mb-4 p-3 rounded-xl text-sm ${msgClass}`}>{msg}</div>}
-
-        {/* ✅ Avatar card */}
-        <div className="bg-white rounded-2xl p-6 ring-1 ring-gray-100 shadow-sm mb-5">
-          <div className="flex items-center gap-5">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 ring-1 ring-gray-200 flex items-center justify-center">
-              {avatar ? (
-                <img src={avatar || form.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-3xl">👤</span>
-              )}
-            </div>
-
-            <div className="flex-1">
-              <div className="text-sm text-gray-500">Profile Photo</div>
-              <div className="text-base font-semibold text-gray-900 mt-1">
-                {form.fullName || "Patient"}
-              </div>
-              <div className="text-sm text-gray-600">{form.email || "—"}</div>
-
-              {editMode && (
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <label className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium cursor-pointer hover:opacity-95 transition">
-                    Upload Photo
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={onPickAvatar}
-                    />
-                  </label>
-
-                  {avatar && (
-                    <button
-                      type="button"
-                      className="px-4 py-2 rounded-xl bg-gray-100 text-gray-900 text-sm font-medium hover:bg-gray-200 transition"
-                      onClick={removeAvatar}
-                    >
-                      Remove
-                    </button>
-                  )}
-
-                  <div className="text-xs text-gray-500">JPG/PNG/WebP • Max 2MB</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      </div>
 
         {/* VIEW MODE */}
         {!editMode && (
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">Full Name</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.name}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">Email</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.email}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">DOB / Gender</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">
-                {profilePreview.dob} • {profilePreview.gender}
+            {[
+              { label: "Full Name",          value: profilePreview.name,       span: false },
+              { label: "Email",              value: profilePreview.email,      span: false },
+              { label: "DOB / Gender",       value: `${profilePreview.dob} • ${profilePreview.gender}`, span: false },
+              { label: "NIC",                value: profilePreview.nic,        span: false },
+              { label: "Address",            value: profilePreview.address,    span: true  },
+              { label: "Emergency Contact",  value: profilePreview.emergency,  span: true  },
+              { label: "Blood Group",        value: profilePreview.bloodGroup, span: false },
+              { label: "Height / Weight",    value: `${profilePreview.height} • ${profilePreview.weight}`, span: false },
+              { label: "Allergies",          value: profilePreview.allergies,  span: true  },
+              { label: "Chronic Conditions", value: profilePreview.conditions, span: true  },
+            ].map(({ label, value, span }) => (
+              <div
+                key={label}
+                className={`bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm ${span ? "md:col-span-2" : ""}`}
+              >
+                <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+                <div className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{value}</div>
               </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">NIC</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.nic}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm md:col-span-2">
-              <div className="text-xs text-gray-500">Address</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.address}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm md:col-span-2">
-              <div className="text-xs text-gray-500">Emergency Contact</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.emergency}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">Blood Group</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.bloodGroup}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm">
-              <div className="text-xs text-gray-500">Height / Weight</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">
-                {profilePreview.height} • {profilePreview.weight}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm md:col-span-2">
-              <div className="text-xs text-gray-500">Allergies</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.allergies}</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 ring-1 ring-gray-100 shadow-sm md:col-span-2">
-              <div className="text-xs text-gray-500">Chronic Conditions</div>
-              <div className="mt-1 text-base font-semibold text-gray-900">{profilePreview.conditions}</div>
-            </div>
+            ))}
           </div>
         )}
 
         {/* EDIT MODE */}
         {editMode && (
-          <form onSubmit={onSave} className="bg-white rounded-2xl p-6 ring-1 ring-gray-100 shadow-sm space-y-5">
+          <form onSubmit={onSave} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm space-y-5">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600">Full Name</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Full Name</label>
                 <input
                   className={inputClass("fullName")}
                   value={form.fullName}
@@ -478,16 +430,16 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Email (readonly)</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Email (readonly)</label>
                 <input
-                  className="w-full rounded-xl px-3 py-2 bg-gray-100 ring-1 ring-gray-200"
+                  className="w-full rounded-xl px-3 py-2 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400"
                   value={form.email}
                   readOnly
                 />
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">DOB</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">DOB</label>
                 <input
                   type="date"
                   className={inputClass("dob")}
@@ -498,7 +450,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Gender</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Gender</label>
                 <select
                   className={inputClass("gender")}
                   value={form.gender}
@@ -513,7 +465,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">NIC</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">NIC</label>
                 <input
                   className={inputClass("nic")}
                   value={form.nic}
@@ -525,7 +477,7 @@ export default function Profile() {
 
             <div className="grid md:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm text-gray-600">District</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">District</label>
                 <input
                   className={inputClass("address.district")}
                   value={form.address.district}
@@ -533,7 +485,7 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600">City</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">City</label>
                 <input
                   className={inputClass("address.city")}
                   value={form.address.city}
@@ -541,7 +493,7 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600">Address line</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Address line</label>
                 <input
                   className={inputClass("address.line1")}
                   value={form.address.line1}
@@ -552,7 +504,7 @@ export default function Profile() {
 
             <div className="grid md:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm text-gray-600">Emergency Name</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Emergency Name</label>
                 <input
                   className={inputClass("emergencyContact.name")}
                   value={form.emergencyContact.name}
@@ -560,7 +512,7 @@ export default function Profile() {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600">Emergency Phone</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Emergency Phone</label>
                 <input
                   className={inputClass("emergencyContact.phone")}
                   value={form.emergencyContact.phone}
@@ -569,7 +521,7 @@ export default function Profile() {
                 <ErrorText k="emergencyContact.phone" />
               </div>
               <div>
-                <label className="text-sm text-gray-600">Relationship</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Relationship</label>
                 <input
                   className={inputClass("emergencyContact.relationship")}
                   value={form.emergencyContact.relationship}
@@ -580,7 +532,7 @@ export default function Profile() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600">Blood Group</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Blood Group</label>
                 <input
                   className={inputClass("bloodGroup")}
                   value={form.bloodGroup}
@@ -590,7 +542,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Height (cm)</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Height (cm)</label>
                 <input
                   className={inputClass("heightCm")}
                   value={form.heightCm}
@@ -600,7 +552,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Weight (kg)</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Weight (kg)</label>
                 <input
                   className={inputClass("weightKg")}
                   value={form.weightKg}
@@ -610,7 +562,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Allergies (comma separated)</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Allergies (comma separated)</label>
                 <input
                   className={inputClass("allergies")}
                   value={form.allergies}
@@ -620,7 +572,7 @@ export default function Profile() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-sm text-gray-600">Chronic Conditions (comma separated)</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400">Chronic Conditions (comma separated)</label>
                 <input
                   className={inputClass("chronicConditions")}
                   value={form.chronicConditions}
@@ -633,26 +585,20 @@ export default function Profile() {
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-medium hover:opacity-95 transition"
+                className="px-5 py-2.5 rounded-xl bg-teal-600 dark:bg-teal-700 text-white text-sm font-medium hover:bg-teal-700 dark:hover:bg-teal-600 transition"
               >
                 Save Changes
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setMsg("");
-                  setMsgType("");
-                  setErrors({});
-                  setEditMode(false);
-                }}
-                className="px-5 py-2.5 rounded-xl bg-gray-100 text-gray-900 text-sm font-medium hover:bg-gray-200 transition"
+                onClick={() => { setMsg(""); setMsgType(""); setErrors({}); setEditMode(false); }}
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
               >
                 Cancel
               </button>
             </div>
           </form>
         )}
-      </div>
     </div>
   );
 }

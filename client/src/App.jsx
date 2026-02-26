@@ -3,6 +3,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
+import PatientLayout from "./layouts/PatientLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
 
 // Landing
@@ -19,7 +20,6 @@ import ResetPassword from "./pages/ResetPassword";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import Profile from "./pages/patient/Profile";
 import Documents from "./pages/patient/Documents";
-import PatientNavbar from "./pages/patient/PatientNavbar";
 
 // Doctor Pages
 import DashboardPage from "./pages/doctor/DashboardPage";
@@ -30,7 +30,6 @@ import ManageUsers from "./pages/admin/ManageUsers";
 import EmergencyMonitoring from "./pages/admin/EmergencyMonitoring";
 import Analytics from "./pages/admin/Analytics";
 import MeetAssign from "./pages/admin/MeetAssign";
-
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -50,12 +49,13 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Patient Protected Routes */}
+          {/* Patient Protected Routes — all share PatientLayout (header) */}
           <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
-            <Route path="/patient/dashboard" element={<PatientDashboard />} />
-            <Route path="/patient/profile" element={<Profile />} />
-            <Route path="/patient/documents" element={<Documents />} />
-            <Route path="/patient/navbar" element={<PatientNavbar />} />
+            <Route element={<PatientLayout />}>
+              <Route path="/patient/dashboard" element={<PatientDashboard />} />
+              <Route path="/patient/profile"   element={<Profile />} />
+              <Route path="/patient/documents" element={<Documents />} />
+            </Route>
           </Route>
 
           {/* Doctor Dashboard */}
@@ -74,16 +74,9 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/dashboard" element={<MainLayout />}>
               <Route index element={<Dashboard />} />
-              <Route path="users" element={<ManageUsers />} />
+              <Route path="users"       element={<ManageUsers />} />
               <Route path="meet-assign" element={<MeetAssign />} />
-              <Route path="analytics" element={<Analytics />} />
-            </Route>
-          </Route>
-
-          {/* Emergencies tab for admin and responder */}
-          <Route element={<ProtectedRoute allowedRoles={["admin", "responder"]} />}>
-            <Route path="/admin/dashboard/emergencies" element={<MainLayout />}>
-              <Route index element={<EmergencyMonitoring />} />
+              <Route path="analytics"   element={<Analytics />} />
             </Route>
           </Route>
 

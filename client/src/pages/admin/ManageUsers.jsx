@@ -14,6 +14,7 @@ const ManageUsers = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [doctorReviews, setDoctorReviews] = useState([]);
 
     // Add User Form State
@@ -23,6 +24,13 @@ const ManageUsers = () => {
         phone: '',
         password: '',
         role: 'patient'
+    });
+
+    const [editData, setEditData] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        newPassword: ''
     });
 
     useEffect(() => {
@@ -100,6 +108,45 @@ const ManageUsers = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleEditInputChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
+
+    const handleEditUser = async (e) => {
+        e.preventDefault();
+        try {
+            await api.patch(`/admin/users/${selectedUser._id}`, editData);
+            toast.success('User updated successfully');
+            setShowEditModal(false);
+            fetchUsers();
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Failed to update user';
+            toast.error(msg);
+        }
+    };
+
+    const openEditModal = (user) => {
+        setSelectedUser(user);
+        setEditData({
+            fullName: user.fullName || user.name || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            newPassword: ''
+        });
+        setShowEditModal(true);
+        setShowDetailModal(false);
+    };
+
+    const generatePassword = () => {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let retVal = "";
+        for (let i = 0, n = charset.length; i < 10; ++i) {
+            retVal += charset.charAt(Math.floor(Math.random() * n));
+        }
+        setEditData({ ...editData, newPassword: retVal });
+        toast.success("Random password generated");
+    };
+
     const openDetailModal = (user) => {
         setSelectedUser(user);
         setShowDetailModal(true);
@@ -110,8 +157,8 @@ const ManageUsers = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">User Management</h2>
-                    <p className="text-slate-500 dark:text-slate-400">Total {totalUsers} users registered in the system</p>
+                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">User Management</h2>
+                    <p className="text-[var(--text-secondary)] font-medium mt-1">Total {totalUsers} users registered in the system</p>
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
@@ -123,14 +170,14 @@ const ManageUsers = () => {
             </div>
 
             {/* Filter & Search Section */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl p-5 shadow-sm">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={18} />
                         <input
                             type="text"
                             placeholder="Search by name, email or phone..."
-                            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white"
+                            className="w-full pl-12 pr-4 py-3 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all text-[var(--text-primary)] font-medium"
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
@@ -138,9 +185,9 @@ const ManageUsers = () => {
                             }}
                         />
                     </div>
-                    <div className="flex gap-2 min-w-[180px]">
+                    <div className="flex gap-2 min-w-[200px]">
                         <select
-                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white font-medium"
+                            className="w-full px-5 py-3 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl focus:outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all text-[var(--text-primary)] font-bold text-sm"
                             value={roleFilter}
                             onChange={(e) => {
                                 setRoleFilter(e.target.value);
@@ -158,47 +205,47 @@ const ManageUsers = () => {
             </div>
 
             {/* Main Table Section */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800">
-                                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">User Identity</th>
-                                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Designation</th>
-                                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="py-4 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-[var(--bg-subtle)] border-b border-[var(--border)]">
+                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">User Identity</th>
+                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Designation</th>
+                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Status</th>
+                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-[var(--border)]">
                             {loading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td className="py-5 px-6"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800"></div><div className="space-y-2"><div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-32"></div><div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-48"></div></div></div></td>
-                                        <td className="py-5 px-6"><div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-16"></div></td>
-                                        <td className="py-5 px-6"><div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full w-20"></div></td>
-                                        <td className="py-5 px-6"><div className="h-8 bg-slate-100 dark:bg-slate-800 rounded w-24 ml-auto"></div></td>
+                                        <td className="py-6 px-8"><div className="flex items-center gap-4"><div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)]"></div><div className="space-y-2"><div className="h-4 bg-[var(--bg-subtle)] rounded w-32"></div><div className="h-3 bg-[var(--bg-subtle)] rounded w-48"></div></div></div></td>
+                                        <td className="py-6 px-8"><div className="h-4 bg-[var(--bg-subtle)] rounded w-16"></div></td>
+                                        <td className="py-6 px-8"><div className="h-6 bg-[var(--bg-subtle)] rounded-full w-20"></div></td>
+                                        <td className="py-6 px-8"><div className="h-10 bg-[var(--bg-subtle)] rounded-xl w-24 ml-auto"></div></td>
                                     </tr>
                                 ))
                             ) : users.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="py-20 text-center text-slate-500 dark:text-slate-400 font-medium italic">
+                                    <td colSpan="4" className="py-24 text-center text-[var(--text-muted)] font-bold italic tracking-wide">
                                         No users found matching your search.
                                     </td>
                                 </tr>
                             ) : users.map((user) => (
-                                <tr key={user._id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer" onClick={() => openDetailModal(user)}>
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 overflow-hidden shadow-sm">
+                                <tr key={user._id} className="group hover:bg-[var(--bg-subtle)] transition-all duration-300 cursor-pointer" onClick={() => openDetailModal(user)}>
+                                    <td className="py-5 px-8">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-12 h-12 rounded-2xl bg-[var(--bg-subtle)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] overflow-hidden shadow-sm group-hover:scale-110 transition-transform duration-300">
                                                 {user.avatarUrl ? (
                                                     <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <UserIcon size={20} />
+                                                    <UserIcon size={22} strokeWidth={1.5} />
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-900 dark:text-white line-clamp-1">{user.name || 'No Name'}</p>
-                                                <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">{user.email || user.phone || 'No Contact'}</p>
+                                                <p className="font-bold text-[var(--text-primary)] text-base tracking-tight">{user.name || 'No Name'}</p>
+                                                <p className="text-xs text-[var(--text-secondary)] font-medium mt-0.5">{user.email || user.phone || 'No Contact'}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -243,9 +290,9 @@ const ManageUsers = () => {
 
                 {/* Pagination Section */}
                 {!loading && totalUsers > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/10">
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                            Showing <span className="text-slate-900 dark:text-white font-bold">{(page - 1) * 10 + 1} - {Math.min(page * 10, totalUsers)}</span> of <span className="text-slate-900 dark:text-white font-bold">{totalUsers}</span> users
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-[var(--border)] bg-[var(--bg-subtle)]/30 rounded-b-3xl">
+                        <p className="text-sm text-[var(--text-secondary)] font-bold">
+                            Showing <span className="text-[var(--text-primary)] font-black">{(page - 1) * 10 + 1} - {Math.min(page * 10, totalUsers)}</span> of <span className="text-[var(--text-primary)] font-black">{totalUsers}</span> users
                         </p>
                         <div className="flex items-center gap-1.5">
                             <button
@@ -260,8 +307,8 @@ const ManageUsers = () => {
                                     key={i + 1}
                                     onClick={() => setPage(i + 1)}
                                     className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${page === i + 1
-                                        ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
-                                        : 'hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-200 dark:hover:border-slate-700'
+                                        ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20 px-3 font-black'
+                                        : 'hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-transparent hover:border-[var(--border)] px-3 font-bold'
                                         }`}
                                 >
                                     {i + 1}
@@ -300,7 +347,7 @@ const ManageUsers = () => {
                                     type="text"
                                     name="fullName"
                                     required
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
                                     placeholder="Enter full name"
                                     value={formData.fullName}
                                     onChange={handleInputChange}
@@ -312,7 +359,7 @@ const ManageUsers = () => {
                                     <input
                                         type="email"
                                         name="email"
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white"
+                                        className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
                                         placeholder="email@example.com"
                                         value={formData.email}
                                         onChange={handleInputChange}
@@ -323,7 +370,7 @@ const ManageUsers = () => {
                                     <input
                                         type="text"
                                         name="phone"
-                                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white"
+                                        className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
                                         placeholder="07xxxxxxxx"
                                         value={formData.phone}
                                         onChange={handleInputChange}
@@ -336,7 +383,7 @@ const ManageUsers = () => {
                                     type="password"
                                     name="password"
                                     required
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={handleInputChange}
@@ -346,7 +393,7 @@ const ManageUsers = () => {
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">User Assignment</label>
                                 <select
                                     name="role"
-                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-slate-900 dark:text-white font-medium"
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)] font-medium"
                                     value={formData.role}
                                     onChange={handleInputChange}
                                 >
@@ -399,9 +446,17 @@ const ManageUsers = () => {
                                     </span>
                                 </div>
                             </div>
-                            <button onClick={() => setShowDetailModal(false)} className="self-start p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex-shrink-0">
-                                <X size={20} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => openEditModal(selectedUser)}
+                                    className="p-2 py-1.5 px-3 bg-teal-600/10 text-teal-600 rounded-lg hover:bg-teal-600 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+                                >
+                                    Edit Profile
+                                </button>
+                                <button onClick={() => setShowDetailModal(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex-shrink-0">
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="px-8 pb-8 flex-1 overflow-y-auto custom-scrollbar pt-6">
@@ -573,6 +628,95 @@ const ManageUsers = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* Edit User Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowEditModal(false)}></div>
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Edit User Profile</h3>
+                            <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleEditUser} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Full Name</label>
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    required
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
+                                    placeholder="Enter full name"
+                                    value={editData.fullName}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
+                                    placeholder="email@example.com"
+                                    value={editData.email}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Phone</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    className="w-full px-4 py-2.5 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-[var(--text-primary)]"
+                                    placeholder="07xxxxxxxx"
+                                    value={editData.phone}
+                                    onChange={handleEditInputChange}
+                                />
+                            </div>
+
+                            <div className="pt-4 border-t border-[var(--border)] mt-4">
+                                <label className="block text-xs font-bold text-rose-500 uppercase tracking-widest mb-2 ml-1">Reset Password (Optional)</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        name="newPassword"
+                                        className="flex-1 px-4 py-2.5 bg-rose-500/5 border border-rose-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all text-[var(--text-primary)] font-mono text-sm"
+                                        placeholder="Enter or generate new password"
+                                        value={editData.newPassword}
+                                        onChange={handleEditInputChange}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={generatePassword}
+                                        className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all active:scale-95"
+                                    >
+                                        Generate
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-2 ml-1 font-medium">※ Saving this will notify the user via email instantly.</p>
+                            </div>
+
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="flex-1 px-4 py-3 border border-[var(--border)] text-[var(--text-secondary)] rounded-xl font-bold hover:bg-[var(--bg-subtle)] transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all active:scale-95"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

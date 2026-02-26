@@ -7,7 +7,7 @@ const MeetAssign = () => {
     const [appointments, setAppointments] = useState([]);
     const [allAppointments, setAllAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filterDate, setFilterDate] = useState('');
+    const [filterDate, setFilterDate] = useState(new Date().toLocaleDateString('en-CA'));
     const [filterType, setFilterType] = useState('all');
     const [selectedMeeting, setSelectedMeeting] = useState(null);
     const jitsiContainerRef = useRef(null);
@@ -49,7 +49,7 @@ const MeetAssign = () => {
         }
         if (filterDate) {
             filtered = filtered.filter(a => {
-                const ad = new Date(a.date).toISOString().slice(0,10);
+                const ad = new Date(a.date).toISOString().slice(0, 10);
                 return ad === filterDate;
             });
         }
@@ -125,40 +125,40 @@ const MeetAssign = () => {
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meet Assign</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Manage and assign video consultations</p>
+                    <h1 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Meet Assignment Hub</h1>
+                    <p className="text-[var(--text-secondary)] font-medium mt-1">Orchestrate and assign specialized video consultations</p>
                 </div>
-                <div className="flex gap-4 items-center">
+                <div className="flex flex-wrap gap-2 items-center p-1.5 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-[24px] shadow-inner">
                     <input
                         type="date"
                         value={filterDate}
                         onChange={(e) => setFilterDate(e.target.value)}
-                        className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-slate-900 dark:text-white"
+                        className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-primary)] font-black uppercase tracking-wider outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
                     />
 
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-slate-900 dark:text-white"
+                        className="px-4 py-2 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-primary)] font-black uppercase tracking-wider outline-none transition-all focus:ring-2 focus:ring-teal-500/20"
                     >
-                        <option value="all">All Types</option>
-                        <option value="video">Video</option>
-                        <option value="in-person">In-Person</option>
-                        <option value="phone">Phone</option>
+                        <option value="all">ALL MODALITIES</option>
+                        <option value="video">VIDEO</option>
+                        <option value="in-person">IN-PERSON</option>
+                        <option value="phone">PHONE</option>
                     </select>
 
                     <button
                         onClick={fetchAppointments}
-                        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
+                        className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-teal-700 transition-all flex items-center gap-2 active:scale-95 shadow-sm shadow-teal-500/20"
                     >
                         Refresh
                     </button>
 
                     <button
                         onClick={() => { setFilterDate(''); setFilterType('all'); }}
-                        className="px-3 py-2 bg-white/10 text-sm rounded-xl"
+                        className="px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-rose-500 transition-colors"
                     >
                         Clear
                     </button>
@@ -166,30 +166,30 @@ const MeetAssign = () => {
             </div>
 
             {selectedMeeting ? (
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 mb-8">
-                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-2xl">
-                                <Video className="text-blue-600 dark:text-blue-400" size={24} />
+                <div className="bg-[var(--bg-surface)] rounded-[32px] shadow-2xl overflow-hidden border border-[var(--border)] mb-12 animate-in zoom-in-95 duration-300">
+                    <div className="p-8 border-b border-[var(--border)] flex justify-between items-center bg-[var(--bg-subtle)]">
+                        <div className="flex items-center gap-6">
+                            <div className="bg-teal-500/10 p-4 rounded-2xl text-teal-600 shadow-inner">
+                                <Video size={28} />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Meeting with {selectedMeeting.patient?.fullName || 'Patient'}
+                                <h2 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">
+                                    Live Session: {selectedMeeting.patient?.fullName || 'Identity Pending'}
                                 </h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Doctor: {selectedMeeting.doctor?.fullName || 'Unassigned'}
+                                <p className="text-xs font-black text-teal-600 uppercase tracking-widest mt-1">
+                                    Primary Consultant: Dr. {selectedMeeting.doctor?.fullName || 'Unassigned'}
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={closeMeeting}
-                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+                            className="p-3 hover:bg-rose-500/10 hover:text-rose-500 rounded-full transition-all text-[var(--text-muted)]"
                         >
-                            <XCircle size={24} className="text-gray-400" />
+                            <XCircle size={28} />
                         </button>
                     </div>
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900/50">
-                        <div ref={jitsiContainerRef} className="rounded-2xl overflow-hidden shadow-inner bg-black min-h-[600px]">
+                    <div className="p-6 bg-[var(--bg-surface)]">
+                        <div ref={jitsiContainerRef} className="rounded-3xl overflow-hidden shadow-2xl bg-slate-950 min-h-[600px] border border-[var(--border)]">
                             {/* Jitsi meet will be mounted here */}
                         </div>
                     </div>
@@ -198,30 +198,30 @@ const MeetAssign = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
                         Array(6).fill(0).map((_, i) => (
-                            <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
-                                <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-4"></div>
-                                <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg mb-2"></div>
-                                <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                            <div key={i} className="bg-[var(--bg-surface)] rounded-3xl p-6 shadow-sm border border-[var(--border)] animate-pulse">
+                                <div className="h-12 w-12 bg-[var(--bg-subtle)] rounded-2xl mb-4"></div>
+                                <div className="h-6 w-3/4 bg-[var(--bg-subtle)] rounded-lg mb-2"></div>
+                                <div className="h-4 w-1/2 bg-[var(--bg-subtle)] rounded-lg"></div>
                             </div>
                         ))
                     ) : appointments.length === 0 ? (
-                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
-                            <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-full mb-4">
-                                <Video size={48} className="text-gray-400" />
+                        <div className="col-span-full py-24 flex flex-col items-center justify-center text-center">
+                            <div className="bg-[var(--bg-subtle)] p-8 rounded-full mb-6 border border-[var(--border)] shadow-inner">
+                                <Video size={48} className="text-[var(--text-muted)]" />
                             </div>
-                            <h3 className="text-xl font-bold dark:text-white">No Appointments Found</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-sm">
+                            <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">No Appointments Found</h3>
+                            <p className="text-[var(--text-secondary)] mt-2 max-w-sm font-medium">
                                 There are currently no appointments matching the selected filters.
                             </p>
                         </div>
                     ) : (
                         appointments.map((appt) => (
-                            <div key={appt._id} className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border border-gray-100 dark:border-gray-700 group">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-2xl ${appt.priority === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' :
-                                        appt.priority === 'medium' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
-                                            'bg-blue-100 text-blue-600 dark:bg-blue-900/30'
-                                        }`}>
+                            <div key={appt._id} className="bg-[var(--bg-surface)] rounded-3xl p-6 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 border border-[var(--border)] group">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className={`p-3.5 rounded-2xl ${appt.priority === 'high' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                                        appt.priority === 'medium' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                                            'bg-teal-500/10 text-teal-600 dark:text-teal-400'
+                                        } group-hover:scale-110 transition-transform duration-300`}>
                                         {((appt.consultationType || '').toLowerCase() === 'video') ? (
                                             <Video size={24} />
                                         ) : ((appt.consultationType || '').toLowerCase() === 'phone') ? (
@@ -231,30 +231,30 @@ const MeetAssign = () => {
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${appt.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                            appt.status === 'pending' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest ${appt.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
+                                            appt.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30' :
+                                                'bg-[var(--bg-muted)] text-[var(--text-secondary)] border-[var(--border)]'
                                             }`}>
                                             {appt.status}
                                         </span>
                                     </div>
                                 </div>
 
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                                    {appt.patient?.fullName || 'Unnamed Patient'}
+                                <h3 className="text-xl font-black text-[var(--text-primary)] mb-1 tracking-tight">
+                                    {appt.patient?.fullName || 'Identity Pending'}
                                 </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
-                                    <User size={14} />
-                                    Dr. {appt.doctor?.fullName || 'TBD'}
+                                <p className="text-xs text-[var(--text-secondary)] mb-6 flex items-center gap-2 font-bold uppercase tracking-widest italic">
+                                    <User size={13} className="text-teal-500" />
+                                    Dr. {appt.doctor?.fullName || 'Awaiting Assignment'}
                                 </p>
 
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                        <Calendar size={16} className="text-gray-400" />
-                                        {new Date(appt.date).toLocaleDateString()}
+                                <div className="space-y-3 mb-8 bg-[var(--bg-subtle)] p-4 rounded-2xl border border-[var(--border)]">
+                                    <div className="flex items-center gap-3 text-xs font-bold text-[var(--text-secondary)]">
+                                        <Calendar size={14} className="text-teal-500" />
+                                        {new Date(appt.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                        <Clock size={16} className="text-gray-400" />
+                                    <div className="flex items-center gap-3 text-xs font-bold text-[var(--text-secondary)]">
+                                        <Clock size={14} className="text-teal-500" />
                                         {appt.time}
                                     </div>
 
@@ -273,61 +273,60 @@ const MeetAssign = () => {
                                     )}
                                 </div>
 
-                                {/* Actions based on consultation type */}
                                 {((appt.consultationType || '').toLowerCase() === 'video') ? (
                                     appt.meetingUrl ? (
                                         <button
                                             onClick={() => startMeeting(appt)}
-                                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 bg-teal-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-teal-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20 active:scale-95"
                                         >
                                             <Video size={18} />
-                                            Join Meeting
+                                            Start Session
                                         </button>
                                     ) : appt.status === 'confirmed' ? (
                                         <button
                                             onClick={() => createMeeting(appt)}
-                                            className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active:scale-95"
                                         >
                                             <Video size={18} />
-                                            Create Meeting Link
+                                            Initialize Meet
                                         </button>
                                     ) : (
                                         <button
                                             disabled
-                                            className="w-full py-4 bg-gray-300 dark:bg-gray-700 text-gray-500 rounded-2xl font-bold cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="w-full py-3.5 bg-[var(--bg-subtle)] text-[var(--text-muted)] rounded-xl font-black uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 border border-[var(--border)]"
                                         >
                                             <Video size={18} />
-                                            Meeting Unavailable
+                                            Meet Unavailable
                                         </button>
                                     )
                                 ) : ((appt.consultationType || '').toLowerCase() === 'phone') ? (
                                     appt.status === 'confirmed' ? (
-                                        <button disabled className="w-full py-4 bg-gray-300 dark:bg-gray-700 text-gray-500 rounded-2xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                                        <button disabled className="w-full py-3.5 bg-[var(--bg-subtle)] text-[var(--text-muted)] rounded-xl font-black uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 border border-[var(--border)]">
                                             <Phone size={18} />
-                                            Meeting Scheduled
+                                            Session Locked
                                         </button>
                                     ) : appt.patient?.phone ? (
-                                        <a href={`tel:${appt.patient.phone}`} className="w-full block text-center py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all">
+                                        <a href={`tel:${appt.patient.phone}`} className="w-full block text-center py-3.5 bg-teal-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 active:scale-95">
                                             <Phone size={18} className="inline-block mr-2" />
-                                            Call Patient
+                                            Contact Now
                                         </a>
                                     ) : (
-                                        <button disabled className="w-full py-4 bg-gray-300 dark:bg-gray-700 text-gray-500 rounded-2xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                                        <button disabled className="w-full py-3.5 bg-[var(--bg-subtle)] text-[var(--text-muted)] rounded-xl font-black uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 border border-[var(--border)]">
                                             <Phone size={18} />
-                                            No Phone
+                                            No Registry
                                         </button>
                                     )
                                 ) : (
                                     // in-person
                                     appt.status === 'confirmed' ? (
-                                        <button disabled className="w-full py-4 bg-gray-300 dark:bg-gray-700 text-gray-500 rounded-2xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                                        <button disabled className="w-full py-3.5 bg-[var(--bg-subtle)] text-[var(--text-muted)] rounded-xl font-black uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 border border-[var(--border)]">
                                             <Users size={18} />
-                                            Meeting Scheduled
+                                            In-Person Logged
                                         </button>
                                     ) : (
-                                        <div className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl font-bold flex items-center justify-center gap-2">
-                                            <ExternalLink size={18} />
-                                            In-Person Appointment
+                                        <div className="w-full py-3.5 bg-[var(--bg-subtle)] text-[var(--text-muted)] rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 border border-[var(--border)] text-[10px]">
+                                            <ExternalLink size={16} />
+                                            Hospital Visit
                                         </div>
                                     )
                                 )}

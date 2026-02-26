@@ -3,6 +3,7 @@ import { Activity, BarChart3, Users, Stethoscope } from 'lucide-react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { useTheme } from '../../context/ThemeContext';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -30,13 +31,17 @@ ChartJS.register(
 );
 
 const AnalyticsCard = ({ title, children, className = "" }) => (
-    <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-sm ${className}`}>
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-8 uppercase tracking-widest border-l-4 border-teal-500 pl-3">{title}</h3>
+    <div className={`bg-[var(--bg-surface)] border border-[var(--border)] p-8 rounded-[32px] shadow-sm ${className}`}>
+        <h3 className="text-xs font-black text-[var(--text-primary)] mb-8 uppercase tracking-[0.25em] flex items-center gap-3">
+            <div className="w-1.5 h-4 bg-teal-500 rounded-full"></div>
+            {title}
+        </h3>
         {children}
     </div>
 );
 
 const Analytics = () => {
+    const { isDark } = useTheme();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -56,13 +61,16 @@ const Analytics = () => {
     };
 
     if (loading) return (
-        <div className="flex flex-col items-center justify-center h-96 gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-            <p className="text-slate-500 font-medium animate-pulse">Analyzing System Data...</p>
+        <div className="flex flex-col items-center justify-center h-96 gap-6">
+            <div className="relative">
+                <div className="absolute inset-0 bg-teal-500/20 blur-xl rounded-full"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-[3px] border-transparent border-t-teal-600 relative z-10"></div>
+            </div>
+            <p className="text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] text-xs animate-pulse">Analyzing Rescue Telemetry...</p>
         </div>
     );
 
-    if (!stats) return <div className="p-8 text-center text-rose-500 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl font-bold">Failed to load analytics engine.</div>;
+    if (!stats) return <div className="p-8 text-center text-red-600 bg-red-500/10 border border-red-500/20 rounded-[24px] font-black uppercase tracking-widest text-xs">Failed to load analytics engine.</div>;
 
     const roleData = {
         labels: ['Patients', 'Doctors', 'Responders'],
@@ -76,10 +84,10 @@ const Analytics = () => {
     };
 
     const responseTimeData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: stats.monthlyHistory.map(m => m.name),
         datasets: [{
-            label: 'Avg Response Time (min)',
-            data: [35, 32, 28, 30, 25, stats.avgResponseTime],
+            label: 'Emergency Cases Surge',
+            data: stats.monthlyHistory.map(m => m.count),
             fill: true,
             borderColor: '#0d9488',
             backgroundColor: 'rgba(13, 148, 136, 0.1)',
@@ -92,8 +100,8 @@ const Analytics = () => {
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">System Analytics & Reports</h2>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium tracking-tight">Advanced intelligence metrics, demographic distribution and comprehensive report generation</p>
+                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">System Analytics & Reports</h2>
+                    <p className="text-[var(--text-secondary)] font-medium mt-1">Advanced intelligence metrics, demographic distribution and comprehensive report generation</p>
                 </div>
             </div>
 
@@ -114,7 +122,7 @@ const Analytics = () => {
                                             usePointStyle: true,
                                             padding: 20,
                                             font: { size: 12, weight: '600' },
-                                            color: '#64748b'
+                                            color: isDark ? '#94a3b8' : '#64748b'
                                         }
                                     }
                                 }
@@ -131,12 +139,14 @@ const Analytics = () => {
                                 maintainAspectRatio: false,
                                 plugins: { legend: { display: false } },
                                 scales: {
+                                    x: {
+                                        grid: { display: false },
+                                        ticks: { color: isDark ? '#94a3b8' : '#64748b' }
+                                    },
                                     y: {
                                         beginAtZero: true,
-                                        grid: { color: 'rgba(148, 163, 184, 0.1)' }
-                                    },
-                                    x: {
-                                        grid: { display: false }
+                                        grid: { color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(148, 163, 184, 0.1)' },
+                                        ticks: { color: isDark ? '#94a3b8' : '#64748b' }
                                     }
                                 }
                             }}
@@ -145,111 +155,9 @@ const Analytics = () => {
                 </AnalyticsCard>
             </div>
 
-            {/* Quick Report Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl text-white">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-blue-100 font-medium text-sm">Total Patients</p>
-                            <h3 className="text-3xl font-bold mt-1">{stats?.totalPatients || 0}</h3>
-                        </div>
-                        <Users className="text-blue-200" size={32} />
-                    </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl text-white">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-green-100 font-medium text-sm">Active Doctors</p>
-                            <h3 className="text-3xl font-bold mt-1">{stats?.totalDoctors || 0}</h3>
-                        </div>
-                        <Stethoscope className="text-green-200" size={32} />
-                    </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-2xl text-white">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-purple-100 font-medium text-sm">Total Emergencies</p>
-                            <h3 className="text-3xl font-bold mt-1">{stats?.totalEmergencies || 0}</h3>
-                        </div>
-                        <Activity className="text-purple-200" size={32} />
-                    </div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-2xl text-white">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-orange-100 font-medium text-sm">Avg Response</p>
-                            <h3 className="text-3xl font-bold mt-1">{stats?.avgResponseTime || 0}min</h3>
-                        </div>
-                        <BarChart3 className="text-orange-200" size={32} />
-                    </div>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-                <div className="bg-gradient-to-br from-teal-600 to-teal-800 p-8 rounded-2xl text-white shadow-lg lg:col-span-1 border border-teal-500/20 relative overflow-hidden group">
-                    <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform">
-                        <Activity size={200} />
-                    </div>
-                    <p className="text-teal-100 font-bold uppercase text-[10px] tracking-widest mb-2">Core Health Status</p>
-                    <h4 className="text-4xl font-black mb-10">Optimal</h4>
-                    <div className="space-y-6">
-                        <div>
-                            <div className="flex justify-between text-xs font-bold mb-2">
-                                <span className="uppercase tracking-widest text-teal-100/80">Resource Saturation</span>
-                                <span>42%</span>
-                            </div>
-                            <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden border border-white/5 shadow-inner">
-                                <div className="bg-white h-full shadow-[0_0_15px_rgba(255,255,255,0.5)]" style={{ width: '42%' }}></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-xs font-bold mb-2">
-                                <span className="uppercase tracking-widest text-teal-100/80">Operational Uptime</span>
-                                <span>99.9%</span>
-                            </div>
-                            <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden border border-white/5 shadow-inner">
-                                <div className="bg-white h-full shadow-[0_0_15px_rgba(255,255,255,0.5)]" style={{ width: '99.9%' }}></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <AnalyticsCard title="Critical Performance Indices" className="lg:col-span-2">
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 transition-all hover:border-teal-500/20">
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Network Conversion</p>
-                            <div className="flex items-end gap-2">
-                                <p className="text-3xl font-black text-slate-900 dark:text-white">12.4%</p>
-                                <span className="text-xs font-bold text-teal-500 mb-1">+2.1% ↑</span>
-                            </div>
-                        </div>
-                        <div className="p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 transition-all hover:border-teal-500/20">
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Daily Active Sessions</p>
-                            <div className="flex items-end gap-2">
-                                <p className="text-3xl font-black text-slate-900 dark:text-white">842</p>
-                                <span className="text-xs font-bold text-teal-500 mb-1">+4% ↑</span>
-                            </div>
-                        </div>
-                        <div className="p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 transition-all hover:border-teal-500/20">
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Medical Retention</p>
-                            <div className="flex items-end gap-2">
-                                <p className="text-3xl font-black text-slate-900 dark:text-white">94%</p>
-                                <span className="text-xs font-bold text-slate-500 mb-1">Stable</span>
-                            </div>
-                        </div>
-                        <div className="p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 transition-all hover:border-teal-500/20">
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Internal API Latency</p>
-                            <div className="flex items-end gap-2">
-                                <p className="text-3xl font-black text-slate-900 dark:text-white">45ms</p>
-                                <span className="text-xs font-bold text-teal-500 mb-1">Optimal</span>
-                            </div>
-                        </div>
-                    </div>
-                </AnalyticsCard>
-            </div>
+
         </div>
     );
 };

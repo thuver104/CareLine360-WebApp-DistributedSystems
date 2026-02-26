@@ -1,26 +1,21 @@
 import { useState } from "react";
-import Sidebar from "./Sidebar";
-import Topbar from "./Topbar";
+import DoctorHeader from "./DoctorHeader";
 
+/**
+ * DashboardLayout – Doctor portal
+ * Replaces the old sidebar+topbar pattern with a single sticky header.
+ * Supports light/dark mode via html.dark class (ThemeContext).
+ */
 export default function DashboardLayout({ children }) {
   const [activePage, setActivePage] = useState("Dashboard");
 
   return (
-    /* cl-page = full-height flex row + gradient background + blobs */
-    <div className="cl-page">
-      <Sidebar active={activePage} setActive={setActivePage} />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      <DoctorHeader active={activePage} setActive={setActivePage} />
 
-      {/* cl-right-col = flex column, takes remaining width */}
-      <div className="cl-right-col">
-        <Topbar pageTitle={activePage} />
-
-        {/* cl-main = flex-1 scrollable area */}
-        <main className="cl-main p-6">
-          <div className="max-w-screen-2xl mx-auto space-y-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {children}
+      </main>
     </div>
   );
 }
