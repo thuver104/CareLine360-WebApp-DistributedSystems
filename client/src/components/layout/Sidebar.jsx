@@ -9,6 +9,7 @@ import {
   ChevronsRight,
   Stethoscope,
   LogOut,
+  Video,
 } from "lucide-react";
 import { getInitials } from "../../utils/colors";
 import { clearAuth } from "../../auth/authStorage";
@@ -23,6 +24,7 @@ const NAV_MAIN = [
     hasBadge: true,
   },
   { id: "My Patients", icon: Users, label: "My Patients" },
+  { id: "Meetings", icon: Video, label: "Meetings" },
   { id: "Availability", icon: CalendarClock, label: "Availability" },
   { id: "Analytics", icon: BarChart3, label: "Analytics" },
 ];

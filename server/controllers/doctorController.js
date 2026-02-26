@@ -1,5 +1,13 @@
 const { validationResult } = require("express-validator");
 const doctorService = require("../services/doctorService");
+const Appointment = require("../models/Appointment");
+const Patient = require("../models/Patient");
+const Doctor = require("../models/Doctor");
+const { sendEmail } = require("../services/emailService");
+const {
+  checkAndNotify,
+  getMeetingUrl,
+} = require("../services/meetingScheduler");
 
 const handleValidation = (req, res) => {
   const errors = validationResult(req);
@@ -300,6 +308,51 @@ const listDoctors = async (req, res) => {
   res.status(result.status).json(result.data);
 };
 
+// ─── Meetings (video-call appointments) ──────────────────────────────────────
+
+/**
+ * GET /api/doctor/meetings
+ * Returns all video-call appointments for the logged-in doctor,
+ * enriched with patient profile data, ordered by date/time ascending.
+ */
+const getMeetings = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { status } = req.query;
+
+    const query = { doctor: userId, consultationType: "video" };
+    if (status) query.status = status;
+
+    let appointments = await Appointment.find(query)
+      .populate({ path: "patient", select: "email phone fullName" })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    const patientUserIds = appointments
+      .map((a) => a.patient?._id)
+      .filter(Boolean);
+    const patientProfiles = await Patient.find({
+      userId: { $in: patientUserIds },
+    })
+      .select("userId fullName patientId avatarUrl")
+      .lean();
+    const profileMap = {};
+    patientProfiles.forEach((p) => {
+      profileMap[p.userId.toString()] = p;
+    });
+
+    appointments = appointments.map((a) => ({
+      ...a,
+      patientProfile: profileMap[a.patient?._id?.toString()] || null,
+    }));
+
+    res.status(200).json({ meetings: appointments });
+  } catch (err) {
+    console.error("getMeetings error:", err);
+    res.status(500).json({ message: err.message || "Internal server error" });
+  }
+};
+
 // ─── Account deactivation ─────────────────────────────────────────────────────
 
 /**
@@ -312,6 +365,84 @@ const deactivateAccount = async (req, res) => {
     userId: req.user.userId,
   });
   res.status(result.status).json(result.data);
+};
+
+/**
+ * GET /api/doctor/trigger-reminder
+ * Manually runs the meeting reminder check (verbose mode) and returns a report.
+ * Useful for testing without waiting for the cron tick.
+ */
+const triggerReminder = async (req, res) => {
+  try {
+    // Clear remindedSet is not accessible here; instruct user to restart if needed.
+    // Run verbose check — logs appear in server console.
+    await checkAndNotify({ verbose: true });
+
+    // Also return a list of upcoming video appointments so the doctor can see what exists.
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const upcomingVideo = await Appointment.find({
+      consultationType: "video",
+      status: { $in: ["confirmed", "pending"] },
+      date: { $gte: todayStart, $lte: todayEnd },
+    })
+      .populate("patient", "email")
+      .select("date time status consultationType");
+
+    res.json({
+      message: "Reminder check triggered. See server console for logs.",
+      todayVideoAppointments: upcomingVideo.map((a) => ({
+        id: a._id,
+        date: a.date,
+        time: a.time,
+        status: a.status,
+        patientEmail: a.patient?.email,
+        meetingUrl: getMeetingUrl(a._id.toString()),
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * POST /api/doctor/test-email
+ * Sends a test email to the currently logged-in doctor to verify SMTP config.
+ */
+const sendTestEmail = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const User = require("../models/User");
+    const user = await User.findById(userId).select("email");
+    const doctorProfile = await Doctor.findOne({ userId });
+
+    const to = user?.email;
+    if (!to)
+      return res
+        .status(400)
+        .json({ error: "No email address on your account." });
+
+    await sendEmail({
+      to,
+      subject: "✅ CareLine360 – SMTP Test Email",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px;border-radius:12px;background:#f0fdfa;border:1px solid #99f6e4;">
+          <h2 style="color:#0d9488;">✅ SMTP is working!</h2>
+          <p>Hello, Dr. <strong>${doctorProfile?.fullName || to}</strong></p>
+          <p>This is a test email from <strong>CareLine360</strong> to confirm that email notifications are correctly configured.</p>
+          <p style="color:#6b7280;font-size:13px;">If you received this, your meeting reminder emails will work as expected.</p>
+        </div>
+      `,
+    });
+
+    res.json({ message: `Test email sent to ${to}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 module.exports = {
@@ -339,4 +470,7 @@ module.exports = {
   getRatings,
   listDoctors,
   deactivateAccount,
+  getMeetings,
+  triggerReminder,
+  sendTestEmail,
 };

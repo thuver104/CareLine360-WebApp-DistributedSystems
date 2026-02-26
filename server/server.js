@@ -18,13 +18,25 @@ const chatRoutes = require("./routes/chatRoutes");
 // Socket handler
 const { registerSocketHandlers } = require("./socket/chatSocket");
 
-// Connect to MongoDB
-connectDB();
+// Meeting reminder scheduler
+const { startMeetingScheduler } = require("./services/meetingScheduler");
+
+// Connect to MongoDB, then start the meeting reminder scheduler
+connectDB()
+  .then(() => {
+    startMeetingScheduler();
+  })
+  .catch(console.error);
 
 const app = express();
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "20mb" })); // increased for base64 images
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
 app.use(helmet());
@@ -45,10 +57,14 @@ app.use((err, req, res, next) => {
   if (err?.message?.includes("Only image files allowed"))
     return res.status(400).json({ message: "Only image files allowed" });
   if (err?.message?.includes("Only PDF, images, DOC, DOCX allowed"))
-    return res.status(400).json({ message: "Only PDF, images, DOC, DOCX allowed" });
+    return res
+      .status(400)
+      .json({ message: "Only PDF, images, DOC, DOCX allowed" });
   if (err?.code === "LIMIT_FILE_SIZE")
     return res.status(400).json({ message: "File too large" });
-  return res.status(500).json({ message: err.message || "Internal server error" });
+  return res
+    .status(500)
+    .json({ message: err.message || "Internal server error" });
 });
 
 // ── HTTP + Socket.io Server ────────────────────────────────────────────────────
@@ -69,4 +85,6 @@ registerSocketHandlers(io);
 app.set("io", io);
 
 const PORT = process.env.PORT || 1111;
-httpServer.listen(PORT, () => console.log(`🚀 Server + Socket.io running on port ${PORT}`));
+httpServer.listen(PORT, () =>
+  console.log(`🚀 Server + Socket.io running on port ${PORT}`),
+);

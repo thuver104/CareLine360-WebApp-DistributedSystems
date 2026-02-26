@@ -21,6 +21,9 @@ import {
   TrendingUp,
   TrendingDown,
   PieChart,
+  Video,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import {
   getDoctorDashboard,
@@ -30,6 +33,9 @@ import {
   getDoctorPatients,
   getDoctorAnalytics,
   getAvailability,
+  getDoctorMeetings,
+  triggerMeetingReminder,
+  sendTestEmail,
 } from "../../api/doctorApi";
 import StatCard from "../../components/ui/StatCard";
 import ActivityFeed from "../../components/dashboard/ActivityFeed";
@@ -58,12 +64,27 @@ const fadeUp = {
 };
 
 const scaleIn = {
-  hidden: { opacity: 0, scale: 0.92 },
+  hidden: { opacity: 0, scale: 0.88, y: 12 },
   visible: (i = 0) => ({
     opacity: 1,
     scale: 1,
-    transition: { delay: i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+    y: 0,
+    transition: { delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] },
   }),
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -24 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
 };
 
 // ── Custom styled status dropdown ────────────────────────────────────────────
@@ -595,6 +616,20 @@ export default function DashboardPage({
   const [prescripModal, setPrescripModal] = useState(null);
   const [patientRecordsModal, setPatientRecordsModal] = useState(null); // { patientId, patientName }
   const [deleteConfirmId, setDeleteConfirmId] = useState(null); // appointmentId pending delete
+
+  // ── Meetings ──────────────────────────────────────────────────────────────
+  const [meetings, setMeetings] = useState([]);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
+  // countdown: null | { apptId, count } where count is 3 → 2 → 1 → 0 (open tab)
+  const [countdown, setCountdown] = useState(null);
+  const countdownRef = useRef(null);
+  // Per-card live timers: { [apptId]: secondsUntilStart }
+  const [meetingTimers, setMeetingTimers] = useState({});
+  // Locally-marked-complete meeting IDs for instant dimming before data refresh
+  const [completedMeetingIds, setCompletedMeetingIds] = useState(new Set());
+  // Email test / reminder trigger state
+  const [testEmailLoading, setTestEmailLoading] = useState(false);
+  const [reminderLoading, setReminderLoading] = useState(false);
   // searchOpen / onSearchClose come from DashboardLayout via cloneElement
 
   // ── Initial load ──────────────────────────────────────────────────────────
@@ -610,56 +645,101 @@ export default function DashboardPage({
       .catch(console.error)
       .finally(() => setTodayLoading(false));
 
-    getAvailability()
-      .then((r) => buildSlotUtilisation(r.data.slots || []))
+    // Compute current week (Mon – Sun) for slot utilisation cross-reference
+    const now = new Date();
+    const dow = now.getDay(); // 0=Sun, 1=Mon…
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    const weekFrom = monday.toISOString().split("T")[0];
+    const weekTo = sunday.toISOString().split("T")[0];
+
+    Promise.all([
+      getAvailability(),
+      getDoctorAppointments({ dateFrom: weekFrom, dateTo: weekTo, limit: 100 }),
+    ])
+      .then(([slotsRes, apptRes]) => {
+        buildSlotUtilisation(
+          slotsRes.data.slots || [],
+          apptRes.data.appointments || [],
+          monday,
+        );
+      })
       .catch(console.error);
   }, []);
 
   // Handle quick-action clicks from the Sidebar
-  // These switch section to Appointments and indicate which action modal to open.
-  // We store a hint in a ref to be picked up on next Appointments render.
   useEffect(() => {
     if (!quickAction) return;
     setSection("Appointments");
-    // Reset immediately — the sidebar already set section; user can click the row buttons
     onQuickActionHandled?.();
   }, [quickAction, setSection, onQuickActionHandled]);
 
-  const buildSlotUtilisation = (slots) => {
-    const colorKeys = ["teal", "cyan", "violet", "rose"];
+  const buildSlotUtilisation = (slots, weekAppts = [], monday = null) => {
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+    const base =
+      monday ||
+      (() => {
+        const d = new Date(now);
+        const dow = d.getDay();
+        d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+        d.setHours(0, 0, 0, 0);
+        return d;
+      })();
 
-    // Group slots by week-of-month (Week 1 = days 1-7, Week 2 = 8-14, etc.)
-    const weeks = [
-      { label: "Week 1", minDay: 1, maxDay: 7 },
-      { label: "Week 2", minDay: 8, maxDay: 14 },
-      { label: "Week 3", minDay: 15, maxDay: 21 },
-      { label: "Week 4", minDay: 22, maxDay: 31 },
-    ];
+    const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    const byWeek = weeks
-      .map((w, idx) => {
-        const weekSlots = slots.filter((s) => {
-          const day = new Date(s.date + "T00:00:00").getDate();
-          return day >= w.minDay && day <= w.maxDay;
-        });
-        const total = weekSlots.length;
-        const booked = weekSlots.filter((s) => s.isBooked).length;
-        return {
-          label: w.label,
-          pct: total > 0 ? Math.round((booked / total) * 100) : 0,
-          colorKey: colorKeys[idx % colorKeys.length],
-          total,
-        };
-      })
-      // Only show weeks that actually have slots
-      .filter((w) => w.total > 0)
-      .map(({ total: _t, ...rest }) => rest);
+    const days = DAY_NAMES.map((name, idx) => {
+      const dayDate = new Date(base);
+      dayDate.setDate(base.getDate() + idx);
+      const dateStr = dayDate.toISOString().split("T")[0];
 
-    const total = slots.length;
-    const booked = slots.filter((s) => s.isBooked).length;
+      // Slots on this day
+      const daySlots = slots.filter((s) => s.date === dateStr);
+      // Appointments on this day (cross-reference by date)
+      const dayAppts = weekAppts.filter((a) => {
+        const aDate = new Date(a.date).toISOString().split("T")[0];
+        return aDate === dateStr;
+      });
+
+      const total = daySlots.length;
+      // A slot is booked if isBooked=true OR there's an appointment at that start time
+      const booked = daySlots.filter(
+        (s) => s.isBooked || dayAppts.some((a) => a.time === s.startTime),
+      ).length;
+      // Extra appointments beyond mapped slots still count
+      const appts = dayAppts.length;
+      const effectiveBooked = Math.max(booked, total > 0 ? 0 : 0);
+      const pct =
+        total > 0 ? Math.round((booked / total) * 100) : appts > 0 ? 100 : 0;
+
+      return {
+        label: name,
+        dateStr,
+        total,
+        booked: effectiveBooked,
+        appts,
+        pct,
+        isToday: dateStr === todayStr,
+      };
+    });
+
+    const totalSlots = slots.length;
+    const totalBooked = slots.filter((s) => s.isBooked).length;
+    const totalAppts = weekAppts.length;
+
     setSlotsData({
-      data: byWeek,
-      summary: { total, booked, free: total - booked },
+      data: days,
+      summary: {
+        totalSlots,
+        totalBooked,
+        totalFree: totalSlots - totalBooked,
+        totalAppts,
+      },
     });
   };
 
@@ -687,6 +767,180 @@ export default function DashboardPage({
   useEffect(() => {
     if (section === "Appointments") loadAppointments(1);
   }, [section, loadAppointments]);
+
+  // ── Meetings ─────────────────────────────────────────────────────────────
+  const loadMeetings = useCallback(async () => {
+    setMeetingsLoading(true);
+    try {
+      const { data } = await getDoctorMeetings();
+      setMeetings(data.meetings || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setMeetingsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (section === "Meetings") loadMeetings();
+  }, [section, loadMeetings]);
+
+  // ── Per-card live countdown timer (ticks every second while on Meetings page)
+  const getSecondsUntil = useCallback((appt) => {
+    const d = new Date(appt.date);
+    const [hh, mm] = (appt.time || "00:00").split(":").map(Number);
+    const apptDT = new Date(
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate(),
+      hh,
+      mm,
+      0,
+    );
+    return Math.floor((apptDT.getTime() - Date.now()) / 1000);
+  }, []);
+
+  const formatSecondsUntil = (secs) => {
+    if (secs <= 0) return null;
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+    if (h > 0) return `${h}h ${pad(m)}m ${pad(s)}s`;
+    if (m > 0) return `${pad(m)}m ${pad(s)}s`;
+    return `${pad(s)}s`;
+  };
+
+  // Build initial timer map whenever meetings list changes
+  useEffect(() => {
+    if (!meetings.length) return;
+    const next = {};
+    meetings.forEach((a) => {
+      next[a._id] = getSecondsUntil(a);
+    });
+    setMeetingTimers(next);
+  }, [meetings, getSecondsUntil]);
+
+  // Tick every second while viewing Meetings
+  useEffect(() => {
+    if (section !== "Meetings") return;
+    const iv = setInterval(() => {
+      setMeetingTimers((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((id) => {
+          next[id] = next[id] - 1;
+        });
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [section]);
+
+  // Countdown logic: triggers when countdown.count reaches 0
+  useEffect(() => {
+    if (!countdown) return;
+    if (countdown.count <= 0) {
+      // Open meeting in new tab
+      const meetingUrl = `https://meet.jit.si/CareLine360-${countdown.apptId}`;
+      window.open(meetingUrl, "_blank", "noopener,noreferrer");
+      setCountdown(null);
+      return;
+    }
+    const t = setTimeout(() => {
+      setCountdown((prev) =>
+        prev ? { ...prev, count: prev.count - 1 } : null,
+      );
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
+
+  // Handle delete from Meetings page
+  const handleDeleteMeeting = async (appointmentId) => {
+    try {
+      await deleteAppointment(appointmentId);
+      toast("Meeting removed", "success");
+      loadMeetings();
+      getDoctorDashboard()
+        .then((r) => setDashData(r.data))
+        .catch(() => {});
+    } catch (e) {
+      toast(e?.response?.data?.message || "Failed to remove meeting", "error");
+    }
+  };
+
+  // Mark a meeting as completed (dims the card immediately, then syncs server)
+  const handleMarkComplete = async (apptId) => {
+    // Optimistic: dim the card immediately
+    setCompletedMeetingIds((prev) => new Set(prev).add(apptId));
+    try {
+      await updateAppointmentStatus(apptId, { status: "completed" });
+      toast("Meeting marked as completed", "success");
+      loadMeetings();
+      getDoctorDashboard()
+        .then((r) => setDashData(r.data))
+        .catch(() => {});
+    } catch (e) {
+      // Rollback optimistic update on error
+      setCompletedMeetingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(apptId);
+        return s;
+      });
+      toast(e?.response?.data?.message || "Failed to mark complete", "error");
+    }
+  };
+
+  // Start countdown for a given appointmentId
+  const startCountdown = (apptId) => {
+    if (countdownRef.current) clearTimeout(countdownRef.current);
+    setCountdown({ apptId, count: 3 });
+  };
+
+  const handleTestEmail = async () => {
+    setTestEmailLoading(true);
+    try {
+      const { data } = await sendTestEmail();
+      toast(data.message || "Test email sent!", "success");
+    } catch (e) {
+      toast(e?.response?.data?.error || "Failed to send test email", "error");
+    } finally {
+      setTestEmailLoading(false);
+    }
+  };
+
+  const handleTriggerReminder = async () => {
+    setReminderLoading(true);
+    try {
+      const { data } = await triggerMeetingReminder();
+      const count = data.todayVideoAppointments?.length ?? 0;
+      toast(
+        `Reminder check done – ${count} video appointment(s) found today. Check server console for details.`,
+        count > 0 ? "success" : "info",
+      );
+    } catch (e) {
+      toast(e?.response?.data?.error || "Reminder trigger failed", "error");
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  // Check whether doctor can join (within 10 min before or after the appointment time)
+  const canJoinMeeting = (appt) => {
+    const d = new Date(appt.date);
+    const [hh, mm] = (appt.time || "00:00").split(":").map(Number);
+    const apptDT = new Date(
+      d.getFullYear(),
+      d.getMonth(),
+      d.getDate(),
+      hh,
+      mm,
+      0,
+    );
+    const now = new Date();
+    const diffMs = apptDT.getTime() - now.getTime();
+    // Allow from 10 min before up to 90 min after start
+    return diffMs <= 10 * 60 * 1000 && diffMs >= -90 * 60 * 1000;
+  };
 
   // ── Patients ─────────────────────────────────────────────────────────────
   // Declarative: runs whenever section, page, or committed search query changes.
@@ -870,6 +1124,58 @@ export default function DashboardPage({
         />
       )}
 
+      {/* ── Countdown Overlay ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {countdown && (
+          <motion.div
+            key="countdown-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="flex flex-col items-center gap-6"
+            >
+              {/* Pulsing ring */}
+              <div className="relative flex items-center justify-center">
+                <span className="absolute h-40 w-40 rounded-full bg-teal-500/20 animate-ping" />
+                <div className="relative h-36 w-36 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-teal-500/50">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={countdown.count}
+                      initial={{ scale: 2, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.3, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="text-6xl font-black text-white"
+                    >
+                      {countdown.count}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-white text-lg font-bold">Joining Meeting…</p>
+                <p className="text-white/60 text-sm mt-1">
+                  Opening in a new tab
+                </p>
+              </div>
+              <button
+                onClick={() => setCountdown(null)}
+                className="text-white/50 hover:text-white text-sm underline transition-colors"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="space-y-6 animate-fade-in">
         {/* ── DASHBOARD ─────────────────────────────────────────────────────── */}
         {section === "Dashboard" && (
@@ -940,7 +1246,12 @@ export default function DashboardPage({
             )}
 
             {/* Stat cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+            >
               {[
                 {
                   icon: Calendar,
@@ -971,8 +1282,7 @@ export default function DashboardPage({
                   key={card.label}
                   custom={i}
                   variants={scaleIn}
-                  initial="hidden"
-                  animate="visible"
+                  whileHover={{ y: -3, transition: { duration: 0.2 } }}
                 >
                   <StatCard
                     icon={card.icon}
@@ -983,14 +1293,15 @@ export default function DashboardPage({
                   />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* Today's appointments table */}
             <motion.div
               variants={fadeUp}
-              custom={1}
+              custom={2}
               initial="hidden"
               animate="visible"
+              whileInView={{ opacity: 1 }}
             >
               <AppointmentsTable
                 appointments={todayAppts}
@@ -1039,6 +1350,7 @@ export default function DashboardPage({
               <SlotUtilisation
                 data={slotsData?.data || []}
                 summary={slotsData?.summary || null}
+                loading={!slotsData}
               />
             </motion.div>
 
@@ -1927,6 +2239,445 @@ export default function DashboardPage({
                 </motion.div>
               );
             })()}
+          </div>
+        )}
+
+        {/* ── MEETINGS ──────────────────────────────────────────────────── */}
+        {section === "Meetings" && (
+          <div className="space-y-6">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center justify-between"
+            >
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Video className="h-5 w-5 text-teal-500" />
+                  Video Meetings
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  All patients with video call appointments
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={handleTestEmail}
+                  disabled={testEmailLoading}
+                  title="Send a test email to verify SMTP is working"
+                  className="h-9 px-3 rounded-xl border border-teal-500 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  {testEmailLoading ? "Sending…" : "✉ Test Email"}
+                </button>
+                <button
+                  onClick={handleTriggerReminder}
+                  disabled={reminderLoading}
+                  title="Manually fire the 10-min reminder check now"
+                  className="h-9 px-3 rounded-xl border border-amber-500 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  {reminderLoading ? "Checking…" : "⏰ Trigger Reminder"}
+                </button>
+                <button
+                  onClick={loadMeetings}
+                  className="h-9 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors shadow-md shadow-teal-600/20"
+                >
+                  Refresh
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Cards */}
+            {meetingsLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="glass-card rounded-2xl p-5 animate-pulse"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-14 w-14 rounded-full bg-gray-200 dark:bg-white/10" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 rounded bg-gray-200 dark:bg-white/10 w-3/4" />
+                        <div className="h-2.5 rounded bg-gray-200 dark:bg-white/10 w-1/2" />
+                      </div>
+                    </div>
+                    <div className="h-24 rounded-xl bg-gray-200 dark:bg-white/10 mb-4" />
+                    <div className="h-10 rounded-xl bg-gray-200 dark:bg-white/10" />
+                  </div>
+                ))}
+              </div>
+            ) : meetings.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card rounded-2xl p-16 flex flex-col items-center gap-3"
+              >
+                <div className="h-20 w-20 rounded-full bg-teal-500/10 flex items-center justify-center">
+                  <Video className="h-10 w-10 text-teal-400" />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                  No video appointments
+                </p>
+                <p className="text-gray-400 dark:text-gray-500 text-xs text-center max-w-xs">
+                  Patients who book video call appointments will appear here
+                  with their meeting links.
+                </p>
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {meetings.map((appt, idx) => {
+                  const patient = appt.patientProfile;
+                  const name =
+                    patient?.fullName ||
+                    appt.patient?.fullName ||
+                    "Unknown Patient";
+                  const initials =
+                    name
+                      .split(" ")
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((w) => w[0].toUpperCase())
+                      .join("") || "?";
+                  const email = appt.patient?.email || "";
+                  const phone = appt.patient?.phone || "";
+                  const apptDate = appt.date
+                    ? new Date(appt.date).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "—";
+                  const meetingUrl = `https://meet.jit.si/CareLine360-${appt._id}`;
+                  const joinable = canJoinMeeting(appt);
+                  const isPast =
+                    appt.status === "completed" ||
+                    appt.status === "cancelled" ||
+                    (() => {
+                      const d = new Date(appt.date);
+                      const [hh, mm] = (appt.time || "00:00")
+                        .split(":")
+                        .map(Number);
+                      const apptDT = new Date(
+                        d.getFullYear(),
+                        d.getMonth(),
+                        d.getDate(),
+                        hh,
+                        mm,
+                      );
+                      return apptDT.getTime() + 90 * 60 * 1000 < Date.now();
+                    })();
+
+                  // Dim if marked complete locally or already completed/cancelled
+                  const isDimmed =
+                    completedMeetingIds.has(appt._id) ||
+                    appt.status === "completed" ||
+                    appt.status === "cancelled";
+
+                  const statusColors = {
+                    confirmed:
+                      "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                    pending:
+                      "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                    completed:
+                      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+                    cancelled:
+                      "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+                  };
+                  const statusColor =
+                    statusColors[appt.status] || "bg-gray-500/10 text-gray-500";
+
+                  // Live timer
+                  const secsLeft =
+                    meetingTimers[appt._id] ?? getSecondsUntil(appt);
+                  const timerLabel = formatSecondsUntil(secsLeft);
+                  // Within 10 min before → highlight timer in amber; otherwise teal
+                  const timerHot = secsLeft >= 0 && secsLeft <= 600;
+
+                  return (
+                    <motion.div
+                      key={appt._id}
+                      custom={idx}
+                      variants={fadeUp}
+                      initial="hidden"
+                      animate="visible"
+                      className={`relative glass-card rounded-2xl p-5 flex flex-col gap-4
+                        transition-all duration-500
+                        ${
+                          isDimmed
+                            ? "opacity-50 grayscale"
+                            : "hover:shadow-xl hover:shadow-teal-500/15 hover:-translate-y-1 hover:scale-[1.01] border border-transparent hover:border-teal-500/20"
+                        }`}
+                    >
+                      {/* Completed overlay badge — covers content only, NOT the action bar */}
+                      {isDimmed && (
+                        <div className="absolute inset-x-0 top-0 bottom-[60px] rounded-t-2xl pointer-events-none z-10 flex items-center justify-center">
+                          <div className="bg-black/30 dark:bg-black/50 backdrop-blur-sm rounded-t-2xl absolute inset-0" />
+                          <span className="relative z-20 px-4 py-1.5 rounded-full bg-emerald-600/90 text-white text-xs font-bold tracking-wide flex items-center gap-1.5">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Completed
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Patient info row */}
+                      <div className="flex items-center gap-3">
+                        {patient?.avatarUrl ? (
+                          <img
+                            src={patient.avatarUrl}
+                            alt={name}
+                            className="h-14 w-14 rounded-full object-cover ring-2 ring-teal-400/30 shrink-0"
+                          />
+                        ) : (
+                          <div className="h-14 w-14 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-lg font-bold shrink-0 ring-2 ring-teal-400/20">
+                            {initials}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight truncate">
+                            {name}
+                          </p>
+                          {patient?.patientId && (
+                            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                              {patient.patientId}
+                            </span>
+                          )}
+                          {email && (
+                            <p className="text-[11px] text-gray-400 truncate mt-0.5 flex items-center gap-1">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              {email}
+                            </p>
+                          )}
+                          {phone && (
+                            <p className="text-[11px] text-gray-400 truncate flex items-center gap-1">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              {phone}
+                            </p>
+                          )}
+                        </div>
+                        {/* Status badge */}
+                        <span
+                          className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusColor}`}
+                        >
+                          {appt.status?.charAt(0).toUpperCase() +
+                            appt.status?.slice(1)}
+                        </span>
+                      </div>
+
+                      {/* Live countdown timer */}
+                      <div
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold
+                          ${
+                            timerLabel === null && secsLeft > -90 * 60
+                              ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-600 dark:text-emerald-400"
+                              : timerHot && timerLabel !== null
+                                ? "bg-amber-500/10 border-amber-400/30 text-amber-600 dark:text-amber-400"
+                                : isPast
+                                  ? "bg-gray-500/10 border-gray-400/20 text-gray-500 dark:text-gray-400"
+                                  : "bg-teal-500/5 border-teal-400/20 text-teal-600 dark:text-teal-400"
+                          }`}
+                      >
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        {timerLabel !== null ? (
+                          <span className="tabular-nums">
+                            Starts in{" "}
+                            <span
+                              className={`font-mono font-bold ${timerHot ? "text-amber-700 dark:text-amber-300" : ""}`}
+                            >
+                              {timerLabel}
+                            </span>
+                          </span>
+                        ) : secsLeft > -90 * 60 ? (
+                          <span className="font-bold animate-pulse">
+                            🟢 Meeting is live — join now!
+                          </span>
+                        ) : (
+                          <span>Meeting has ended</span>
+                        )}
+                      </div>
+
+                      {/* Date / Time / Priority row */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-xl bg-black/5 dark:bg-white/5 px-2.5 py-2">
+                          <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400 mb-0.5">
+                            <CalendarDays className="h-3 w-3" />
+                            <span className="text-[9px] font-semibold uppercase tracking-wide">
+                              Date
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-semibold text-gray-900 dark:text-white">
+                            {apptDate}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-black/5 dark:bg-white/5 px-2.5 py-2">
+                          <div className="flex items-center gap-1 text-violet-600 dark:text-violet-400 mb-0.5">
+                            <Clock className="h-3 w-3" />
+                            <span className="text-[9px] font-semibold uppercase tracking-wide">
+                              Time
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-semibold text-gray-900 dark:text-white">
+                            {appt.time || "—"}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-black/5 dark:bg-white/5 px-2.5 py-2">
+                          <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 mb-0.5">
+                            <Activity className="h-3 w-3" />
+                            <span className="text-[9px] font-semibold uppercase tracking-wide">
+                              Priority
+                            </span>
+                          </div>
+                          <p className="text-[11px] font-semibold text-gray-900 dark:text-white capitalize">
+                            {appt.priority || "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Symptoms / Notes */}
+                      {(appt.symptoms || appt.notes) && (
+                        <div className="rounded-xl bg-black/5 dark:bg-white/5 px-3 py-2.5 text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                          {appt.symptoms || appt.notes}
+                        </div>
+                      )}
+
+                      {/* Meeting link — disabled/locked until 10-min window */}
+                      <div
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border
+                          ${
+                            joinable
+                              ? "bg-teal-500/5 border-teal-400/20"
+                              : "bg-gray-100/50 dark:bg-white/5 border-gray-300/30 dark:border-white/10"
+                          }`}
+                        title={
+                          !joinable
+                            ? "Link is locked — available 10 minutes before the meeting"
+                            : undefined
+                        }
+                      >
+                        {joinable ? (
+                          <Video className="h-3.5 w-3.5 text-teal-500 shrink-0" />
+                        ) : (
+                          /* Lock icon (inline SVG — no extra import needed) */
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5 text-gray-400 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect
+                              x="3"
+                              y="11"
+                              width="18"
+                              height="11"
+                              rx="2"
+                              ry="2"
+                            />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                        )}
+                        <span
+                          className={`text-[10px] font-mono truncate flex-1 ${
+                            joinable
+                              ? "text-teal-600 dark:text-teal-400"
+                              : "text-gray-400 dark:text-gray-500"
+                          }`}
+                        >
+                          {joinable
+                            ? meetingUrl
+                            : "🔒 Locked — available 10 min before"}
+                        </span>
+                        {/* Open-in-new-tab: only works when joinable */}
+                        {joinable ? (
+                          <a
+                            href={meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 text-teal-500 hover:text-teal-400 transition-colors"
+                            title="Open meeting link"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        ) : (
+                          <ExternalLink className="h-3.5 w-3.5 text-gray-300 dark:text-gray-600 shrink-0" />
+                        )}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-2 pt-1 border-t border-gray-100 dark:border-white/10">
+                        {/* Join button */}
+                        <button
+                          onClick={() => joinable && startCountdown(appt._id)}
+                          disabled={!joinable || isPast}
+                          title={
+                            isPast
+                              ? "Meeting has ended"
+                              : !joinable
+                                ? "Available 10 minutes before the meeting"
+                                : "Join video meeting"
+                          }
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
+                            text-[12px] font-semibold transition-all duration-200 active:scale-95
+                            ${
+                              joinable && !isPast
+                                ? "bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-500/25"
+                                : "bg-gray-200 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-60"
+                            }`}
+                        >
+                          <Video className="h-4 w-4" />
+                          {isPast
+                            ? "Ended"
+                            : joinable
+                              ? "Join Now"
+                              : "Join (−10 min)"}
+                        </button>
+
+                        {/* Mark Complete — only after meeting start time has passed */}
+                        {!isDimmed && secsLeft <= 0 && (
+                          <button
+                            onClick={() => handleMarkComplete(appt._id)}
+                            title="Mark meeting as completed"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl
+                              text-[12px] font-semibold
+                              bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
+                              hover:bg-emerald-500/25 hover:shadow-md hover:shadow-emerald-500/20
+                              transition-all duration-200 active:scale-95"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                        )}
+
+                        {/* Delete — only visible after marking complete */}
+                        {isDimmed && (
+                          <button
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Remove this meeting record? This cannot be undone.",
+                                )
+                              ) {
+                                handleDeleteMeeting(appt._id);
+                              }
+                            }}
+                            title="Delete completed meeting"
+                            className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl
+                              text-[12px] font-semibold
+                              bg-rose-500/10 text-rose-600 dark:text-rose-400
+                              hover:bg-rose-500/25 hover:shadow-md hover:shadow-rose-500/20
+                              transition-all duration-200 active:scale-95"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

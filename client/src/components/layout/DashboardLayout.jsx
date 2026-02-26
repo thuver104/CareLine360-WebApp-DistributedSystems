@@ -1,8 +1,16 @@
-import { useState, useEffect, createContext, useContext, cloneElement, isValidElement } from "react";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  cloneElement,
+  isValidElement,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import Topbar  from "./Topbar";
+import Topbar from "./Topbar";
 import { ToastContainer } from "../ui/Toast";
+import AIChatWidget from "../dashboard/AIChatWidget";
 import { getDoctorProfile, getDoctorDashboard } from "../../api/doctorApi";
 
 // ── Doctor context — any child can read doctor data + current section ─────────
@@ -10,12 +18,12 @@ const DoctorContext = createContext(null);
 export const useDoctorContext = () => useContext(DoctorContext);
 
 export default function DashboardLayout({ children }) {
-  const [section,        setSection]        = useState("Dashboard");
-  const [doctor,         setDoctor]         = useState(null);
-  const [pendingCount,   setPendingCount]   = useState(0);
+  const [section, setSection] = useState("Dashboard");
+  const [doctor, setDoctor] = useState(null);
+  const [pendingCount, setPendingCount] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
   // Search overlay + quick action are shared between Topbar/Sidebar and the page child
-  const [searchOpen,  setSearchOpen]  = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [quickAction, setQuickAction] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,7 +32,10 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (location.pathname === "/doctor/profile") {
       setSection("profile");
-    } else if (location.pathname === "/doctor/dashboard" && section === "profile") {
+    } else if (
+      location.pathname === "/doctor/dashboard" &&
+      section === "profile"
+    ) {
       setSection("Dashboard");
     }
   }, [location.pathname]);
@@ -59,14 +70,16 @@ export default function DashboardLayout({ children }) {
   const pageChild = isValidElement(children)
     ? cloneElement(children, {
         searchOpen,
-        onSearchClose:       () => setSearchOpen(false),
+        onSearchClose: () => setSearchOpen(false),
         quickAction,
         onQuickActionHandled: () => setQuickAction(null),
       })
     : children;
 
   return (
-    <DoctorContext.Provider value={{ doctor, profileLoading, refreshProfile, section, setSection }}>
+    <DoctorContext.Provider
+      value={{ doctor, profileLoading, refreshProfile, section, setSection }}
+    >
       {/* Global toast container — renders above everything */}
       <ToastContainer />
 
@@ -93,6 +106,9 @@ export default function DashboardLayout({ children }) {
           </main>
         </div>
       </div>
+
+      {/* Floating AI chatbot — doctor portal only */}
+      <AIChatWidget />
     </DoctorContext.Provider>
   );
 }

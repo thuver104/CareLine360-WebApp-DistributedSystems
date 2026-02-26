@@ -27,6 +27,9 @@ const {
   getRatings,
   listDoctors,
   deactivateAccount,
+  getMeetings,
+  triggerReminder,
+  sendTestEmail,
 } = require("../controllers/doctorController");
 
 const {
@@ -86,6 +89,13 @@ router.put(
 router.get("/appointments", doctorAuth, getAppointments);
 router.patch("/appointments/:appointmentId", doctorAuth, updateAppointment);
 router.delete("/appointments/:appointmentId", doctorAuth, deleteAppointment);
+
+// Meetings (video-call appointments)
+router.get("/meetings", doctorAuth, getMeetings);
+
+// Debug / test routes (doctor-auth protected)
+router.get("/trigger-reminder", doctorAuth, triggerReminder);
+router.post("/test-email", doctorAuth, sendTestEmail);
 
 // Patients
 router.get("/patients", doctorAuth, getPatients);
