@@ -474,6 +474,19 @@ const getHospitalDetailsForPatient = async (req, res) => {
   }
 };
 
+const createEmergency = async (req, res, next) => {
+    try {
+        const emergency = await emergencyService.createEmergency({
+            ...req.body,
+            patient: req.user.id,   // 👈 take patient from token
+        });
+
+        res.status(201).json({ success: true, data: emergency });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 module.exports = { 
   getMyProfile, 
@@ -488,4 +501,5 @@ module.exports = {
   getDoctorDetailsForPatient,
   getAllHospitalsForPatient,
   getHospitalDetailsForPatient,
+  createEmergency,
 };

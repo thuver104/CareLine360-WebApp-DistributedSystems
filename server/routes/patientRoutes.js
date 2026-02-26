@@ -14,6 +14,7 @@ const {
   getDoctorDetailsForPatient,
   getAllHospitalsForPatient,
   getHospitalDetailsForPatient,
+  createEmergency,
 } = require("../controllers/patientController");
 const { imageUpload } = require("../middleware/upload");
 
@@ -102,21 +103,28 @@ router.get(
   getDoctorDetailsForPatient
 );
 
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(["patient"]),
+  createEmergency
+);
+
 // Get appointments for a specific patient (for doctors)
-// router.get(
-//   "/:patientId/appointment",
-//   authMiddleware,
-//   roleMiddleware(["doctor"]),
-//   getAllPatientAppointments
-// );
+router.get(
+  "/:patientId/appointment",
+  authMiddleware,
+  roleMiddleware(["doctor"]),
+  getAllPatientAppointments
+);
 
 // Get ratings for a specific patient (for doctors)
-// router.get(
-//   "/:patientId/rating",
-//   authMiddleware,
-//   roleMiddleware(["doctor"]),
-//   getPatientRatings
-// );
+router.get(
+  "/:patientId/rating",
+  authMiddleware,
+  roleMiddleware(["doctor"]),
+  getPatientRatings
+);
 
 
 
