@@ -22,6 +22,8 @@ export const updateAvailabilitySlot = (slotId, { startTime, endTime }) =>
 export const getDoctorAppointments = (params) => api.get("/doctor/appointments", { params });
 export const updateAppointmentStatus = (appointmentId, data) =>
   api.patch(`/doctor/appointments/${appointmentId}`, data);
+export const deleteAppointment = (appointmentId) =>
+  api.delete(`/doctor/appointments/${appointmentId}`);
 
 // ── Patients ──────────────────────────────────────────────────────────────────
 export const getDoctorPatients = (params) => api.get("/doctor/patients", { params });

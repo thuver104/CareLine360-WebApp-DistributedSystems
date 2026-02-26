@@ -14,20 +14,33 @@ const getNextDoctorId = async () => {
   const counter = await Counter.findOneAndUpdate(
     { key: "doctor" },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   return `DOC-${String(counter.seq).padStart(6, "0")}`;
 };
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
-const createDoctorProfile = async ({ userId, fullName, specialization, qualifications, experience, bio, licenseNumber, consultationFee, phone }) => {
+const createDoctorProfile = async ({
+  userId,
+  fullName,
+  specialization,
+  qualifications,
+  experience,
+  bio,
+  licenseNumber,
+  consultationFee,
+  phone,
+}) => {
   const existing = await Doctor.findOne({ userId });
-  if (existing) return { status: 409, data: { message: "Doctor profile already exists" } };
+  if (existing)
+    return { status: 409, data: { message: "Doctor profile already exists" } };
 
   const user = await User.findById(userId);
-  if (!user || user.role !== "doctor") return { status: 403, data: { message: "Not a doctor account" } };
-  if (user.status !== "ACTIVE") return { status: 403, data: { message: "Account not approved yet" } };
+  if (!user || user.role !== "doctor")
+    return { status: 403, data: { message: "Not a doctor account" } };
+  if (user.status !== "ACTIVE")
+    return { status: 403, data: { message: "Account not approved yet" } };
 
   const doctorId = await getNextDoctorId();
 
@@ -49,26 +62,43 @@ const createDoctorProfile = async ({ userId, fullName, specialization, qualifica
 
 const getDoctorProfile = async ({ userId }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
-  if (!doctor) return { status: 404, data: { message: "Doctor profile not found. Please complete your profile." } };
+  if (!doctor)
+    return {
+      status: 404,
+      data: {
+        message: "Doctor profile not found. Please complete your profile.",
+      },
+    };
   return { status: 200, data: { doctor } };
 };
 
-// Soft-delete: marks doctor profile as deleted and deactivates the User account.
-// Medical records and appointments are intentionally preserved for compliance.
+// Hard-delete: permanently removes the Doctor profile and the User account.
+// Medical records, appointments, and prescriptions are intentionally preserved for compliance.
 const deactivateDoctorAccount = async ({ userId }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
-  if (!doctor) return { status: 404, data: { message: "Doctor profile not found" } };
+  if (!doctor)
+    return { status: 404, data: { message: "Doctor profile not found" } };
 
-  doctor.isDeleted = true;
-  await doctor.save();
+  // Permanently delete the doctor profile document
+  await Doctor.findByIdAndDelete(doctor._id);
 
-  await User.findByIdAndUpdate(userId, { isActive: false });
+  // Permanently delete the user account
+  await User.findByIdAndDelete(userId);
 
-  return { status: 200, data: { message: "Account deactivated successfully" } };
+  return { status: 200, data: { message: "Account permanently deleted" } };
 };
 
 const updateDoctorProfile = async ({ userId, updates }) => {
-  const allowed = ["fullName", "specialization", "qualifications", "experience", "bio", "licenseNumber", "consultationFee", "phone"];
+  const allowed = [
+    "fullName",
+    "specialization",
+    "qualifications",
+    "experience",
+    "bio",
+    "licenseNumber",
+    "consultationFee",
+    "phone",
+  ];
   const sanitized = {};
   for (const key of allowed) {
     if (updates[key] !== undefined) sanitized[key] = updates[key];
@@ -77,7 +107,7 @@ const updateDoctorProfile = async ({ userId, updates }) => {
   const doctor = await Doctor.findOneAndUpdate(
     { userId, isDeleted: false },
     { $set: sanitized },
-    { new: true }
+    { new: true },
   );
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
   return { status: 200, data: { message: "Profile updated", doctor } };
@@ -89,7 +119,8 @@ const updateDoctorProfile = async ({ userId, updates }) => {
  * @param {string} base64Image - data URI string
  */
 const updateAvatarBase64 = async ({ userId, base64Image }) => {
-  if (!base64Image) return { status: 400, data: { message: "No image data provided" } };
+  if (!base64Image)
+    return { status: 400, data: { message: "No image data provided" } };
 
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
@@ -104,7 +135,9 @@ const updateAvatarBase64 = async ({ userId, base64Image }) => {
     uploaded = await uploadBase64Image(base64Image, {
       folder: "careline360/avatars",
       maxSizeMB: 2,
-      transformation: [{ width: 512, height: 512, crop: "fill", quality: "auto:good" }],
+      transformation: [
+        { width: 512, height: 512, crop: "fill", quality: "auto:good" },
+      ],
     });
   } catch (err) {
     return { status: 400, data: { message: err.message } };
@@ -114,16 +147,27 @@ const updateAvatarBase64 = async ({ userId, base64Image }) => {
   doctor.avatarPublicId = uploaded.publicId;
   await doctor.save();
 
-  return { status: 200, data: { message: "Avatar updated", avatarUrl: doctor.avatarUrl } };
+  return {
+    status: 200,
+    data: { message: "Avatar updated", avatarUrl: doctor.avatarUrl },
+  };
 };
 
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
 
 const getDashboardStats = async ({ userId }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
-  if (!doctor) return { status: 404, data: { message: "Doctor profile not found" } };
+  if (!doctor)
+    return { status: 404, data: { message: "Doctor profile not found" } };
 
-  const [totalAppointments, pendingAppointments, completedAppointments, todayAppointments, totalPatients, totalRecords] = await Promise.all([
+  const [
+    totalAppointments,
+    pendingAppointments,
+    completedAppointments,
+    todayAppointments,
+    totalPatients,
+    totalRecords,
+  ] = await Promise.all([
     Appointment.countDocuments({ doctor: userId }),
     Appointment.countDocuments({ doctor: userId, status: "pending" }),
     Appointment.countDocuments({ doctor: userId, status: "completed" }),
@@ -165,7 +209,9 @@ const getDashboardStats = async ({ userId }) => {
 // ─── Availability ────────────────────────────────────────────────────────────
 
 const getAvailability = async ({ userId }) => {
-  const doctor = await Doctor.findOne({ userId, isDeleted: false }).select("availabilitySlots");
+  const doctor = await Doctor.findOne({ userId, isDeleted: false }).select(
+    "availabilitySlots",
+  );
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
   return { status: 200, data: { slots: doctor.availabilitySlots } };
 };
@@ -184,7 +230,10 @@ const addAvailabilitySlots = async ({ userId, slots }) => {
   doctor.availabilitySlots.push(...newSlots);
   await doctor.save();
 
-  return { status: 201, data: { message: "Slots added", slots: doctor.availabilitySlots } };
+  return {
+    status: 201,
+    data: { message: "Slots added", slots: doctor.availabilitySlots },
+  };
 };
 
 const deleteAvailabilitySlot = async ({ userId, slotId }) => {
@@ -193,36 +242,74 @@ const deleteAvailabilitySlot = async ({ userId, slotId }) => {
 
   const slot = doctor.availabilitySlots.id(slotId);
   if (!slot) return { status: 404, data: { message: "Slot not found" } };
-  if (slot.isBooked) return { status: 400, data: { message: "Cannot delete a booked slot" } };
+  if (slot.isBooked)
+    return { status: 400, data: { message: "Cannot delete a booked slot" } };
 
   slot.deleteOne();
   await doctor.save();
-  return { status: 200, data: { message: "Slot deleted", slots: doctor.availabilitySlots } };
+  return {
+    status: 200,
+    data: { message: "Slot deleted", slots: doctor.availabilitySlots },
+  };
 };
 
-const updateAvailabilitySlot = async ({ userId, slotId, startTime, endTime }) => {
+const updateAvailabilitySlot = async ({
+  userId,
+  slotId,
+  startTime,
+  endTime,
+}) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
 
   const slot = doctor.availabilitySlots.id(slotId);
   if (!slot) return { status: 404, data: { message: "Slot not found" } };
-  if (slot.isBooked) return { status: 400, data: { message: "Cannot edit a booked slot" } };
-  if (!startTime || !endTime) return { status: 400, data: { message: "startTime and endTime are required" } };
-  if (startTime >= endTime) return { status: 400, data: { message: "End time must be after start time" } };
+  if (slot.isBooked)
+    return { status: 400, data: { message: "Cannot edit a booked slot" } };
+  if (!startTime || !endTime)
+    return {
+      status: 400,
+      data: { message: "startTime and endTime are required" },
+    };
+  if (startTime >= endTime)
+    return {
+      status: 400,
+      data: { message: "End time must be after start time" },
+    };
 
   slot.startTime = startTime;
   slot.endTime = endTime;
   await doctor.save();
 
-  return { status: 200, data: { message: "Slot updated", slots: doctor.availabilitySlots } };
+  return {
+    status: 200,
+    data: { message: "Slot updated", slots: doctor.availabilitySlots },
+  };
 };
 
 // ─── Appointments ─────────────────────────────────────────────────────────────
 
-const getMyAppointments = async ({ userId, status, date, search, page = 1, limit = 10 }) => {
+const getMyAppointments = async ({
+  userId,
+  status,
+  date,
+  dateFrom,
+  dateTo,
+  search,
+  page = 1,
+  limit = 10,
+}) => {
   const query = { doctor: userId };
   if (status) query.status = status;
-  if (date) {
+
+  // Range filter (dateFrom / dateTo) takes priority over legacy single date
+  if (dateFrom || dateTo) {
+    query.date = {};
+    if (dateFrom)
+      query.date.$gte = new Date(new Date(dateFrom).setHours(0, 0, 0, 0));
+    if (dateTo)
+      query.date.$lte = new Date(new Date(dateTo).setHours(23, 59, 59, 999));
+  } else if (date) {
     const d = new Date(date);
     query.date = {
       $gte: new Date(new Date(d).setHours(0, 0, 0, 0)),
@@ -239,12 +326,18 @@ const getMyAppointments = async ({ userId, status, date, search, page = 1, limit
     .limit(Number(limit))
     .lean();
 
-  const patientUserIds = appointments.map((a) => a.patient?._id).filter(Boolean);
-  const patientProfiles = await Patient.find({ userId: { $in: patientUserIds } })
+  const patientUserIds = appointments
+    .map((a) => a.patient?._id)
+    .filter(Boolean);
+  const patientProfiles = await Patient.find({
+    userId: { $in: patientUserIds },
+  })
     .select("userId fullName patientId avatarUrl")
     .lean();
   const profileMap = {};
-  patientProfiles.forEach((p) => { profileMap[p.userId.toString()] = p; });
+  patientProfiles.forEach((p) => {
+    profileMap[p.userId.toString()] = p;
+  });
 
   appointments = appointments.map((a) => ({
     ...a,
@@ -254,7 +347,7 @@ const getMyAppointments = async ({ userId, status, date, search, page = 1, limit
   if (search) {
     const q = search.toLowerCase();
     appointments = appointments.filter((a) =>
-      a.patientProfile?.fullName?.toLowerCase().includes(q)
+      a.patientProfile?.fullName?.toLowerCase().includes(q),
     );
   }
 
@@ -264,30 +357,68 @@ const getMyAppointments = async ({ userId, status, date, search, page = 1, limit
     status: 200,
     data: {
       appointments,
-      pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) },
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
     },
   };
 };
 
-const updateAppointmentStatus = async ({ userId, appointmentId, status, notes }) => {
+const updateAppointmentStatus = async ({
+  userId,
+  appointmentId,
+  status,
+  notes,
+}) => {
   const validStatuses = ["confirmed", "completed", "cancelled"];
   if (!validStatuses.includes(status))
     return { status: 400, data: { message: "Invalid status" } };
 
-  const appointment = await Appointment.findOne({ _id: appointmentId, doctor: userId });
-  if (!appointment) return { status: 404, data: { message: "Appointment not found" } };
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    doctor: userId,
+  });
+  if (!appointment)
+    return { status: 404, data: { message: "Appointment not found" } };
 
   appointment.status = status;
   if (notes) appointment.notes = notes;
   await appointment.save();
 
-  return { status: 200, data: { message: "Appointment status updated", appointment } };
+  return {
+    status: 200,
+    data: { message: "Appointment status updated", appointment },
+  };
+};
+
+const deleteAppointment = async ({ userId, appointmentId }) => {
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    doctor: userId,
+  });
+  if (!appointment)
+    return { status: 404, data: { message: "Appointment not found" } };
+
+  // Only allow deletion of non-completed appointments
+  if (appointment.status === "completed")
+    return {
+      status: 400,
+      data: { message: "Cannot delete a completed appointment" },
+    };
+
+  await Appointment.findByIdAndDelete(appointmentId);
+  return { status: 200, data: { message: "Appointment deleted successfully" } };
 };
 
 // ─── My Patients ──────────────────────────────────────────────────────────────
 
 const getMyPatients = async ({ userId, search, page = 1, limit = 10 }) => {
-  const patientUserIds = await Appointment.distinct("patient", { doctor: userId });
+  const patientUserIds = await Appointment.distinct("patient", {
+    doctor: userId,
+  });
 
   const query = { userId: { $in: patientUserIds }, isDeleted: false };
   if (search) {
@@ -309,7 +440,12 @@ const getMyPatients = async ({ userId, search, page = 1, limit = 10 }) => {
     status: 200,
     data: {
       patients,
-      pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) },
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
     },
   };
 };
@@ -320,11 +456,28 @@ const getPatientDetail = async ({ userId, patientDbId }) => {
     .lean();
   if (!patient) return { status: 404, data: { message: "Patient not found" } };
 
-  const hasAppointment = await Appointment.exists({ doctor: userId, patient: patient.userId });
-  if (!hasAppointment) return { status: 403, data: { message: "No appointment with this patient" } };
+  const hasAppointment = await Appointment.exists({
+    doctor: userId,
+    patient: patient.userId,
+  });
+  if (!hasAppointment)
+    return {
+      status: 403,
+      data: { message: "No appointment with this patient" },
+    };
 
-  const appointments = await Appointment.find({ doctor: userId, patient: patient.userId }).sort({ date: -1 }).lean();
-  const records = await MedicalRecord.find({ patientId: patientDbId, isDeleted: false }).sort({ createdAt: -1 }).lean();
+  const appointments = await Appointment.find({
+    doctor: userId,
+    patient: patient.userId,
+  })
+    .sort({ date: -1 })
+    .lean();
+  const records = await MedicalRecord.find({
+    patientId: patientDbId,
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .lean();
 
   return { status: 200, data: { patient, appointments, records } };
 };
@@ -333,9 +486,18 @@ const getPatientDetail = async ({ userId, patientDbId }) => {
 
 const createMedicalRecord = async ({ userId, data }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
-  if (!doctor) return { status: 404, data: { message: "Doctor profile not found" } };
+  if (!doctor)
+    return { status: 404, data: { message: "Doctor profile not found" } };
 
-  const { patientId, appointmentId, chiefComplaint, diagnosis, notes, vitals, prescriptions } = data;
+  const {
+    patientId,
+    appointmentId,
+    chiefComplaint,
+    diagnosis,
+    notes,
+    vitals,
+    prescriptions,
+  } = data;
 
   const patient = await Patient.findById(patientId);
   if (!patient) return { status: 404, data: { message: "Patient not found" } };
@@ -358,13 +520,26 @@ const createMedicalRecord = async ({ userId, data }) => {
   return { status: 201, data: { message: "Medical record created", record } };
 };
 
-const getMedicalRecordsByPatient = async ({ userId, patientId, page = 1, limit = 10 }) => {
+const getMedicalRecordsByPatient = async ({
+  userId,
+  patientId,
+  page = 1,
+  limit = 10,
+}) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
 
   const skip = (Number(page) - 1) * Number(limit);
-  const total = await MedicalRecord.countDocuments({ doctorId: doctor._id, patientId, isDeleted: false });
-  const records = await MedicalRecord.find({ doctorId: doctor._id, patientId, isDeleted: false })
+  const total = await MedicalRecord.countDocuments({
+    doctorId: doctor._id,
+    patientId,
+    isDeleted: false,
+  });
+  const records = await MedicalRecord.find({
+    doctorId: doctor._id,
+    patientId,
+    isDeleted: false,
+  })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit))
@@ -372,7 +547,15 @@ const getMedicalRecordsByPatient = async ({ userId, patientId, page = 1, limit =
 
   return {
     status: 200,
-    data: { records, pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) } },
+    data: {
+      records,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
+    },
   };
 };
 
@@ -380,7 +563,13 @@ const updateMedicalRecord = async ({ userId, recordId, updates }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
 
-  const allowed = ["chiefComplaint", "diagnosis", "notes", "vitals", "prescriptions"];
+  const allowed = [
+    "chiefComplaint",
+    "diagnosis",
+    "notes",
+    "vitals",
+    "prescriptions",
+  ];
   const sanitized = {};
   for (const key of allowed) {
     if (updates[key] !== undefined) sanitized[key] = updates[key];
@@ -389,7 +578,7 @@ const updateMedicalRecord = async ({ userId, recordId, updates }) => {
   const record = await MedicalRecord.findOneAndUpdate(
     { _id: recordId, doctorId: doctor._id, isDeleted: false },
     { $set: sanitized },
-    { new: true }
+    { new: true },
   );
   if (!record) return { status: 404, data: { message: "Record not found" } };
   return { status: 200, data: { message: "Record updated", record } };
@@ -401,7 +590,8 @@ const savePrescription = async ({ userId, data }) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
 
-  const { medicalRecordId, patientId, medicines, notes, fileUrl, publicId } = data;
+  const { medicalRecordId, patientId, medicines, notes, fileUrl, publicId } =
+    data;
 
   const prescription = await Prescription.create({
     medicalRecordId: medicalRecordId || null,
@@ -418,7 +608,12 @@ const savePrescription = async ({ userId, data }) => {
   return { status: 201, data: { message: "Prescription saved", prescription } };
 };
 
-const getMyPrescriptions = async ({ userId, patientId, page = 1, limit = 10 }) => {
+const getMyPrescriptions = async ({
+  userId,
+  patientId,
+  page = 1,
+  limit = 10,
+}) => {
   const doctor = await Doctor.findOne({ userId, isDeleted: false });
   if (!doctor) return { status: 404, data: { message: "Doctor not found" } };
 
@@ -434,7 +629,18 @@ const getMyPrescriptions = async ({ userId, patientId, page = 1, limit = 10 }) =
     .limit(Number(limit))
     .lean();
 
-  return { status: 200, data: { prescriptions, pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) } } };
+  return {
+    status: 200,
+    data: {
+      prescriptions,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
+    },
+  };
 };
 
 // ─── Ratings ──────────────────────────────────────────────────────────────────
@@ -458,19 +664,36 @@ const getMyRatings = async ({ userId, page = 1, limit = 10 }) => {
       averageRating: doctor.rating,
       totalRatings: doctor.totalRatings,
       ratings,
-      pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) },
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
     },
   };
 };
 
 // ─── Public Doctor List ───────────────────────────────────────────────────────
 
-const getPublicDoctors = async ({ specialization, search, page = 1, limit = 10 }) => {
-  const activeUsers = await User.find({ role: "doctor", status: "ACTIVE", isActive: true }).select("_id").lean();
+const getPublicDoctors = async ({
+  specialization,
+  search,
+  page = 1,
+  limit = 10,
+}) => {
+  const activeUsers = await User.find({
+    role: "doctor",
+    status: "ACTIVE",
+    isActive: true,
+  })
+    .select("_id")
+    .lean();
   const activeUserIds = activeUsers.map((u) => u._id);
 
   const query = { isDeleted: false, userId: { $in: activeUserIds } };
-  if (specialization) query.specialization = { $regex: specialization, $options: "i" };
+  if (specialization)
+    query.specialization = { $regex: specialization, $options: "i" };
   if (search) {
     query.$or = [
       { fullName: { $regex: search, $options: "i" } },
@@ -481,14 +704,24 @@ const getPublicDoctors = async ({ specialization, search, page = 1, limit = 10 }
   const skip = (Number(page) - 1) * Number(limit);
   const total = await Doctor.countDocuments(query);
   const doctors = await Doctor.find(query)
-    .select("fullName specialization experience bio rating totalRatings consultationFee avatarUrl doctorId")
+    .select(
+      "fullName specialization experience bio rating totalRatings consultationFee avatarUrl doctorId",
+    )
     .skip(skip)
     .limit(Number(limit))
     .lean();
 
   return {
     status: 200,
-    data: { doctors, pagination: { total, page: Number(page), limit: Number(limit), pages: Math.ceil(total / Number(limit)) } },
+    data: {
+      doctors,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / Number(limit)),
+      },
+    },
   };
 };
 
@@ -503,9 +736,20 @@ const getDoctorAnalytics = async ({ userId }) => {
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  const [thisMonthAppointments, lastMonthAppointments, appointmentsByStatus, recentAppointments] = await Promise.all([
-    Appointment.countDocuments({ doctor: userId, createdAt: { $gte: startOfMonth } }),
-    Appointment.countDocuments({ doctor: userId, createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } }),
+  const [
+    thisMonthAppointments,
+    lastMonthAppointments,
+    appointmentsByStatus,
+    recentAppointments,
+  ] = await Promise.all([
+    Appointment.countDocuments({
+      doctor: userId,
+      createdAt: { $gte: startOfMonth },
+    }),
+    Appointment.countDocuments({
+      doctor: userId,
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+    }),
     Appointment.aggregate([
       { $match: { doctor: doctor.userId } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -542,6 +786,7 @@ module.exports = {
   updateAvailabilitySlot,
   getMyAppointments,
   updateAppointmentStatus,
+  deleteAppointment,
   getMyPatients,
   getPatientDetail,
   createMedicalRecord,

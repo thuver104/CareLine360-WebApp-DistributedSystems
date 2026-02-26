@@ -1,72 +1,94 @@
-import { useState, useEffect, createContext, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, createContext, useContext, cloneElement, isValidElement } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import Topbar from "./Topbar";
-import { getDoctorProfile, getDoctorDashboard, getUnreadCount } from "../../api/doctorApi";
+import Topbar  from "./Topbar";
+import { ToastContainer } from "../ui/Toast";
+import { getDoctorProfile, getDoctorDashboard } from "../../api/doctorApi";
 
-// ── Doctor context so any child can read doctor data without prop drilling ──
+// ── Doctor context — any child can read doctor data + current section ─────────
 const DoctorContext = createContext(null);
 export const useDoctorContext = () => useContext(DoctorContext);
 
 export default function DashboardLayout({ children }) {
-  const [activePage, setActivePage] = useState("Dashboard");
-  const [doctor, setDoctor] = useState(null);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [section,        setSection]        = useState("Dashboard");
+  const [doctor,         setDoctor]         = useState(null);
+  const [pendingCount,   setPendingCount]   = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
+  // Search overlay + quick action are shared between Topbar/Sidebar and the page child
+  const [searchOpen,  setSearchOpen]  = useState(false);
+  const [quickAction, setQuickAction] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Keep section state in sync with URL
+  useEffect(() => {
+    if (location.pathname === "/doctor/profile") {
+      setSection("profile");
+    } else if (location.pathname === "/doctor/dashboard" && section === "profile") {
+      setSection("Dashboard");
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
-    // 1. Fetch real doctor profile
     getDoctorProfile()
       .then((r) => setDoctor(r.data.doctor))
       .catch((err) => {
-        if (err?.response?.status === 404 || err?.response?.status === 403) {
+        if (err?.response?.status === 404 || err?.response?.status === 403)
           navigate("/doctor/setup");
-        }
       })
       .finally(() => setProfileLoading(false));
 
-    // 2. Pending appointment count (sidebar badge)
     getDoctorDashboard()
       .then((r) => setPendingCount(r.data.stats?.pendingAppointments ?? 0))
       .catch(() => {});
-
-    // 3. Unread chat count (topbar bell)
-    getUnreadCount()
-      .then((r) => setUnreadCount(r.data.unreadCount ?? 0))
-      .catch(() => {});
   }, [navigate]);
 
-  // Expose a refreshProfile helper so DoctorProfilePage can trigger a refetch
   const refreshProfile = () => {
     getDoctorProfile()
       .then((r) => setDoctor(r.data.doctor))
       .catch(() => {});
   };
 
+  // Sidebar quick-action handler — switch to Appointments + tell page which modal to open
+  const handleQuickAction = (actionId) => {
+    setSection("Appointments");
+    setQuickAction(actionId);
+  };
+
+  // Inject searchOpen / quickAction props into the direct child page component
+  const pageChild = isValidElement(children)
+    ? cloneElement(children, {
+        searchOpen,
+        onSearchClose:       () => setSearchOpen(false),
+        quickAction,
+        onQuickActionHandled: () => setQuickAction(null),
+      })
+    : children;
+
   return (
-    <DoctorContext.Provider value={{ doctor, profileLoading, refreshProfile }}>
+    <DoctorContext.Provider value={{ doctor, profileLoading, refreshProfile, section, setSection }}>
+      {/* Global toast container — renders above everything */}
+      <ToastContainer />
+
       <div className="cl-page">
-        {/* Sidebar gets REAL doctor data — no hardcoded values */}
         <Sidebar
-          active={activePage}
-          setActive={setActivePage}
+          section={section}
+          setSection={setSection}
           doctor={doctor}
           pendingCount={pendingCount}
+          onQuickAction={handleQuickAction}
         />
 
         <div className="cl-right-col">
-          {/* Topbar gets REAL doctor data — profile click → navigate */}
           <Topbar
-            pageTitle={activePage}
+            section={section}
             doctor={doctor}
-            unreadCount={unreadCount}
+            onSearchOpen={() => setSearchOpen(true)}
           />
 
           <main className="cl-main p-6">
             <div className="max-w-screen-2xl mx-auto space-y-6">
-              {children}
+              {pageChild}
             </div>
           </main>
         </div>

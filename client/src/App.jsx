@@ -22,7 +22,7 @@ import PatientNavbar from "./pages/patient/PatientNavbar";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import DashboardPage from "./pages/doctor/DashboardPage";
 import DoctorProfileSetup from "./pages/doctor/DoctorProfileSetup";
-import DoctorProfilePage from "./pages/doctor/DoctorProfilePage";
+import DoctorProfilePage from "./pages/doctor/Doctorprofilepage";
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -63,9 +63,10 @@ export default function App() {
 
           {/* Doctor */}
           <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
+            {/* Profile setup - NO sidebar layout */}
             <Route path="/doctor/setup" element={<DoctorProfileSetup />} />
 
-            {/* Dashboard (with sidebar layout) */}
+            {/* Dashboard - WITH sidebar layout */}
             <Route
               path="/doctor/dashboard"
               element={
@@ -75,7 +76,7 @@ export default function App() {
               }
             />
 
-            {/* Profile page (with sidebar layout) */}
+            {/* Profile page - WITH sidebar layout */}
             <Route
               path="/doctor/profile"
               element={
