@@ -1,3 +1,4 @@
+export { default } from './DashboardLayoutAdmin.jsx';
 import {
   useState,
   useEffect,

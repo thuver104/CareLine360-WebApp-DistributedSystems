@@ -1,3 +1,5 @@
+// Thin compatibility layer: main.jsx expects `App.jsx`.
+export { default } from './AppAdmin.jsx';
 import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
