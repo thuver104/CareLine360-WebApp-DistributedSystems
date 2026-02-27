@@ -1,0 +1,865 @@
+{
+  "info": {
+    "_postman_id": "36cbbbc4-d3f5-4a92-a5f4-cd288560cdeb",
+    "name": "CareLine360-APIDocs",
+    "description": "Postman collection for Admin module CRUD and emergency management endpoints with role-based access.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "43278843"
+  },
+  "item": [
+    {
+      "name": "adminModule",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Get all users (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"doctor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            },
+            "description": "Create a new user (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Update user status (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Delete a user (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "stats"
+              ]
+            },
+            "description": "Get admin statistics (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Emergencies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/emergencies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "emergencies"
+              ]
+            },
+            "description": "Get all emergencies (admin & responder)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Emergency By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/emergencies/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "emergencies",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Get emergency by ID (admin & responder)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Emergency Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"responderName\": \"Jane Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/emergencies/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "emergencies",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Update emergency status (admin & responder)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Nearest Hospital",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "any"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/emergencies/:id/nearest-hospital",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "emergencies",
+                ":id",
+                "nearest-hospital"
+              ],
+              "variable": [
+                {
+                  "key": "id"
+                }
+              ]
+            },
+            "description": "Get nearest hospital for emergency (admin & responder)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "patientModule",
+      "item": [
+        {
+          "name": "patientLogin",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"identifier\": \"kyalini2001@gmail.com\",\r\n  \"password\": \"Vanai@2001\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetPatientProfile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MjAyNSwiZXhwIjoxNzcyMTkyOTI1fQ.Qk-ty4dc6jLdqCJo4QOb4IGcPXAHVqk6M9RvX4Qn9nc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UpdateProfile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"gender\": \"female\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DeleteAvatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "avatar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UploadAvatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "uuid": "1e0dcabd-be13-42b9-bcbe-63fd3c680213",
+                  "src": "/C:/Users/ASUS/Downloads/🎀.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "avatar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RegisterPatient",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"identifier\" : \"piraksh12r@gmail.com\",\r\n    \"fullName\": \"Pirakash\",\r\n    \"password\": \"Pirakash@2002\",\r\n    \"role\": \"patient\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DeactivatePatient",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWExNmM2MTgwNjBjMzk0ODE2MGI3MTMiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjgyMiwiZXhwIjoxNzcyMTg3NzIyfQ.N7d-NOEapb5PGDXcqSbmhrpRgsyjno3ksiGLm5JZTjM",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "deactivate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ReactivatePatient",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4NjAyOSwiZXhwIjoxNzcyMTg2OTI5fQ.j05IeRPe5esRvT-VJX67BOli42LGoe9T3aLafWQIvao",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"identifier\": \"piraksh12r@gmail.com\",\r\n  \"password\": \"Pirakash@2002\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reactivate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AiExplain",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE4OTIzOCwiZXhwIjoxNzcyMTkwMTM4fQ.pH8Yozi56aDqhso4XORHqMy3ZODIad0KMuHj77GX08Q",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"text\": \"panadol\",\r\n    \"language\": \"tamil\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/ai-explain",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "ai-explain"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "MedicalRecords",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDIwNiwiZXhwIjoxNzcyMTkxMTA2fQ.YS34iEkcVSmO63h8jgErZ6Gr4z-ngfepD8z2KVI3-_8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/medical-record",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "medical-record"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetPrescription",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDIwNiwiZXhwIjoxNzcyMTkxMTA2fQ.YS34iEkcVSmO63h8jgErZ6Gr4z-ngfepD8z2KVI3-_8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/me/prescription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "me",
+                "prescription"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetAllDoctors",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDQyMywiZXhwIjoxNzcyMTkxMzIzfQ.yWPALv8FlusNk94PxzGurAnQNjzi3I9mtJdIRznHW1U",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/doctor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "doctor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetAllHospitals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDQyMywiZXhwIjoxNzcyMTkxMzIzfQ.yWPALv8FlusNk94PxzGurAnQNjzi3I9mtJdIRznHW1U",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/hospital",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "hospital"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CreateEmergency",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MTM0NCwiZXhwIjoxNzcyMTkyMjQ0fQ.nOEVSvii45fMoikPkmYOnGdGvBvrVsK9bPVCtfFtwDY",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"description\": \"Accident\",\r\n  \"latitude\": 6.9271,\r\n  \"longitude\": 79.8612\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetDocDetails",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDQyMywiZXhwIjoxNzcyMTkxMzIzfQ.yWPALv8FlusNk94PxzGurAnQNjzi3I9mtJdIRznHW1U",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/doctor/699f34e327a289983e59973f",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "doctor",
+                "699f34e327a289983e59973f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetHosDetails",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTliZjcwYjI4MWU1OTA2NWU2NTU5NTIiLCJyb2xlIjoicGF0aWVudCIsImlhdCI6MTc3MjE5MDQyMywiZXhwIjoxNzcyMTkxMzIzfQ.yWPALv8FlusNk94PxzGurAnQNjzi3I9mtJdIRznHW1U",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/hospital/699b5446ab451e3b42f1299b",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "hospital",
+                "699b5446ab451e3b42f1299b"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "LoginRBAc",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"identifier\": \"thuverakantharma@gmail.com\",\r\n  \"password\": \"@#Thuva2002\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -3,6 +3,9 @@
 ﻿@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
+/* Tailwind v4: use .dark class on <html> instead of @media prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ════════════════════════════════════════════════════════
    CareLine360 – Doctor Dashboard
    Design System: Glassmorphism + Transparent Layering
