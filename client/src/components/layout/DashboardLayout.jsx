@@ -1,11 +1,22 @@
-import { useState } from "react";
-import DoctorHeader from "./DoctorHeader";
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  cloneElement,
+  isValidElement,
+} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import { ToastContainer } from "../ui/Toast";
+import AIChatWidget from "../dashboard/AIChatWidget";
+import { getDoctorProfile, getDoctorDashboard } from "../../api/doctorApi";
 
-/**
- * DashboardLayout – Doctor portal
- * Replaces the old sidebar+topbar pattern with a single sticky header.
- * Supports light/dark mode via html.dark class (ThemeContext).
- */
+// ── Doctor context — any child can read doctor data + current section ─────────
+const DoctorContext = createContext(null);
+export const useDoctorContext = () => useContext(DoctorContext);
+
 export default function DashboardLayout({ children }) {
   const [section, setSection] = useState("Dashboard");
   const [doctor, setDoctor] = useState(null);
@@ -66,12 +77,38 @@ export default function DashboardLayout({ children }) {
     : children;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      <DoctorHeader active={activePage} setActive={setActivePage} />
+    <DoctorContext.Provider
+      value={{ doctor, profileLoading, refreshProfile, section, setSection }}
+    >
+      {/* Global toast container — renders above everything */}
+      <ToastContainer />
 
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {children}
-      </main>
-    </div>
+      <div className="cl-page">
+        <Sidebar
+          section={section}
+          setSection={setSection}
+          doctor={doctor}
+          pendingCount={pendingCount}
+          onQuickAction={handleQuickAction}
+        />
+
+        <div className="cl-right-col">
+          <Topbar
+            section={section}
+            doctor={doctor}
+            onSearchOpen={() => setSearchOpen(true)}
+          />
+
+          <main className="cl-main p-6">
+            <div className="max-w-screen-2xl mx-auto space-y-6">
+              {pageChild}
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Floating AI chatbot — doctor portal only */}
+      <AIChatWidget />
+    </DoctorContext.Provider>
   );
 }

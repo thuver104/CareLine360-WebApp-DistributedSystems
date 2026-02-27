@@ -1,9 +1,10 @@
 const Patient = require("../models/Patient");
 const User = require("../models/User");
-const Appointment = require("../models/Appointment");
-const Document = require("../models/Document");
+const MedicalRecord = require("../models/MedicalRecord");
+const Prescription = require("../models/Prescription");
+const Doctor = require("../models/Doctor");
+const Hospital = require("../models/Hospital");
 const { calcPatientProfileStrength } = require("../services/profileStrength");
-const { generateReport } = require("../services/reportService");
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -295,317 +296,286 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-const getPatientStats = async (req, res) => {
+const deactivateMyAccount = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Get patient profile
-    const patient = await Patient.findOne({ 
-      userId, 
-      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }]
+    // 1) Deactivate user account
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          isActive: false,
+          status: "SUSPENDED", // or "REJECTED"/"PENDING" - your choice
+          refreshTokenHash: null,
+        },
+      },
+      { returnDocument: "after" }, // mongoose v7+ (instead of { new: true })
+    );
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 2) Soft delete patient profile (if exists)
+    await Patient.findOneAndUpdate(
+      { userId },
+      { $set: { isDeleted: true } },
+      { returnDocument: "after" },
+    );
+
+    return res.json({ message: "Account deactivated successfully" });
+  } catch (e) {
+    console.error("DEACTIVATE ERROR:", e);
+    return res.status(500).json({ message: e.message || "Server error" });
+  }
+};
+
+const medicalRecord = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // 1) find patient profile (because medicalrecords uses patientId = Patient._id)
+    const patient = await Patient.findOne({
+      userId,
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
     });
-    
-    if (!patient) {
+
+    if (!patient)
       return res.status(404).json({ message: "Patient profile not found" });
-    }
 
-    // Get appointment statistics
-    const appointments = await Appointment.find({ patient: userId });
-    const totalAppointments = appointments.length;
-    const completedAppointments = appointments.filter(apt => apt.status === 'completed').length;
-    const upcomingAppointments = appointments.filter(apt => {
-      return apt.status === 'confirmed' && new Date(apt.date) > new Date();
-    }).length;
+    // 2) fetch medical records
+    const histories = await MedicalRecord.find({
+      patientId: patient._id,
+      isDeleted: false,
+    })
+      .populate("doctorId") // returns Doctor document (fullName, specialization, etc.)
+      .populate("appointmentId") // if linked later
+      .populate("prescriptionId") // if linked later
+      .sort({ visitDate: -1 });
 
-    // Get document count
-    const totalDocuments = await Document.countDocuments({ userId });
-
-    // Get recent activity (last 5 appointments)
-    const recentActivity = appointments
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 5)
-      .map(apt => ({
-        title: `Appointment with Dr. ${apt.doctor?.fullName || 'TBD'}`,
-        description: `${apt.consultationType} consultation - ${apt.status}`,
-        date: new Date(apt.date).toLocaleDateString()
-      }));
-
-    const profileStrength = calcPatientProfileStrength({ 
-      patient, 
-      docsCount: totalDocuments 
-    });
-
-    const stats = {
-      totalAppointments,
-      completedAppointments,
-      upcomingAppointments,
-      totalDocuments,
-      profileStrength: profileStrength.score,
-      recentActivity
-    };
-
-    return res.json({ success: true, data: stats });
-  } catch (error) {
-    console.error('Get patient stats error:', error);
+    return res.json({ histories });
+  } catch (e) {
+    console.error("MEDICAL HISTORY ERROR:", e);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-const generatePatientReport = async (req, res) => {
+const explainMedicalText = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const { format, dateRange } = req.body;
-    
-    if (!format || !dateRange) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Format and date range are required' 
+    const { text, language } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ message: "Text is required" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ message: "Gemini API key not configured" });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    // gemini-2.0-flash-lite has a separate (more generous) free-tier quota bucket
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+
+    // Default language = English
+    const selectedLanguage = language || "english";
+
+    const result = await model.generateContent(
+      `Explain this medical information in simple language for a patient.
+
+      Language: ${selectedLanguage}
+
+      Do NOT use markdown formatting.
+      Do NOT use headings.
+      Do NOT use bold text.
+      Do NOT give medical advice.
+      Do NOT change dosage.
+      Only explain meaning clearly.
+
+      ${text}`,
+    );
+
+    const explanation = result.response.text();
+
+    return res.json({
+      language: selectedLanguage,
+      explanation,
+    });
+  } catch (error) {
+    console.error("GEMINI ERROR:", error?.message || error);
+
+    // Detect quota / rate-limit errors (HTTP 429 from Google's API)
+    const errMsg = error?.message || "";
+    const isQuota =
+      errMsg.includes("429") ||
+      errMsg.includes("Too Many Requests") ||
+      errMsg.includes("quota") ||
+      errMsg.includes("RESOURCE_EXHAUSTED");
+
+    if (isQuota) {
+      return res.status(429).json({
+        message: "AI quota exceeded. Please try again in a few minutes.",
+        detail: errMsg,
       });
     }
 
-    // Get patient data for the report
-    const patient = await Patient.findOne({ 
-      userId, 
-      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }]
-    }).populate('userId');
-    
-    if (!patient) {
-      return res.status(404).json({ message: "Patient profile not found" });
-    }
+    return res.status(500).json({
+      message: "AI service error",
+      detail: errMsg || "Unknown error",
+    });
+  }
+};
 
-    const startDate = new Date(dateRange.from);
-    const endDate = new Date(dateRange.to);
-    endDate.setHours(23, 59, 59, 999);
+/**
+ * GET /api/patient/me/medical-records
+ * Patient fetch their own medical records
+ */
+const getMyMedicalRecords = async (req, res) => {
+  try {
+    const patientId = req.user.userId; // from authMiddleware
 
-    // Get appointments in date range
-    const appointments = await Appointment.find({
-      patient: userId,
-      createdAt: { $gte: startDate, $lte: endDate }
-    }).populate('doctor', 'fullName specialty');
+    const records = await MedicalRecord.find({
+      patientId,
+      isDeleted: false,
+    }).sort({ createdAt: -1 });
 
-    // Get documents in date range
-    const documents = await Document.find({
-      userId,
-      createdAt: { $gte: startDate, $lte: endDate }
+    return res.json({ count: records.length, records });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch medical records", error: err.message });
+  }
+};
+
+/**
+ * GET /api/patient/me/prescriptions
+ * Patient fetch their own prescriptions
+ */
+const getMyPrescriptions = async (req, res) => {
+  try {
+    const patientId = req.user.userId;
+
+    const prescriptions = await Prescription.find({ patientId }).sort({
+      createdAt: -1,
     });
 
-    // Prepare report data
-    const reportData = {
-      patient: {
-        ...patient.toObject(),
-        user: patient.userId
-      },
-      appointments,
-      documents,
-      summary: {
-        totalAppointments: appointments.length,
-        completedAppointments: appointments.filter(apt => apt.status === 'completed').length,
-        totalDocuments: documents.length,
-        profileStrength: calcPatientProfileStrength({ patient, docsCount: documents.length }).score
-      }
-    };
+    return res.json({ count: prescriptions.length, prescriptions });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch prescriptions", error: err.message });
+  }
+};
 
-    // Generate the report using the existing report service
-    const reportBuffer = await generatePatientHealthReport({
-      reportData,
-      format,
-      dateRange
-    });
+/**
+ * GET /api/patient/doctors
+ * Patient fetch all doctors (users with role doctor)
+ */
+const getAllDoctorsForPatient = async (req, res) => {
+  try {
+    const { q = "" } = req.query;
 
-    // Set appropriate headers for file download
-    let filename = `my_health_report_${dateRange.from}_to_${dateRange.to}`;
-    let contentType = 'application/octet-stream';
+    const filter = { isDeleted: { $ne: true } };
 
-    switch (format) {
-      case 'pdf':
-        filename += '.pdf';
-        contentType = 'application/pdf';
-        break;
-      case 'excel':
-        filename += '.xlsx';
-        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        break;
-      case 'csv':
-        filename += '.csv';
-        contentType = 'text/csv';
-        break;
-      default:
-        filename += '.txt';
-        contentType = 'text/plain';
+    if (q) {
+      filter.$or = [
+        { fullName: { $regex: q, $options: "i" } },
+        { specialization: { $regex: q, $options: "i" } },
+      ];
     }
 
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Type', contentType);
-    res.send(reportBuffer);
+    const doctors = await Doctor.find(filter)
+      .select(
+        "fullName specialization phone avatarUrl qualifications experience bio consultationFee rating totalRatings availabilitySlots doctorId licenseNumber",
+      )
+      .sort({ fullName: 1 });
 
+    return res.json(doctors);
+  } catch (e) {
+    return res.status(500).json({ message: "Failed to fetch doctors" });
+  }
+};
+
+const getDoctorDetailsForPatient = async (req, res) => {
+  try {
+    const doc = await Doctor.findOne({
+      _id: req.params.id,
+      isDeleted: { $ne: true },
+    });
+
+    if (!doc) return res.status(404).json({ message: "Doctor not found" });
+
+    return res.json(doc);
+  } catch (e) {
+    return res.status(500).json({ message: "Failed to fetch doctor details" });
+  }
+};
+
+const getAllHospitalsForPatient = async (req, res) => {
+  try {
+    const { q = "" } = req.query;
+
+    const filter = { isActive: true };
+
+    if (q) {
+      filter.$or = [
+        { name: { $regex: q, $options: "i" } },
+        { address: { $regex: q, $options: "i" } },
+        { contact: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    const hospitals = await Hospital.find(filter)
+      .select("name address contact lat lng isActive")
+      .sort({ name: 1 });
+
+    res.json(hospitals);
+  } catch (e) {
+    res.status(500).json({ message: "Failed to fetch hospitals" });
+  }
+};
+
+const getHospitalDetailsForPatient = async (req, res) => {
+  try {
+    const hospital = await Hospital.findOne({
+      _id: req.params.id,
+      isActive: true,
+    }).select("name address contact lat lng isActive");
+
+    if (!hospital)
+      return res.status(404).json({ message: "Hospital not found" });
+
+    res.json(hospital);
+  } catch (e) {
+    res.status(500).json({ message: "Failed to fetch hospital details" });
+  }
+};
+
+const createEmergency = async (req, res, next) => {
+  try {
+    const emergency = await emergencyService.createEmergency({
+      ...req.body,
+      patient: req.user.id, // 👈 take patient from token
+    });
+
+    res.status(201).json({ success: true, data: emergency });
   } catch (error) {
-    console.error('Patient report generation error:', error);
-    return res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 
-// Helper function for patient-specific report generation
-const generatePatientHealthReport = async ({ reportData, format, dateRange }) => {
-  const PDFDocument = require('pdfkit');
-  const ExcelJS = require('exceljs');
-
-  switch (format) {
-    case 'pdf':
-      return await generatePatientPDFReport(reportData, dateRange);
-    case 'excel':
-      return await generatePatientExcelReport(reportData, dateRange);
-    case 'csv':
-      return await generatePatientCSVReport(reportData, dateRange);
-    default:
-      throw new Error('Unsupported report format');
-  }
-};
-
-const generatePatientPDFReport = async (data, dateRange) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const PDFDocument = require('pdfkit');
-      const doc = new PDFDocument({ margin: 50 });
-      const chunks = [];
-
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-
-      // Header
-      doc.fontSize(24).font('Helvetica-Bold')
-         .fillColor('#2563eb')
-         .text('My Health Report', 50, 50);
-
-      doc.fontSize(14).font('Helvetica')
-         .fillColor('#6b7280')
-         .text(`Patient: ${data.patient.fullName}`, 50, 85)
-         .text(`Period: ${dateRange.from} to ${dateRange.to}`, 50, 105)
-         .text(`Generated: ${new Date().toLocaleString()}`, 50, 125);
-
-      let yPosition = 160;
-
-      // Patient Summary
-      doc.fontSize(16).font('Helvetica-Bold').fillColor('#1f2937')
-         .text('Health Summary', 50, yPosition);
-      
-      yPosition += 30;
-      
-      doc.fontSize(12).font('Helvetica').fillColor('#374151')
-         .text(`Total Appointments: ${data.summary.totalAppointments}`, 70, yPosition)
-         .text(`Completed Appointments: ${data.summary.completedAppointments}`, 70, yPosition + 20)
-         .text(`Health Documents: ${data.summary.totalDocuments}`, 70, yPosition + 40)
-         .text(`Profile Completion: ${data.summary.profileStrength}%`, 70, yPosition + 60);
-
-      yPosition += 100;
-
-      // Appointment Details
-      if (data.appointments.length > 0) {
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#1f2937')
-           .text('Appointment History', 50, yPosition);
-        
-        yPosition += 25;
-
-        data.appointments.slice(0, 10).forEach((appointment, index) => {
-          if (yPosition > 700) {
-            doc.addPage();
-            yPosition = 50;
-          }
-
-          doc.fontSize(10).font('Helvetica')
-             .fillColor('#374151')
-             .text(`${index + 1}. ${new Date(appointment.date).toLocaleDateString()}`, 70, yPosition)
-             .text(`Doctor: ${appointment.doctor?.fullName || 'TBD'}`, 90, yPosition + 15)
-             .text(`Type: ${appointment.consultationType}`, 90, yPosition + 30)
-             .text(`Status: ${appointment.status}`, 90, yPosition + 45);
-
-          yPosition += 70;
-        });
-      }
-
-      // Footer
-      doc.fontSize(10).fillColor('#9ca3af')
-         .text('Generated by CareLine360 Patient Portal', 50, doc.page.height - 50);
-
-      doc.end();
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-const generatePatientExcelReport = async (data, dateRange) => {
-  const ExcelJS = require('exceljs');
-  const workbook = new ExcelJS.Workbook();
-  
-  workbook.creator = 'CareLine360';
-  workbook.created = new Date();
-  workbook.modified = new Date();
-
-  // Summary Sheet
-  const summarySheet = workbook.addWorksheet('Health Summary');
-  summarySheet.addRow(['My Health Report - CareLine360']);
-  summarySheet.addRow([`Patient: ${data.patient.fullName}`]);
-  summarySheet.addRow([`Period: ${dateRange.from} to ${dateRange.to}`]);
-  summarySheet.addRow([]);
-  
-  summarySheet.addRow(['Metric', 'Value']);
-  summarySheet.addRow(['Total Appointments', data.summary.totalAppointments]);
-  summarySheet.addRow(['Completed Appointments', data.summary.completedAppointments]);
-  summarySheet.addRow(['Health Documents', data.summary.totalDocuments]);
-  summarySheet.addRow(['Profile Completion', `${data.summary.profileStrength}%`]);
-
-  // Appointments Sheet
-  const appointmentsSheet = workbook.addWorksheet('Appointments');
-  appointmentsSheet.addRow(['Date', 'Time', 'Doctor', 'Specialty', 'Type', 'Status']);
-  
-  data.appointments.forEach(appointment => {
-    appointmentsSheet.addRow([
-      appointment.date ? appointment.date.toISOString().split('T')[0] : 'N/A',
-      appointment.time || 'N/A',
-      appointment.doctor?.fullName || 'TBD',
-      appointment.doctor?.specialty || 'N/A',
-      appointment.consultationType || 'N/A',
-      appointment.status
-    ]);
-  });
-
-  // Style headers
-  [summarySheet, appointmentsSheet].forEach(sheet => {
-    sheet.getRow(1).font = { bold: true };
-    sheet.columns.forEach(column => {
-      column.width = 20;
-    });
-  });
-
-  return await workbook.xlsx.writeBuffer();
-};
-
-const generatePatientCSVReport = async (data, dateRange) => {
-  let csv = `My Health Report - CareLine360\n`;
-  csv += `Patient: ${data.patient.fullName}\n`;
-  csv += `Period: ${dateRange.from} to ${dateRange.to}\n\n`;
-  
-  csv += `Health Summary\n`;
-  csv += `Total Appointments,${data.summary.totalAppointments}\n`;
-  csv += `Completed Appointments,${data.summary.completedAppointments}\n`;
-  csv += `Health Documents,${data.summary.totalDocuments}\n`;
-  csv += `Profile Completion,${data.summary.profileStrength}%\n\n`;
-  
-  csv += `Appointment History\n`;
-  csv += `Date,Time,Doctor,Specialty,Type,Status\n`;
-  
-  data.appointments.forEach(appointment => {
-    csv += `"${appointment.date ? appointment.date.toISOString().split('T')[0] : 'N/A'}","${appointment.time || 'N/A'}","${appointment.doctor?.fullName || 'TBD'}","${appointment.doctor?.specialty || 'N/A'}","${appointment.consultationType || 'N/A'}","${appointment.status}"\n`;
-  });
-
-  return Buffer.from(csv, 'utf-8');
-};
-
-
-module.exports = { 
-  getMyProfile, 
-  updateMyProfile, 
-  uploadAvatar, 
-  getPatientStats, 
-  generatePatientReport 
+module.exports = {
+  getMyProfile,
+  updateMyProfile,
+  uploadAvatar,
+  deactivateMyAccount,
+  medicalRecord,
+  explainMedicalText,
+  getMyMedicalRecords,
+  getMyPrescriptions,
+  getAllDoctorsForPatient,
+  getDoctorDetailsForPatient,
+  getAllHospitalsForPatient,
+  getHospitalDetailsForPatient,
+  createEmergency,
 };
