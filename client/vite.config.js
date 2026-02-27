@@ -11,4 +11,13 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:1111',
+      '/socket.io': {
+        target: 'http://localhost:1111',
+        ws: true,
+      },
+    },
+  },
 })

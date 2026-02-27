@@ -5,11 +5,16 @@ const Document = require("../models/Document");
 const { calcPatientProfileStrength } = require("../services/profileStrength");
 const { generateReport } = require("../services/reportService");
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const patient = await Patient.findOne({ userId ,  $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],});
+    const patient = await Patient.findOne({
+      userId,
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+    });
     if (!patient) return res.status(404).json({ message: "Profile not found" });
 
     const user = await User.findById(userId).select("email isVerified role");
@@ -75,7 +80,9 @@ const updateMyProfile = async (req, res) => {
     // fullName basic check (optional)
     if (fullName !== undefined) {
       if (typeof fullName !== "string" || fullName.trim().length < 3) {
-        return res.status(400).json({ message: "Full name must be at least 3 characters" });
+        return res
+          .status(400)
+          .json({ message: "Full name must be at least 3 characters" });
       }
     }
 
@@ -103,7 +110,9 @@ const updateMyProfile = async (req, res) => {
       const nicStr = String(nic).trim();
       const nicRegex = /^[0-9]{9}[vVxX]$|^[0-9]{12}$/;
       if (!nicRegex.test(nicStr)) {
-        return res.status(400).json({ message: "Invalid NIC format (123456789V or 200012345678)" });
+        return res
+          .status(400)
+          .json({ message: "Invalid NIC format (123456789V or 200012345678)" });
       }
     }
 
@@ -112,29 +121,51 @@ const updateMyProfile = async (req, res) => {
       if (typeof address !== "object" || Array.isArray(address)) {
         return res.status(400).json({ message: "Address must be an object" });
       }
-      if (address.city !== undefined && String(address.city).trim().length === 0) {
+      if (
+        address.city !== undefined &&
+        String(address.city).trim().length === 0
+      ) {
         return res.status(400).json({ message: "City cannot be empty" });
       }
-      if (address.district !== undefined && String(address.district).trim().length === 0) {
+      if (
+        address.district !== undefined &&
+        String(address.district).trim().length === 0
+      ) {
         return res.status(400).json({ message: "District cannot be empty" });
       }
-      if (address.line1 !== undefined && String(address.line1).trim().length === 0) {
-        return res.status(400).json({ message: "Address line cannot be empty" });
+      if (
+        address.line1 !== undefined &&
+        String(address.line1).trim().length === 0
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Address line cannot be empty" });
       }
     }
 
     // Emergency contact validation (if provided)
     if (emergencyContact !== undefined) {
-      if (typeof emergencyContact !== "object" || Array.isArray(emergencyContact)) {
-        return res.status(400).json({ message: "Emergency contact must be an object" });
+      if (
+        typeof emergencyContact !== "object" ||
+        Array.isArray(emergencyContact)
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Emergency contact must be an object" });
       }
 
-      if (emergencyContact.phone !== undefined && emergencyContact.phone !== null && emergencyContact.phone !== "") {
+      if (
+        emergencyContact.phone !== undefined &&
+        emergencyContact.phone !== null &&
+        emergencyContact.phone !== ""
+      ) {
         const p = String(emergencyContact.phone).replace(/\s+/g, "");
         // basic Sri Lanka-ish pattern: allow +94 / 0 / plain 9–10 digits
         const phoneRegex = /^(?:\+94|0)?\d{9}$/;
         if (!phoneRegex.test(p)) {
-          return res.status(400).json({ message: "Invalid emergency phone number" });
+          return res
+            .status(400)
+            .json({ message: "Invalid emergency phone number" });
         }
       }
     }
@@ -144,7 +175,9 @@ const updateMyProfile = async (req, res) => {
       const bg = String(bloodGroup).trim();
       const bgRegex = /^(A|B|AB|O)[+-]$/i;
       if (!bgRegex.test(bg)) {
-        return res.status(400).json({ message: "Invalid blood group (A+, O-, AB+)" });
+        return res
+          .status(400)
+          .json({ message: "Invalid blood group (A+, O-, AB+)" });
       }
     }
 
@@ -153,20 +186,26 @@ const updateMyProfile = async (req, res) => {
       return res.status(400).json({ message: "Allergies must be an array" });
     }
     if (chronicConditions !== undefined && !Array.isArray(chronicConditions)) {
-      return res.status(400).json({ message: "Chronic conditions must be an array" });
+      return res
+        .status(400)
+        .json({ message: "Chronic conditions must be an array" });
     }
 
     // Height/Weight validation
     if (heightCm !== undefined) {
       const h = Number(heightCm);
       if (Number.isNaN(h) || h < 30 || h > 250) {
-        return res.status(400).json({ message: "Height must be between 30 and 250 cm" });
+        return res
+          .status(400)
+          .json({ message: "Height must be between 30 and 250 cm" });
       }
     }
     if (weightKg !== undefined) {
       const w = Number(weightKg);
       if (Number.isNaN(w) || w < 2 || w > 300) {
-        return res.status(400).json({ message: "Weight must be between 2 and 300 kg" });
+        return res
+          .status(400)
+          .json({ message: "Weight must be between 2 and 300 kg" });
       }
     }
     // ---------------- END VALIDATION ----------------
@@ -190,13 +229,16 @@ const updateMyProfile = async (req, res) => {
     if (req.body.emergencyContact) {
       update["emergencyContact.name"] = req.body.emergencyContact.name;
       update["emergencyContact.phone"] = req.body.emergencyContact.phone;
-      update["emergencyContact.relationship"] = req.body.emergencyContact.relationship;
+      update["emergencyContact.relationship"] =
+        req.body.emergencyContact.relationship;
     }
 
     // Medical
-    if (req.body.bloodGroup !== undefined) update.bloodGroup = req.body.bloodGroup;
+    if (req.body.bloodGroup !== undefined)
+      update.bloodGroup = req.body.bloodGroup;
     if (req.body.allergies !== undefined) update.allergies = req.body.allergies;
-    if (req.body.chronicConditions !== undefined) update.chronicConditions = req.body.chronicConditions;
+    if (req.body.chronicConditions !== undefined)
+      update.chronicConditions = req.body.chronicConditions;
     if (req.body.heightCm !== undefined) update.heightCm = req.body.heightCm;
     if (req.body.weightKg !== undefined) update.weightKg = req.body.weightKg;
 
@@ -206,7 +248,7 @@ const updateMyProfile = async (req, res) => {
         $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
       },
       { $set: update },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!patient) return res.status(404).json({ message: "Profile not found" });
@@ -236,9 +278,12 @@ const uploadAvatar = async (req, res) => {
     console.log("avatarUrl =", avatarUrl); // ✅ add this
 
     const patient = await Patient.findOneAndUpdate(
-      { userId , $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }], },
-      { $set: { avatarUrl }  },
-      { returnDocument: "after", runValidators: true }
+      {
+        userId,
+        $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+      },
+      { $set: { avatarUrl } },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!patient) return res.status(404).json({ message: "Profile not found" });

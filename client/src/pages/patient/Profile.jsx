@@ -37,7 +37,9 @@ export default function Profile() {
   const [errors, setErrors] = useState({});
 
   // ✅ Avatar (frontend-only)
-  const [avatar, setAvatar] = useState(() => localStorage.getItem("patientAvatar") || "");
+  const [avatar, setAvatar] = useState(
+    () => localStorage.getItem("patientAvatar") || "",
+  );
   const [avatarFile, setAvatarFile] = useState(null);
 
   // identity from login (localStorage)
@@ -64,27 +66,26 @@ export default function Profile() {
 
   // ✅ Avatar picker
   const onPickAvatar = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  // preview instantly
-  setAvatar(URL.createObjectURL(file));
+    // preview instantly
+    setAvatar(URL.createObjectURL(file));
 
-  try {
-    const fd = new FormData();
-    fd.append("avatar", file);
+    try {
+      const fd = new FormData();
+      fd.append("avatar", file);
 
-    const res = await api.patch("/patients/me/avatar", fd);
+      const res = await api.patch("/patients/me/avatar", fd);
 
-    setAvatar(res.data.avatarUrl); // final Cloudinary URL
-    setMsgType("success");
-    setMsg("✅ Profile photo updated");
-  } catch (err) {
-    setMsgType("error");
-    setMsg(err.response?.data?.message || "Avatar upload failed");
-  }
-};
-
+      setAvatar(res.data.avatarUrl); // final Cloudinary URL
+      setMsgType("success");
+      setMsg("✅ Profile photo updated");
+    } catch (err) {
+      setMsgType("error");
+      setMsg(err.response?.data?.message || "Avatar upload failed");
+    }
+  };
 
   const removeAvatar = () => {
     setAvatar("");
@@ -146,7 +147,11 @@ export default function Profile() {
   }, []);
 
   const profilePreview = useMemo(() => {
-    const addr = [form.address?.line1, form.address?.city, form.address?.district]
+    const addr = [
+      form.address?.line1,
+      form.address?.city,
+      form.address?.district,
+    ]
       .filter(Boolean)
       .join(", ");
 
@@ -241,11 +246,13 @@ export default function Profile() {
 
     if (form.heightCm !== "") {
       const h = Number(form.heightCm);
-      if (Number.isNaN(h) || h < 30 || h > 250) e.heightCm = "Height must be 30–250 cm";
+      if (Number.isNaN(h) || h < 30 || h > 250)
+        e.heightCm = "Height must be 30–250 cm";
     }
     if (form.weightKg !== "") {
       const w = Number(form.weightKg);
-      if (Number.isNaN(w) || w < 2 || w > 300) e.weightKg = "Weight must be 2–300 kg";
+      if (Number.isNaN(w) || w < 2 || w > 300)
+        e.weightKg = "Weight must be 2–300 kg";
     }
 
     setErrors(e);
@@ -275,10 +282,16 @@ export default function Profile() {
 
         bloodGroup: form.bloodGroup || undefined,
         allergies: form.allergies
-          ? form.allergies.split(",").map((s) => s.trim()).filter(Boolean)
+          ? form.allergies
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
         chronicConditions: form.chronicConditions
-          ? form.chronicConditions.split(",").map((s) => s.trim()).filter(Boolean)
+          ? form.chronicConditions
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [],
         heightCm: form.heightCm === "" ? undefined : Number(form.heightCm),
         weightKg: form.weightKg === "" ? undefined : Number(form.weightKg),
@@ -307,6 +320,25 @@ export default function Profile() {
     errors[k] ? <p className="text-xs text-red-600 mt-1">{errors[k]}</p> : null;
 
   if (loading) return <div className="p-6 text-gray-500 dark:text-gray-400">Loading...</div>;
+
+  const deactivateAccount = async () => {
+    const confirm = window.confirm(
+      "Are you sure you want to deactivate your account?\n\nYou will not be able to access the system until reactivated.",
+    );
+
+    if (!confirm) return;
+
+    try {
+      await api.patch("/patients/me/deactivate");
+
+      localStorage.clear();
+      alert("Your account has been deactivated.");
+      window.location.href = "/login";
+    } catch (err) {
+      setMsgType("error");
+      setMsg(err.response?.data?.message || "Failed to deactivate account");
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -481,7 +513,9 @@ export default function Profile() {
                 <input
                   className={inputClass("address.district")}
                   value={form.address.district}
-                  onChange={(e) => updateNested("address.district", e.target.value)}
+                  onChange={(e) =>
+                    updateNested("address.district", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -497,7 +531,9 @@ export default function Profile() {
                 <input
                   className={inputClass("address.line1")}
                   value={form.address.line1}
-                  onChange={(e) => updateNested("address.line1", e.target.value)}
+                  onChange={(e) =>
+                    updateNested("address.line1", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -508,7 +544,9 @@ export default function Profile() {
                 <input
                   className={inputClass("emergencyContact.name")}
                   value={form.emergencyContact.name}
-                  onChange={(e) => updateNested("emergencyContact.name", e.target.value)}
+                  onChange={(e) =>
+                    updateNested("emergencyContact.name", e.target.value)
+                  }
                 />
               </div>
               <div>
@@ -516,7 +554,9 @@ export default function Profile() {
                 <input
                   className={inputClass("emergencyContact.phone")}
                   value={form.emergencyContact.phone}
-                  onChange={(e) => updateNested("emergencyContact.phone", e.target.value)}
+                  onChange={(e) =>
+                    updateNested("emergencyContact.phone", e.target.value)
+                  }
                 />
                 <ErrorText k="emergencyContact.phone" />
               </div>
@@ -525,7 +565,12 @@ export default function Profile() {
                 <input
                   className={inputClass("emergencyContact.relationship")}
                   value={form.emergencyContact.relationship}
-                  onChange={(e) => updateNested("emergencyContact.relationship", e.target.value)}
+                  onChange={(e) =>
+                    updateNested(
+                      "emergencyContact.relationship",
+                      e.target.value,
+                    )
+                  }
                 />
               </div>
             </div>
@@ -567,7 +612,7 @@ export default function Profile() {
                   className={inputClass("allergies")}
                   value={form.allergies}
                   onChange={(e) => setField("allergies", e.target.value)}
-                  placeholder="Peanuts, Dust..."
+                  placeholder="Peanuts, Dust…"
                 />
               </div>
 
@@ -576,8 +621,10 @@ export default function Profile() {
                 <input
                   className={inputClass("chronicConditions")}
                   value={form.chronicConditions}
-                  onChange={(e) => setField("chronicConditions", e.target.value)}
-                  placeholder="Diabetes, Asthma..."
+                  onChange={(e) =>
+                    setField("chronicConditions", e.target.value)
+                  }
+                  placeholder="Diabetes, Asthma…"
                 />
               </div>
             </div>

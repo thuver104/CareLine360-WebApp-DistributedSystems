@@ -52,7 +52,25 @@ router.post("/refresh", authLimiter, [body("refreshToken").notEmpty()], refresh)
 router.post("/logout", authMiddleware, logout);
 
 router.get("/me", authMiddleware, async (req, res) => {
-  res.json({ user: req.user });
+  try {
+    const User = require("../models/User");
+    const user = await User.findById(req.user.userId).select(
+      "email phone role status isVerified"
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email || null,
+        phone: user.phone || null,
+        role: user.role,
+        status: user.status,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (e) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 router.post(

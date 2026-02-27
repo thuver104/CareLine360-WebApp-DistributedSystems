@@ -1,0 +1,476 @@
+const { validationResult } = require("express-validator");
+const doctorService = require("../services/doctorService");
+const Appointment = require("../models/Appointment");
+const Patient = require("../models/Patient");
+const Doctor = require("../models/Doctor");
+const { sendEmail } = require("../services/emailService");
+const {
+  checkAndNotify,
+  getMeetingUrl,
+} = require("../services/meetingScheduler");
+
+const handleValidation = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return false;
+  }
+  return true;
+};
+
+// ─── Profile ──────────────────────────────────────────────────────────────────
+
+const createProfile = async (req, res) => {
+  if (!handleValidation(req, res)) return;
+  const result = await doctorService.createDoctorProfile({
+    userId: req.user.userId,
+    ...req.body,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const getProfile = async (req, res) => {
+  const result = await doctorService.getDoctorProfile({
+    userId: req.user.userId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const updateProfile = async (req, res) => {
+  const result = await doctorService.updateDoctorProfile({
+    userId: req.user.userId,
+    updates: req.body,
+  });
+  res.status(result.status).json(result.data);
+};
+
+/**
+ * PUT /api/doctor/profile/avatar
+ * Body: { image: "data:image/jpeg;base64,..." }
+ * No Multer needed — pure base64 via JSON body.
+ */
+const updateAvatar = async (req, res) => {
+  const { image } = req.body;
+  if (!image)
+    return res
+      .status(400)
+      .json({ message: "image (base64) is required in request body" });
+
+  const result = await doctorService.updateAvatarBase64({
+    userId: req.user.userId,
+    base64Image: image,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+const getDashboard = async (req, res) => {
+  const result = await doctorService.getDashboardStats({
+    userId: req.user.userId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const getAnalytics = async (req, res) => {
+  const result = await doctorService.getDoctorAnalytics({
+    userId: req.user.userId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Availability ─────────────────────────────────────────────────────────────
+
+const getAvailability = async (req, res) => {
+  const result = await doctorService.getAvailability({
+    userId: req.user.userId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const addSlots = async (req, res) => {
+  if (!handleValidation(req, res)) return;
+  const { slots } = req.body;
+  if (!Array.isArray(slots) || slots.length === 0)
+    return res.status(400).json({ message: "slots must be a non-empty array" });
+  const result = await doctorService.addAvailabilitySlots({
+    userId: req.user.userId,
+    slots,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const deleteSlot = async (req, res) => {
+  const result = await doctorService.deleteAvailabilitySlot({
+    userId: req.user.userId,
+    slotId: req.params.slotId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const updateSlot = async (req, res) => {
+  const { startTime, endTime } = req.body;
+  const result = await doctorService.updateAvailabilitySlot({
+    userId: req.user.userId,
+    slotId: req.params.slotId,
+    startTime,
+    endTime,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Appointments ─────────────────────────────────────────────────────────────
+
+const getAppointments = async (req, res) => {
+  const { status, date, dateFrom, dateTo, search, page, limit } = req.query;
+  const result = await doctorService.getMyAppointments({
+    userId: req.user.userId,
+    status,
+    date,
+    dateFrom,
+    dateTo,
+    search,
+    page,
+    limit,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const updateAppointment = async (req, res) => {
+  const result = await doctorService.updateAppointmentStatus({
+    userId: req.user.userId,
+    appointmentId: req.params.appointmentId,
+    status: req.body.status,
+    notes: req.body.notes,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const deleteAppointment = async (req, res) => {
+  const result = await doctorService.deleteAppointment({
+    userId: req.user.userId,
+    appointmentId: req.params.appointmentId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Patients ─────────────────────────────────────────────────────────────────
+
+const getPatients = async (req, res) => {
+  const result = await doctorService.getMyPatients({
+    userId: req.user.userId,
+    ...req.query,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const getPatientDetail = async (req, res) => {
+  const result = await doctorService.getPatientDetail({
+    userId: req.user.userId,
+    patientDbId: req.params.patientId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Medical Records ──────────────────────────────────────────────────────────
+
+const createRecord = async (req, res) => {
+  const result = await doctorService.createMedicalRecord({
+    userId: req.user.userId,
+    data: req.body,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const getRecordsByPatient = async (req, res) => {
+  const result = await doctorService.getMedicalRecordsByPatient({
+    userId: req.user.userId,
+    patientId: req.params.patientId,
+    ...req.query,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const updateRecord = async (req, res) => {
+  const result = await doctorService.updateMedicalRecord({
+    userId: req.user.userId,
+    recordId: req.params.recordId,
+    updates: req.body,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Prescriptions ────────────────────────────────────────────────────────────
+
+const savePrescription = async (req, res) => {
+  const result = await doctorService.savePrescription({
+    userId: req.user.userId,
+    data: req.body,
+  });
+  res.status(result.status).json(result.data);
+};
+
+const getPrescriptions = async (req, res) => {
+  const result = await doctorService.getMyPrescriptions({
+    userId: req.user.userId,
+    ...req.query,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// Proxy Cloudinary PDF to the browser as a forced download.
+// Using the backend avoids CORS / Content-Disposition:inline issues.
+const downloadPrescription = async (req, res) => {
+  const { url, filename = "prescription.pdf" } = req.query;
+  if (!url) return res.status(400).json({ message: "url is required" });
+
+  // Only allow Cloudinary URLs for security
+  try {
+    const p = new URL(url);
+    if (!p.hostname.endsWith("cloudinary.com")) {
+      return res.status(403).json({ message: "URL not allowed" });
+    }
+  } catch {
+    return res.status(400).json({ message: "Invalid URL" });
+  }
+
+  const https = require("https");
+  const http = require("http");
+
+  // Recursive helper so we follow 301/302/307 redirects from Cloudinary
+  const fetchAndStream = (targetUrl, redirectsLeft = 5) => {
+    const parsed = new URL(targetUrl);
+    const lib = parsed.protocol === "https:" ? https : http;
+
+    lib
+      .get(targetUrl, (upstream) => {
+        // Follow redirects
+        if ([301, 302, 303, 307, 308].includes(upstream.statusCode)) {
+          upstream.resume(); // discard body
+          if (redirectsLeft <= 0) {
+            return res.status(502).json({ message: "Too many redirects" });
+          }
+          const location = upstream.headers.location;
+          if (!location) {
+            return res
+              .status(502)
+              .json({ message: "Redirect missing location header" });
+          }
+          return fetchAndStream(
+            new URL(location, targetUrl).href,
+            redirectsLeft - 1,
+          );
+        }
+
+        if (upstream.statusCode !== 200) {
+          return res
+            .status(502)
+            .json({ message: `Upstream error: ${upstream.statusCode}` });
+        }
+
+        const safeFilename = filename.replace(/[^\w.\-]/g, "_");
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${safeFilename}"`,
+        );
+        if (upstream.headers["content-length"]) {
+          res.setHeader("Content-Length", upstream.headers["content-length"]);
+        }
+        upstream.pipe(res);
+      })
+      .on("error", () => {
+        if (!res.headersSent) {
+          res
+            .status(502)
+            .json({ message: "Failed to fetch file from Cloudinary" });
+        }
+      });
+  };
+
+  fetchAndStream(url);
+};
+
+// ─── Ratings ──────────────────────────────────────────────────────────────────
+
+const getRatings = async (req, res) => {
+  const result = await doctorService.getMyRatings({
+    userId: req.user.userId,
+    ...req.query,
+  });
+  res.status(result.status).json(result.data);
+};
+
+// ─── Public ───────────────────────────────────────────────────────────────────
+
+const listDoctors = async (req, res) => {
+  const result = await doctorService.getPublicDoctors(req.query);
+  res.status(result.status).json(result.data);
+};
+
+// ─── Meetings (video-call appointments) ──────────────────────────────────────
+
+/**
+ * GET /api/doctor/meetings
+ * Returns all video-call appointments for the logged-in doctor,
+ * enriched with patient profile data, ordered by date/time ascending.
+ */
+const getMeetings = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { status } = req.query;
+
+    const query = { doctor: userId, consultationType: "video" };
+    if (status) query.status = status;
+
+    let appointments = await Appointment.find(query)
+      .populate({ path: "patient", select: "email phone fullName" })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    const patientUserIds = appointments
+      .map((a) => a.patient?._id)
+      .filter(Boolean);
+    const patientProfiles = await Patient.find({
+      userId: { $in: patientUserIds },
+    })
+      .select("userId fullName patientId avatarUrl")
+      .lean();
+    const profileMap = {};
+    patientProfiles.forEach((p) => {
+      profileMap[p.userId.toString()] = p;
+    });
+
+    appointments = appointments.map((a) => ({
+      ...a,
+      patientProfile: profileMap[a.patient?._id?.toString()] || null,
+    }));
+
+    res.status(200).json({ meetings: appointments });
+  } catch (err) {
+    console.error("getMeetings error:", err);
+    res.status(500).json({ message: err.message || "Internal server error" });
+  }
+};
+
+// ─── Account deactivation ─────────────────────────────────────────────────────
+
+/**
+ * DELETE /api/doctor/account
+ * Soft-deletes the doctor profile and deactivates the User account.
+ * Medical records and appointments are preserved.
+ */
+const deactivateAccount = async (req, res) => {
+  const result = await doctorService.deactivateDoctorAccount({
+    userId: req.user.userId,
+  });
+  res.status(result.status).json(result.data);
+};
+
+/**
+ * GET /api/doctor/trigger-reminder
+ * Manually runs the meeting reminder check (verbose mode) and returns a report.
+ * Useful for testing without waiting for the cron tick.
+ */
+const triggerReminder = async (req, res) => {
+  try {
+    // Clear remindedSet is not accessible here; instruct user to restart if needed.
+    // Run verbose check — logs appear in server console.
+    await checkAndNotify({ verbose: true });
+
+    // Also return a list of upcoming video appointments so the doctor can see what exists.
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const upcomingVideo = await Appointment.find({
+      consultationType: "video",
+      status: { $in: ["confirmed", "pending"] },
+      date: { $gte: todayStart, $lte: todayEnd },
+    })
+      .populate("patient", "email")
+      .select("date time status consultationType");
+
+    res.json({
+      message: "Reminder check triggered. See server console for logs.",
+      todayVideoAppointments: upcomingVideo.map((a) => ({
+        id: a._id,
+        date: a.date,
+        time: a.time,
+        status: a.status,
+        patientEmail: a.patient?.email,
+        meetingUrl: getMeetingUrl(a._id.toString()),
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * POST /api/doctor/test-email
+ * Sends a test email to the currently logged-in doctor to verify SMTP config.
+ */
+const sendTestEmail = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const User = require("../models/User");
+    const user = await User.findById(userId).select("email");
+    const doctorProfile = await Doctor.findOne({ userId });
+
+    const to = user?.email;
+    if (!to)
+      return res
+        .status(400)
+        .json({ error: "No email address on your account." });
+
+    await sendEmail({
+      to,
+      subject: "✅ CareLine360 – SMTP Test Email",
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:24px;border-radius:12px;background:#f0fdfa;border:1px solid #99f6e4;">
+          <h2 style="color:#0d9488;">✅ SMTP is working!</h2>
+          <p>Hello, Dr. <strong>${doctorProfile?.fullName || to}</strong></p>
+          <p>This is a test email from <strong>CareLine360</strong> to confirm that email notifications are correctly configured.</p>
+          <p style="color:#6b7280;font-size:13px;">If you received this, your meeting reminder emails will work as expected.</p>
+        </div>
+      `,
+    });
+
+    res.json({ message: `Test email sent to ${to}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = {
+  createProfile,
+  getProfile,
+  updateProfile,
+  updateAvatar,
+  getDashboard,
+  getAnalytics,
+  getAvailability,
+  addSlots,
+  deleteSlot,
+  updateSlot,
+  getAppointments,
+  updateAppointment,
+  deleteAppointment,
+  getPatients,
+  getPatientDetail,
+  createRecord,
+  getRecordsByPatient,
+  updateRecord,
+  savePrescription,
+  getPrescriptions,
+  downloadPrescription,
+  getRatings,
+  listDoctors,
+  deactivateAccount,
+  getMeetings,
+  triggerReminder,
+  sendTestEmail,
+};

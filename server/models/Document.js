@@ -12,6 +12,11 @@ const documentSchema = new mongoose.Schema(
       default: "other",
     },
 
+    appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", default: null, index: true },
+    medicalRecordId: { type: mongoose.Schema.Types.ObjectId, ref: "MedicalRecord", default: null, index: true },
+    uploadedBy: { type: String, enum: ["PATIENT","DOCTOR"], default: "PATIENT" },
+    doctorUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
     fileName: { type: String, default: "" },
     fileUrl: { type: String, required: true }, // secure_url
     publicId: { type: String, required: true }, // public_id (with folder)

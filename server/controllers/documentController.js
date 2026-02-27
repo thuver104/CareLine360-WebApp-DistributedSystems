@@ -67,13 +67,28 @@ const uploadMyDocument = async (req, res) => {
 const listMyDocuments = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const { category , q } = req.query;
 
-    const docs = await Document.find({ userId, isDeleted: false }).sort({ createdAt: -1 });
+    const filter = { userId, isDeleted: false };
+
+    if (category && category !== "all") {
+      filter.category = category;
+    }
+
+    if (q && q.trim()) {
+      const kw = q.trim();
+      filter.$or = [
+        { title: { $regex: kw, $options: "i" } },
+        { fileName: { $regex: kw, $options: "i" } },
+      ];
+    }
+
+    const docs = await Document.find(filter).sort({ createdAt: -1 });
 
     return res.json({
       documents: docs.map((d) => ({
         ...d.toObject(),
-        viewUrl: buildViewUrl(d),
+        viewUrl: d.fileUrl,
       })),
     });
   } catch (e) {

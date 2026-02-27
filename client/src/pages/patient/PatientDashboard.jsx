@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api/axios";
 import { motion, AnimatePresence } from "framer-motion";
+import EmergencySOSButton from "../../components/EmergencySOSButton";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -378,6 +379,9 @@ export default function PatientDashboard() {
             </div>
           </motion.div>
         </div>
+      </div>
+      <div className="fmax-w-6xl mx-auto mt-8 flex justify-center">
+        <EmergencySOSButton />
       </div>
     </div>
   );

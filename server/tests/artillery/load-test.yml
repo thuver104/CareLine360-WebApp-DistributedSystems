@@ -1,0 +1,31 @@
+config:
+  target: "http://localhost:6000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 20
+      name: "Ramp up"
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "List appointments"
+    flow:
+      - get:
+          url: "/api/appointments"
+
+  - name: "Get users"
+    flow:
+      - get:
+          url: "/api/users"
+
+  - name: "Get doctors"
+    flow:
+      - get:
+          url: "/api/users?role=doctor"

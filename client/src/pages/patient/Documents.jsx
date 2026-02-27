@@ -33,7 +33,9 @@ export default function Documents() {
   const loadDocs = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/documents");
+      const res = await api.get("/documents", {
+        params: { category: filterCategory, q: search },
+      });
       setDocs(res.data?.documents || []);
     } catch (e) {
       setMsgType("error");
@@ -46,7 +48,7 @@ export default function Documents() {
   useEffect(() => {
     loadDocs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [search, filterCategory]);
 
   const upload = async () => {
     if (!file) {
