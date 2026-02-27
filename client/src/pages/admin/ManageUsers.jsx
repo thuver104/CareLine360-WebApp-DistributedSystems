@@ -210,10 +210,10 @@ const ManageUsers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-[var(--bg-subtle)] border-b border-[var(--border)]">
-                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">User Identity</th>
-                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Designation</th>
-                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">Status</th>
-                                <th className="py-5 px-8 text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] text-right">Actions</th>
+                                <th className="py-5 px-8 text-xs font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">User Identity</th>
+                                <th className="py-5 px-8 text-xs font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">Designation</th>
+                                <th className="py-5 px-8 text-xs font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">Status</th>
+                                <th className="py-5 px-8 text-xs font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--border)]">

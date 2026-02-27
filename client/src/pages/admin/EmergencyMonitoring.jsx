@@ -142,8 +142,8 @@ const EmergencyMonitoring = () => {
             </div>
 
             <div className="flex items-center gap-2 p-1.5 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl w-fit">
-                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'monitor' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`} onClick={() => setActiveTab('monitor')}>Monitor</button>
-                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'config' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`} onClick={() => setActiveTab('config')}>Config</button>
+                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'monitor' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} onClick={() => setActiveTab('monitor')}>Monitor</button>
+                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'config' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} onClick={() => setActiveTab('config')}>Config</button>
             </div>
 
             {activeTab === 'monitor' && (

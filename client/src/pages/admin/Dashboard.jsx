@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, AlertCircle, Clock, CheckCircle2, TrendingUp, Stethoscope, Activity, BarChart3 } from 'lucide-react';
+import { Users, AlertCircle, Clock, CheckCircle2, TrendingUp, Stethoscope, Activity } from 'lucide-react';
 import api from '../../api/axios';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -14,7 +14,7 @@ const StatCard = ({ title, value, icon, color, delay }) => (
             {icon}
         </div>
         <div>
-            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">{title}</p>
+            <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">{title}</p>
             <h3 className="text-2xl font-black text-[var(--text-primary)] mt-0.5 tracking-tight">{value}</h3>
         </div>
         <div className={`absolute bottom-0 left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-30 transition-opacity ${color.replace('bg-', 'text-')}`}></div>
@@ -146,10 +146,10 @@ const Dashboard = () => {
                 <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-2xl text-white shadow-lg shadow-orange-500/20">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-orange-100 font-medium text-sm">Avg Response</p>
-                            <h3 className="text-3xl font-bold mt-1">{stats?.avgResponseTime || 0}min</h3>
+                            <p className="text-orange-100 font-medium text-sm">Resolved Cases</p>
+                            <h3 className="text-3xl font-bold mt-1">{stats?.resolvedEmergencies || 0}</h3>
                         </div>
-                        <BarChart3 className="text-orange-200/50" size={32} />
+                        <CheckCircle2 className="text-orange-200/50" size={32} />
                     </div>
                 </div>
             </div>
@@ -206,16 +206,16 @@ const Dashboard = () => {
                         <div className="group flex items-center justify-between p-6 bg-[var(--bg-subtle)] rounded-2xl border border-[var(--border)] transition-all hover:border-blue-500/30">
                             <div className="flex items-center gap-4">
                                 <div className="p-3.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                                    <AlertCircle size={20} />
+                                    <Stethoscope size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-[var(--text-primary)]">Staffing Saturation</p>
-                                    <p className="text-xs text-[var(--text-muted)]">Active responder density</p>
+                                    <p className="text-sm font-bold text-[var(--text-primary)]">Doctor Coverage</p>
+                                    <p className="text-xs text-[var(--text-muted)]">Active doctors vs total patients</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-2xl font-black text-[var(--text-primary)]">{(stats.activeResponders / (stats.totalResponders || 1) * 100).toFixed(0)}%</p>
-                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">Operational</p>
+                                <p className="text-2xl font-black text-[var(--text-primary)]">{stats.totalDoctors || 0} / {stats.totalPatients || 0}</p>
+                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">Doctors / Patients</p>
                             </div>
                         </div>
 
