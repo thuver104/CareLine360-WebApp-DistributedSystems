@@ -106,8 +106,17 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", async (data) => {
     try {
-      const message = await chatService.sendMessage(data);
-      io.to(data.appointment).emit("newMessage", message);
+      const result = await chatService.sendMessage({
+        appointmentId: data.appointment,
+        senderId: data.sender,
+        senderRole: data.senderRole || socket.user?.role,
+        message: data.message,
+      });
+      if (result.status === 201) {
+        io.to(data.appointment).emit("newMessage", result.data.chat);
+      } else {
+        socket.emit("error", { message: result.data.message });
+      }
     } catch (err) {
       socket.emit("error", { message: "Failed to send message" });
     }

@@ -9,7 +9,7 @@ const authenticateSocket = (socket, next) => {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
     if (!token) return next(new Error("Authentication error: no token"));
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
     socket.user = decoded; // { id, role, ... }
     next();
   } catch (err) {
@@ -26,7 +26,7 @@ const registerSocketHandlers = (io) => {
   io.use(authenticateSocket);
 
   io.on("connection", (socket) => {
-    const { id: userId, role } = socket.user;
+    const { userId, role } = socket.user;
     console.log(
       `🔌 Socket connected: userId=${userId} role=${role} socketId=${socket.id}`,
     );

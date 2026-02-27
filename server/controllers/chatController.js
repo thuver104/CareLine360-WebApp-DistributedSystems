@@ -16,8 +16,8 @@ const getMessages = async (req, res) => {
     const appointment = await Appointment.findById(appointmentId);
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
 
-    const isDoctor = appointment.doctor.toString() === userId;
-    const isPatient = appointment.patient.toString() === userId;
+    const isDoctor = appointment.doctor.toString() === userId.toString();
+    const isPatient = appointment.patient.toString() === userId.toString();
     if (!isDoctor && !isPatient) return res.status(403).json({ message: "Access denied" });
 
     const skip = (Number(page) - 1) * Number(limit);

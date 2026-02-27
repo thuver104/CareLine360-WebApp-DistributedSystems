@@ -17,7 +17,7 @@ export default function ChatWindow({ messages, currentUserId }) {
         <ChatBubble
           key={msg._id}
           message={msg}
-          isOwn={msg.sender?._id === currentUserId}
+          isOwn={msg.senderId === currentUserId || msg.senderId?._id === currentUserId}
         />
       ))}
       <div ref={bottomRef} />

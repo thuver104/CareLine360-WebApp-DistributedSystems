@@ -1,49 +1,46 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { getMessages, markAsRead } from "../api/chatApi";
+import { getMessages } from "../api/chatApi";
 import useSocket from "../hooks/useSocket";
 import ChatWindow from "../components/chat/ChatWindow";
 import ChatInput from "../components/chat/ChatInput";
 
 export default function ChatPage() {
   const { id } = useParams();
-  const { currentUser } = useUser();
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
   const [messages, setMessages] = useState([]);
   const socket = useSocket();
 
   // Join room and fetch initial messages
   useEffect(() => {
+    if (!socket) return;
     socket.emit("joinRoom", id);
 
     getMessages(id)
       .then((res) => {
-        setMessages(res.data.data);
-        if (currentUser) {
-          markAsRead(id, currentUser._id).catch(() => {});
-        }
+        setMessages(res.data.messages || []);
       })
       .catch((err) => console.error("Failed to fetch messages:", err));
-  }, [id, currentUser, socket]);
+  }, [id, socket]);
 
   // Listen for new messages from socket
   useEffect(() => {
+    if (!socket) return;
     const handleNewMessage = (message) => {
       setMessages((prev) => [...prev, message]);
-      if (currentUser) {
-        markAsRead(id, currentUser._id).catch(() => {});
-      }
     };
 
     socket.on("newMessage", handleNewMessage);
     return () => socket.off("newMessage", handleNewMessage);
-  }, [id, currentUser, socket]);
+  }, [id, socket]);
 
   const handleSend = (text) => {
-    if (!currentUser) return;
+    if (!userId) return;
     socket.emit("sendMessage", {
       appointment: id,
-      sender: currentUser._id,
+      sender: userId,
+      senderRole: role,
       message: text,
     });
   };
@@ -61,8 +58,8 @@ export default function ChatPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 overflow-hidden flex flex-col" style={{ height: "calc(100vh - 220px)" }}>
-        <ChatWindow messages={messages} currentUserId={currentUser?._id} />
-        <ChatInput onSend={handleSend} disabled={!currentUser} />
+        <ChatWindow messages={messages} currentUserId={userId} />
+        <ChatInput onSend={handleSend} disabled={!userId} />
       </div>
     </div>
   );

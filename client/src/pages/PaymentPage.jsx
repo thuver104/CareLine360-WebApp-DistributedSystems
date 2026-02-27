@@ -15,6 +15,9 @@ export default function PaymentPage() {
   const toast = useToast();
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
 
   useEffect(() => {
     const fetch = async () => {
@@ -117,7 +120,7 @@ export default function PaymentPage() {
       <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 p-6">
         <div className="flex justify-between items-center mb-6">
           <span className="text-sm text-gray-600">Amount Due</span>
-          <span className="text-2xl font-bold text-gray-800">$50.00</span>
+          <span className="text-2xl font-bold text-gray-800">LKR 15,000.00</span>
         </div>
 
         <div className="space-y-4">
@@ -125,9 +128,11 @@ export default function PaymentPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
             <input
               type="text"
-              readOnly
-              value="4242 4242 4242 4242"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700"
+              placeholder="4242 4242 4242 4242"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              maxLength={19}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -136,18 +141,22 @@ export default function PaymentPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
               <input
                 type="text"
-                readOnly
-                value="12/28"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700"
+                placeholder="MM/YY"
+                value={expiry}
+                onChange={(e) => setExpiry(e.target.value)}
+                maxLength={5}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
               <input
                 type="text"
-                readOnly
-                value="123"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700"
+                placeholder="123"
+                value={cvv}
+                onChange={(e) => setCvv(e.target.value)}
+                maxLength={4}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -158,7 +167,7 @@ export default function PaymentPage() {
           disabled={processing}
           className="w-full mt-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-sm shadow-blue-200"
         >
-          {processing ? "Processing..." : "Pay $50.00"}
+          {processing ? "Processing..." : "Pay LKR 15,000.00"}
         </button>
 
         <p className="text-xs text-gray-400 text-center mt-3">

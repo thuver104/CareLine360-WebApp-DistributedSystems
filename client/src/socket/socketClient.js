@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:1111";
+const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:1111").replace(/\/api\/?$/, "");
 
 let socket = null;
 
@@ -9,7 +9,7 @@ let socket = null;
  * Safe to call multiple times — won't create duplicate connections.
  */
 export const connectSocket = () => {
-  if (socket?.connected) return socket;
+  if (socket) return socket;
 
   const token = localStorage.getItem("accessToken");
   if (!token) return null;
@@ -23,15 +23,15 @@ export const connectSocket = () => {
   });
 
   socket.on("connect", () => {
-    console.log("🔌 Socket connected:", socket.id);
+    console.log("Socket connected:", socket.id);
   });
 
   socket.on("connect_error", (err) => {
-    console.warn("⚠️ Socket connection error:", err.message);
+    console.warn("Socket connection error:", err.message);
   });
 
   socket.on("disconnect", (reason) => {
-    console.log("❌ Socket disconnected:", reason);
+    console.log("Socket disconnected:", reason);
   });
 
   return socket;
