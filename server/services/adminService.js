@@ -170,7 +170,9 @@ const toggleUserStatus = async (id) => {
         </div>
       `,
       smsText: `CareLine360: Your account has been ${statusLabel}. ${newStatus === "ACTIVE" ? "You can now log in." : "Contact support if you need help."}`,
-    }).catch((err) => console.error("Status change notification error:", err.message));
+    }).catch((err) =>
+      console.error("Status change notification error:", err.message),
+    );
   });
 
   return { status: 200, data: user };
@@ -348,7 +350,9 @@ const updateUserStatus = async ({ userId, status }) => {
           </div>
         `,
         smsText: `CareLine360: Your account has been ${sm.label}. ${sm.msg}`,
-      }).catch((err) => console.error("Status change notification error:", err.message));
+      }).catch((err) =>
+        console.error("Status change notification error:", err.message),
+      );
     });
   } catch (err) {
     console.error("Status update error:", err.message);
@@ -461,7 +465,9 @@ const createMeetingLink = async (appointmentId) => {
           html: meetingHtml(appt.patient.fullName || "Patient", "patient"),
           smsText: meetingSms(appt.patient.fullName || "Patient"),
         },
-      ).catch((err) => console.error("Patient meeting notification error:", err.message));
+      ).catch((err) =>
+        console.error("Patient meeting notification error:", err.message),
+      );
     }
 
     // Notify doctor
@@ -477,7 +483,9 @@ const createMeetingLink = async (appointmentId) => {
           html: meetingHtml(appt.doctor.fullName || "Doctor", "doctor"),
           smsText: meetingSms(appt.doctor.fullName || "Doctor"),
         },
-      ).catch((err) => console.error("Doctor meeting notification error:", err.message));
+      ).catch((err) =>
+        console.error("Doctor meeting notification error:", err.message),
+      );
     }
   });
 

@@ -202,12 +202,9 @@ const ReportGeneration = () => {
         doc.setTextColor(160, 160, 160);
         doc.setFont("helvetica", "normal");
         doc.text("CareLine360 Automated Report - Confidential", margin, h - 8);
-        doc.text(
-          `Page ${doc.internal.getNumberOfPages()}`,
-          w - margin,
-          h - 8,
-          { align: "right" },
-        );
+        doc.text(`Page ${doc.internal.getNumberOfPages()}`, w - margin, h - 8, {
+          align: "right",
+        });
       };
 
       const sectionTitle = (title) => {
@@ -251,11 +248,7 @@ const ReportGeneration = () => {
         pdf.setFont("helvetica", "bold");
         pdf.setTextColor(100, 116, 139);
         headers.forEach((h, i) => {
-          pdf.text(
-            h.toUpperCase(),
-            margin + i * colW + 3,
-            y + rowH / 2 + 1,
-          );
+          pdf.text(h.toUpperCase(), margin + i * colW + 3, y + rowH / 2 + 1);
         });
         y += rowH;
         pdf.setDrawColor(226, 232, 240);
@@ -290,9 +283,14 @@ const ReportGeneration = () => {
           pdf.setFontSize(6);
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(100, 116, 139);
-          pdf.text(String(label).toUpperCase().substring(0, 20), cx + cardW / 2, y + 5, {
-            align: "center",
-          });
+          pdf.text(
+            String(label).toUpperCase().substring(0, 20),
+            cx + cardW / 2,
+            y + 5,
+            {
+              align: "center",
+            },
+          );
           pdf.setFontSize(12);
           pdf.setFont("helvetica", "bold");
           pdf.setTextColor(30, 41, 59);
@@ -335,7 +333,9 @@ const ReportGeneration = () => {
           ["Completion Rate", s.completionRate],
           ["Cancellation Rate", s.cancellationRate],
           ["Period Days", d.period?.days],
-        ].forEach(([l, v], i) => statCard(l, v, margin + i * (cardW + 4), cardW));
+        ].forEach(([l, v], i) =>
+          statCard(l, v, margin + i * (cardW + 4), cardW),
+        );
         y += 22;
 
         if (s.statusBreakdown) {
@@ -348,15 +348,20 @@ const ReportGeneration = () => {
         }
         if (d.records?.length > 0) {
           sectionTitle(`Appointment Records (${d.records.length})`);
-          const tableRows = d.records.slice(0, 100).map((r) => [
-            r.date ? new Date(r.date).toLocaleDateString() : "",
-            r.time || "",
-            r.patient || "",
-            r.doctor || "",
-            r.type || "",
-            r.status || "",
-          ]);
-          drawTable(["Date", "Time", "Patient", "Doctor", "Type", "Status"], tableRows);
+          const tableRows = d.records
+            .slice(0, 100)
+            .map((r) => [
+              r.date ? new Date(r.date).toLocaleDateString() : "",
+              r.time || "",
+              r.patient || "",
+              r.doctor || "",
+              r.type || "",
+              r.status || "",
+            ]);
+          drawTable(
+            ["Date", "Time", "Patient", "Doctor", "Type", "Status"],
+            tableRows,
+          );
         }
       }
 
@@ -369,7 +374,9 @@ const ReportGeneration = () => {
           ["Avg Response Time", `${s.avgResponseTimeMinutes ?? "N/A"} min`],
           ["Resolution Rate", s.resolutionRate],
           ["Period Days", d.period?.days],
-        ].forEach(([l, v], i) => statCard(l, v, margin + i * (cardW + 4), cardW));
+        ].forEach(([l, v], i) =>
+          statCard(l, v, margin + i * (cardW + 4), cardW),
+        );
         y += 22;
 
         if (s.statusBreakdown) {
@@ -393,7 +400,9 @@ const ReportGeneration = () => {
         pdf.setFontSize(20);
         pdf.setFont("helvetica", "bold");
         pdf.setTextColor(15, 118, 110);
-        pdf.text(String(s.totalPatients ?? 0), pw / 2, y + 10, { align: "center" });
+        pdf.text(String(s.totalPatients ?? 0), pw / 2, y + 10, {
+          align: "center",
+        });
         pdf.setFontSize(7);
         pdf.setFont("helvetica", "normal");
         pdf.setTextColor(13, 148, 136);
@@ -429,7 +438,9 @@ const ReportGeneration = () => {
           ["Total Doctors", s.totalDoctors],
           ["Avg Rating", `${s.avgRating ?? "N/A"} / 5`],
           ["Avg Consultation Fee", `Rs. ${s.avgConsultationFee ?? "N/A"}`],
-        ].forEach(([l, v], i) => statCard(l, v, margin + i * (cardW + 4), cardW));
+        ].forEach(([l, v], i) =>
+          statCard(l, v, margin + i * (cardW + 4), cardW),
+        );
         y += 22;
 
         if (s.specializationDistribution) {
