@@ -70,9 +70,9 @@ export default function ViewAppointments() {
   if (!currentUserId) return <LoadingSpinner />;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">My Appointments</h1>
-      <p className="text-sm text-gray-400 mb-6">View and manage your upcoming appointments.</p>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-lg font-bold text-gray-900 mb-0.5">My Appointments</h1>
+      <p className="text-xs text-gray-400 mb-4">View and manage your upcoming appointments.</p>
 
       <AppointmentFilters filters={filters} onChange={setFilters} />
 
@@ -81,7 +81,7 @@ export default function ViewAppointments() {
       ) : appointments.length === 0 ? (
         <EmptyState message="No appointments found" />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           {appointments.map((apt) => (
             <div key={apt._id}>
               <AppointmentCard
@@ -91,20 +91,20 @@ export default function ViewAppointments() {
                 onCancel={setCancelTarget}
               />
               {currentUserRole === "doctor" && apt.status === "pending" && (
-                <div className="mt-1 ml-4">
+                <div className="mt-1 ml-3">
                   <button
                     onClick={() => handleConfirm(apt)}
-                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+                    className="text-[11px] px-2.5 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
                   >
                     Confirm
                   </button>
                 </div>
               )}
               {currentUserRole === "doctor" && apt.status === "confirmed" && (
-                <div className="mt-1 ml-4">
+                <div className="mt-1 ml-3">
                   <button
                     onClick={() => handleComplete(apt)}
-                    className="text-xs px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium shadow-sm"
+                    className="text-[11px] px-2.5 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
                   >
                     Mark Complete
                   </button>

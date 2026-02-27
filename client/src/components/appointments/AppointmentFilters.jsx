@@ -1,7 +1,7 @@
 const fieldBase =
-  "w-full h-10 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 " +
+  "w-full h-8 rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-xs text-gray-800 " +
   "placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 " +
-  "transition-shadow duration-150 shadow-sm hover:border-gray-300";
+  "transition-shadow duration-150";
 
 export default function AppointmentFilters({ filters, onChange }) {
   const handleChange = (e) => {
@@ -9,11 +9,10 @@ export default function AppointmentFilters({ filters, onChange }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 px-5 py-4 mb-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {/* Status */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+    <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 px-4 py-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="flex flex-col gap-0.5">
+          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
             Status
           </label>
           <select
@@ -28,10 +27,9 @@ export default function AppointmentFilters({ filters, onChange }) {
           </select>
         </div>
 
-        {/* From Date */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            From Date
+        <div className="flex flex-col gap-0.5">
+          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+            From
           </label>
           <input
             type="date"
@@ -42,10 +40,9 @@ export default function AppointmentFilters({ filters, onChange }) {
           />
         </div>
 
-        {/* To Date */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-            To Date
+        <div className="flex flex-col gap-0.5">
+          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+            To
           </label>
           <input
             type="date"
@@ -56,9 +53,8 @@ export default function AppointmentFilters({ filters, onChange }) {
           />
         </div>
 
-        {/* Sort */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div className="flex flex-col gap-0.5">
+          <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
             Sort
           </label>
           <select

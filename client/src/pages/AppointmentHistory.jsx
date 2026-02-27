@@ -56,16 +56,16 @@ export default function AppointmentHistory() {
   if (!currentUserId) return <LoadingSpinner />;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Appointment History</h1>
-      <p className="text-sm text-gray-400 mb-6">Review your past consultations.</p>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-lg font-bold text-gray-900 mb-0.5">Appointment History</h1>
+      <p className="text-xs text-gray-400 mb-4">Review your past consultations.</p>
 
       {loading ? (
         <LoadingSpinner />
       ) : appointments.length === 0 ? (
         <EmptyState message="No past appointments found" />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           {appointments.map((apt) => (
             <AppointmentCard key={apt._id} appointment={apt} currentUserRole={currentUserRole} />
           ))}
