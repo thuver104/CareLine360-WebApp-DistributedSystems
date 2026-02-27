@@ -7,13 +7,17 @@ export default function Login() {
   const nav = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // ✅ NEW
+  const [showPassword, setShowPassword] = useState(false);
   const [msg, setMsg] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ optional
+  const [loading, setLoading] = useState(false);
+
+  const [canReactivate, setCanReactivate] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
+    setCanReactivate(false);
 
     try {
       setLoading(true);
@@ -32,10 +36,46 @@ export default function Login() {
       else if (role === "responder") nav("/admin/dashboard/emergencies");
       else nav("/");
     } catch (err) {
-      const apiMsg = err.response?.data?.message;
-      setMsg(apiMsg || "Login failed");
+      const apiMsg = err.response?.data?.message || "Login failed";
+      setMsg(apiMsg);
+
+      // show reactivate button when backend says account inactive
+      const m = apiMsg.toLowerCase();
+      if (
+        m.includes("deactiv") ||
+        m.includes("inactive") ||
+        m.includes("suspend") ||
+        m.includes("disabled")
+      ) {
+        setCanReactivate(true);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReactivate = async () => {
+    setMsg("");
+
+    if (!identifier.trim() || !password) {
+      setMsg("Enter email/phone and password to reactivate.");
+      return;
+    }
+
+    try {
+      setReactivating(true);
+
+      const res = await api.post("/auth/reactivate", {
+        identifier: identifier.trim(),
+        password,
+      });
+
+      setMsg(res.data?.message || "Account reactivated. Now login again.");
+      setCanReactivate(false);
+    } catch (err) {
+      setMsg(err.response?.data?.message || "Reactivate failed");
+    } finally {
+      setReactivating(false);
     }
   };
 
@@ -53,7 +93,6 @@ export default function Login() {
           onChange={(e) => setIdentifier(e.target.value)}
         />
 
-        {/* ✅ PASSWORD WITH SHOW/HIDE */}
         <div className="relative">
           <input
             className="w-full border p-2 rounded pr-16"
@@ -78,13 +117,25 @@ export default function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* ✅ Reactivate button (only shows if login says deactivated) */}
+        {canReactivate && (
+          <button
+            type="button"
+            onClick={handleReactivate}
+            disabled={reactivating}
+            className="w-full bg-gray-600 text-white p-2 rounded disabled:opacity-60 hover:bg-gray-800"
+          >
+            {reactivating ? "Reactivating..." : "Reactivate Account"}
+          </button>
+        )}
       </form>
 
       <div className="mt-4 text-sm flex justify-between">
-        <Link to="/register" className="underline">
+        <Link to="/register" className="hover:underline">
           Create account
         </Link>
-        <Link to="/forgot-password" className="underline">
+        <Link to="/forgot-password" className="hover:underline">
           Forgot password?
         </Link>
       </div>
