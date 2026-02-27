@@ -1,10 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
 ﻿@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════
-   CareLine360 – Unified Design System
-   Dark/Light mode via html.dark class (ThemeContext)
+   CareLine360 – Doctor Dashboard
+   Design System: Glassmorphism + Transparent Layering
    Google Font: Outfit
 ════════════════════════════════════════════════════════ */
 
@@ -15,17 +14,10 @@
   --color-cl-cyan: #06b6d4;
   --color-cl-light: #5eead4;
 
-  --color-primary: #0077b6;
-  --color-secondary: #00b4d8;
-  --color-accent: #90e0ef;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
-  --color-purple: #8b5cf6;
-
-  --shadow-glass: 0 4px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  --shadow-glass-dark: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-glass:
+    0 4px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --shadow-glass-dark:
+    0 4px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-teal: 0 8px 32px rgba(13, 148, 136, 0.35);
 }
 
@@ -33,7 +25,6 @@
    BASE LAYER
 ───────────────────────────────────────────── */
 @layer base {
-
   /* CRITICAL: full-height layout foundation */
   html,
   body,
@@ -58,91 +49,12 @@
     color-scheme: dark;
   }
 
-  /* ── Light mode CSS variables ── */
-  :root {
-    /* Surfaces */
-    --bg-page: #f3f4f6;
-    /* Soft cool gray */
-    --bg-surface: #ffffff;
-    --bg-subtle: #f9fafb;
-    --bg-muted: #e5e7eb;
-
-    /* Text */
-    --text-primary: #111827;
-    /* Near black */
-    --text-secondary: #4b5563;
-    /* Medium gray */
-    --text-muted: #9ca3af;
-
-    /* Borders */
-    --border: #e5e7eb;
-    --border-strong: #d1d5db;
-
-    /* Header */
-    --header-bg: rgba(255, 255, 255, 0.85);
-    --header-border: rgba(0, 0, 0, 0.05);
-    --header-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-
-    /* Glass */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --glass-shadow: rgba(0, 0, 0, 0.05);
-
-    /* Actions */
-    --primary: #0d9488;
-    --secondary: #0891b2;
-    --success: #059669;
-    --warning: #d97706;
-    --danger: #dc2626;
-    --info: #2563eb;
-    --purple: #7c3aed;
-  }
-
-  /* ── Dark mode CSS variables ── */
-  html.dark {
-    /* Surfaces */
-    --bg-page: #030712;
-    /* Deepest blue-black */
-    --bg-surface: #0f172a;
-    /* Navy slate */
-    --bg-subtle: #1e293b;
-    --bg-muted: #334155;
-
-    /* Text */
-    --text-primary: #f9fafb;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-
-    /* Borders */
-    --border: #1e293b;
-    --border-strong: #334155;
-
-    /* Header */
-    --header-bg: rgba(3, 7, 18, 0.85);
-    --header-border: rgba(255, 255, 255, 0.08);
-    --header-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-
-    /* Glass */
-    --glass-bg: rgba(15, 23, 42, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-shadow: rgba(0, 0, 0, 0.3);
-
-    /* Actions (Dark Adjusted) */
-    --primary: #14b8a6;
-    --secondary: #06b6d4;
-    --success: #10b981;
-    --warning: #fbbf24;
-    --danger: #f87171;
-    --info: #60a5fa;
-    --purple: #a78bfa;
-  }
-
   body {
-    background-color: var(--bg-page);
-    color: var(--text-primary);
-    font-family: "Outfit", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    color: #0f172a;
+  }
+
+  html.dark body {
+    color: #f1f5f9;
   }
 
   button:focus-visible {
@@ -151,10 +63,6 @@
     border-radius: 8px;
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
   /* Scrollbar – main content area — hidden without clipping fixed children.
      overflow-x must NOT be set to hidden here because that creates a new
      stacking context which clips position:fixed modals/dropdowns.
@@ -168,50 +76,50 @@
     scrollbar-width: none;
   }
 
-  ::-webkit-scrollbar-track {
+  main::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: rgba(13, 148, 136, 0.3);
+  main::-webkit-scrollbar-thumb {
+    background: rgba(13, 148, 136, 0.32);
     border-radius: 10px;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
+  main::-webkit-scrollbar-thumb:hover {
     background: rgba(13, 148, 136, 0.55);
+  }
+
+  /* CSS variables — LIGHT MODE */
+  :root {
+    --glass-bg: #ffffff;
+    --glass-border: #e2e8f0;
+    --glass-shadow: rgba(0, 0, 0, 0.05);
+    --glass-inset: transparent;
+    --sidebar-bg: #ffffff;
+    --topbar-bg: #ffffff;
+    --page-from: #f8fafc;
+    --page-to: #f1f5f9;
+  }
+
+  /* CSS variables — DARK MODE */
+  html.dark {
+    --glass-bg: #0f172a;
+    --glass-border: #1e293b;
+    --glass-shadow: rgba(0, 0, 0, 0.3);
+    --glass-inset: transparent;
+    --sidebar-bg: #020617;
+    --topbar-bg: #020617;
+    --page-from: #020617;
+    --page-to: #0f172a;
   }
 }
 
 /* ─────────────────────────────────────────────
-   COMPONENT LAYER
+   COMPONENT LAYER — all custom utility classes
 ───────────────────────────────────────────── */
 @layer components {
   /* ══════════════════════════════
-     UNIVERSAL HEADER
-  ══════════════════════════════ */
-  .cl-header,
-  .cl-admin-header {
-    background: var(--header-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--header-border);
-    box-shadow: var(--header-shadow);
-    transition: background 0.3s ease, border-color 0.3s ease;
-  }
-
-  .cl-header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
-    height: 60px;
-  }
-
-  /* ══════════════════════════════
-     PAGE SHELL (legacy)
+     PAGE SHELL
   ══════════════════════════════ */
   .cl-page {
     display: flex;
@@ -219,7 +127,7 @@
     width: 100%;
     overflow: hidden;
     position: relative;
-    background: var(--bg-page);
+    background: var(--page-from);
   }
 
   /* ══════════════════════════════
@@ -237,6 +145,7 @@
     min-width: 0; /* prevents flex overflow */
     overflow: hidden;
     min-width: 0;
+    /* prevents flex overflow */
     position: relative;
     z-index: 1;
   }
@@ -252,7 +161,7 @@
   }
 
   /* ══════════════════════════════
-     SIDEBAR (legacy)
+     SIDEBAR
   ══════════════════════════════ */
   .cl-sidebar {
     flex-shrink: 0;
@@ -263,20 +172,22 @@
     position: relative;
     z-index: 50;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--bg-surface);
-    border-right: 1px solid var(--border);
+
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--glass-border);
     box-shadow: 2px 0 12px var(--glass-shadow);
   }
 
   /* ══════════════════════════════
-     TOPBAR (legacy)
+     TOPBAR
   ══════════════════════════════ */
   .cl-topbar {
     flex-shrink: 0;
     position: relative;
     z-index: 40;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
+
+    background: var(--topbar-bg);
+    border-bottom: 1px solid var(--glass-border);
     box-shadow: 0 1px 8px var(--glass-shadow);
   }
 
@@ -286,25 +197,29 @@
   .glass-card {
     position: relative;
     z-index: 1;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     box-shadow: 0 4px 12px var(--glass-shadow);
-    border-radius: 1rem;
   }
 
+  /* ══════════════════════════════
+     TEAL ACCENT GLASS (profile card)
+  ══════════════════════════════ */
   .glass-card-teal {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: var(--sidebar-bg);
+    border: 1px solid var(--glass-border);
   }
 
   /* ══════════════════════════════
      GLASS BUTTON
   ══════════════════════════════ */
   .glass-btn {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     box-shadow: 0 1px 3px var(--glass-shadow);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
 
   .glass-btn:hover {
@@ -317,13 +232,18 @@
   }
 
   /* ══════════════════════════════
-     GLASS INPUT
+     GLASS INPUT / SEARCH BAR
   ══════════════════════════════ */
   .glass-input {
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.58);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+
+  html.dark .glass-input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   /* ══════════════════════════════
@@ -333,11 +253,15 @@
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, #0d9488 0%, #0891b2 55%, #06b6d4 100%);
-    box-shadow: 0 8px 32px rgba(13, 148, 136, 0.4), 0 2px 8px rgba(0, 0, 0, 0.12);
+    box-shadow:
+      0 8px 32px rgba(13, 148, 136, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.12);
   }
 
   html.dark .welcome-banner {
-    box-shadow: 0 8px 32px rgba(13, 148, 136, 0.3), 0 2px 8px rgba(0, 0, 0, 0.5);
+    box-shadow:
+      0 8px 32px rgba(13, 148, 136, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.5);
   }
 
   /* ══════════════════════════════
@@ -352,7 +276,6 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(13, 148, 136, 0.06) 0%, transparent 60%);
     background: linear-gradient(
       135deg,
       rgba(13, 148, 136, 0.06) 0%,
@@ -365,31 +288,6 @@
 
   .record-card:hover::before {
     opacity: 1;
-  }
-
-  /* ══════════════════════════════
-     SIDEBAR LINK (legacy admin sidebar)
-  ══════════════════════════════ */
-  .sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    transition: all 0.2s ease;
-    color: rgba(255, 255, 255, 0.75);
-  }
-
-  .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-  }
-
-  .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    font-weight: 700;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   /* ══════════════════════════════
@@ -578,6 +476,7 @@
     scrollbar-width: none;
   }
 
+  /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -588,12 +487,20 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--border-strong);
+    background: #e2e8f0;
     border-radius: 10px;
   }
 
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+    background: #cbd5e1;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #475569;
   }
 
   .line-clamp-2 {
@@ -604,11 +511,6 @@
   }
 
   /* ══════════════════════════════
-     PAGE TRANSITIONS
-  ══════════════════════════════ */
-  .page-transition-enter {
-    opacity: 0;
-    transform: translateY(10px);
      DATE INPUT — match dark/light system theme
      Ensures the native browser calendar popup inherits the correct colour scheme.
      We also hide the duplicate native picker icon because we render our own
@@ -698,10 +600,6 @@
     background: rgba(45, 212, 191, 0.08);
   }
 
-  /* ══════════════════════════════
-     LEAFLET FIX
-  ══════════════════════════════ */
-  .leaflet-container {
   .availability-calendar
     .cal-day:not(.selected):not(.past):not(:disabled):hover {
     background: rgba(0, 0, 0, 0.06);

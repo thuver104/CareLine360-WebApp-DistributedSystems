@@ -10,9 +10,9 @@ const {
   deleteUser,
   getStats,
   getAppointments,
-  createMeetingLink,
-  patchUpdateUser
-} = require("../controllers/adminController"); const { generateReportController } = require("../controllers/reportController");
+  createMeetingLink
+} = require("../controllers/adminController");
+
 const router = express.Router();
 
 // admin-only for most routes
@@ -28,15 +28,11 @@ router.get("/emergencies/:id/nearest-hospital", roleMiddleware(["admin", "respon
 // All other admin routes remain admin-only
 router.get("/doctors/pending", roleMiddleware(["admin"]), getPendingDoctors);
 router.get("/users", roleMiddleware(["admin"]), getAllUsers);
-router.patch("/users/:id", roleMiddleware(["admin"]), patchUpdateUser);
 router.get("/appointments", roleMiddleware(["admin"]), getAppointments);
 router.post("/appointments/:id/meeting", roleMiddleware(["admin"]), createMeetingLink);
 router.patch("/users/:id/toggle-status", roleMiddleware(["admin"]), toggleUserStatus);
 router.delete("/users/:id", roleMiddleware(["admin"]), deleteUser);
 router.get("/stats", roleMiddleware(["admin"]), getStats);
-
-// Report generation routes
-router.post("/reports/generate", roleMiddleware(["admin"]), generateReportController);
 
 router.patch(
   "/users/:id/status",

@@ -16,10 +16,10 @@ const safeFormatDate = (dateStr, formatStr) => {
 
 const StatusBadge = ({ status }) => {
     const styles = {
-        PENDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-        DISPATCHED: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-        ARRIVED: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',
-        RESOLVED: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        PENDING: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30',
+        DISPATCHED: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30',
+        ARRIVED: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-900/30',
+        RESOLVED: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30',
     };
 
     return (
@@ -130,36 +130,36 @@ const EmergencyMonitoring = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-left">
                 <div>
-                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Emergency Dispatch Hub</h2>
-                    <p className="text-[var(--text-secondary)] font-medium mt-1">Real-time situational awareness and responder orchestration</p>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Emergency Dispatch Hub</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium">Real-time situational awareness and responder orchestration</p>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-600 rounded-xl border border-emerald-500/20 shadow-sm">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Feed Active</span>
+                    <span className="text-xs font-bold uppercase tracking-widest">Live Feed Active</span>
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 p-1.5 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl w-fit">
-                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'monitor' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} onClick={() => setActiveTab('monitor')}>Monitor</button>
-                <button className={`px-6 py-2 rounded-xl transition-all duration-300 text-xs font-black uppercase tracking-widest ${activeTab === 'config' ? 'bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md border border-[var(--border)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} onClick={() => setActiveTab('config')}>Config</button>
+            <div className="flex items-center gap-4">
+                <div className={`px-4 py-2 rounded-lg cursor-pointer ${activeTab === 'monitor' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`} onClick={() => setActiveTab('monitor')}>Monitor</div>
+                <div className={`px-4 py-2 rounded-lg cursor-pointer ${activeTab === 'config' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`} onClick={() => setActiveTab('config')}>Config</div>
             </div>
 
             {activeTab === 'monitor' && (
-                <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm overflow-hidden text-left">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-[var(--bg-subtle)] border-b border-[var(--border)] text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.25em]">
+                            <thead className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
                                 <tr>
-                                    <th className="py-5 px-8">Case Subject</th>
-                                    <th className="py-5 px-8">Registry Timestamp</th>
-                                    <th className="py-5 px-8">Condition</th>
-                                    <th className="py-5 px-8">Spatial Node</th>
-                                    <th className="py-5 px-8 text-right">Dispatch Actions</th>
+                                    <th className="py-4 px-6">Case Subject</th>
+                                    <th className="py-4 px-6">Registry Timestamp</th>
+                                    <th className="py-4 px-6">Condition</th>
+                                    <th className="py-4 px-6">Spatial Node</th>
+                                    <th className="py-4 px-6 text-right">Dispatch Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[var(--border)]">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {emergencies.length === 0 ? (
                                     <tr>
                                         <td colSpan="5" className="py-20 text-center text-slate-500 italic font-medium">No active or historical emergency cases discovered.</td>
@@ -167,16 +167,16 @@ const EmergencyMonitoring = () => {
                                 ) : emergencies.map((e) => (
                                     <tr
                                         key={e._id}
-                                        className="hover:bg-[var(--bg-subtle)] transition-all duration-300 cursor-pointer"
+                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
                                         onClick={() => openModal(e)}
                                     >
                                         <td className="py-5 px-6">
-                                            <div className="font-bold text-[var(--text-primary)] text-base">{e.patient?.fullName || 'Identity Pending'}</div>
-                                            <div className="text-xs text-[var(--text-secondary)] font-medium max-w-[280px] truncate italic">"{e.description}"</div>
+                                            <div className="font-bold text-slate-900 dark:text-white text-base">{e.patient?.fullName || 'Identity Pending'}</div>
+                                            <div className="text-xs text-slate-500 dark:text-slate-500 font-medium max-w-[280px] truncate italic">"{e.description}"</div>
                                         </td>
                                         <td className="py-5 px-6">
-                                            <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)]">
-                                                <Calendar size={14} className="text-teal-500" />
+                                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                                <Calendar size={14} className="text-slate-400" />
                                                 {safeFormatDate(e.triggeredAt, 'HH:mm — MMM dd')}
                                             </div>
                                         </td>
@@ -184,7 +184,7 @@ const EmergencyMonitoring = () => {
                                             <StatusBadge status={e.status} />
                                         </td>
                                         <td className="py-5 px-6">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-secondary)] group">
+                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 group">
                                                 <MapPin size={14} className="text-teal-500" />
                                                 <span className="font-mono tracking-tighter">{e.latitude?.toFixed(5) || 0}, {e.longitude?.toFixed(5) || 0}</span>
                                             </div>
@@ -193,7 +193,7 @@ const EmergencyMonitoring = () => {
                                             <select
                                                 value={e.status}
                                                 onChange={(event) => updateStatus(e._id, event.target.value)}
-                                                className="text-[11px] font-black border border-[var(--border)] rounded-xl px-3 py-1.5 outline-none bg-[var(--bg-surface)] text-[var(--text-primary)] focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer shadow-sm"
+                                                className="text-[11px] font-bold border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 outline-none bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer"
                                             >
                                                 <option value="PENDING">SET PENDING</option>
                                                 <option value="DISPATCHED">DISPATCH HELP</option>
@@ -210,123 +210,49 @@ const EmergencyMonitoring = () => {
             )}
 
             {activeTab === 'config' && (
-                <div className="space-y-8 text-left">
-                    {/* Add Hospital Form */}
-                    <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm p-8">
-                        <div className="mb-6 flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-teal-500 rounded-full"></div>
-                            <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-[0.2em]">Register New Hospital</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left p-6">
+                    <h3 className="text-lg font-bold mb-4">Config — Manage Hospitals</h3>
+                    <form onSubmit={handleAddHospital} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <input value={newHospital.name} onChange={(e) => handleNewHospitalChange('name', e.target.value)} placeholder="Hospital name" className="p-3 border rounded-lg" />
+                        <input value={newHospital.contact} onChange={(e) => handleNewHospitalChange('contact', e.target.value)} placeholder="Contact (phone/email)" className="p-3 border rounded-lg" />
+                        <input value={newHospital.address} onChange={(e) => handleNewHospitalChange('address', e.target.value)} placeholder="Address" className="p-3 border rounded-lg md:col-span-2" />
+                        <input value={newHospital.lat} onChange={(e) => handleNewHospitalChange('lat', e.target.value)} placeholder="Latitude" className="p-3 border rounded-lg" />
+                        <input value={newHospital.lng} onChange={(e) => handleNewHospitalChange('lng', e.target.value)} placeholder="Longitude" className="p-3 border rounded-lg" />
+                        <div className="flex items-center gap-2 md:col-span-2">
+                            <button type="button" onClick={handleFetchLocation} className="px-4 py-2 rounded-xl bg-teal-600 text-white">Use Current Location</button>
+                            <button type="submit" className="px-4 py-2 rounded-xl bg-emerald-600 text-white">Add Hospital</button>
+                            <button type="button" onClick={() => { setNewHospital({ name: '', address: '', contact: '', lat: '', lng: '' }); }} className="px-4 py-2 rounded-xl border">Reset</button>
                         </div>
-                        <form onSubmit={handleAddHospital} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hospital Name</label>
-                                <input
-                                    value={newHospital.name}
-                                    onChange={(e) => handleNewHospitalChange('name', e.target.value)}
-                                    placeholder="e.g. City General Hospital"
-                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Contact (Phone / Email)</label>
-                                <input
-                                    value={newHospital.contact}
-                                    onChange={(e) => handleNewHospitalChange('contact', e.target.value)}
-                                    placeholder="e.g. +94 11 234 5678"
-                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1 md:col-span-2">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Address</label>
-                                <input
-                                    value={newHospital.address}
-                                    onChange={(e) => handleNewHospitalChange('address', e.target.value)}
-                                    placeholder="e.g. 25 Kynsey Road, Colombo 08"
-                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Latitude</label>
-                                <input
-                                    value={newHospital.lat}
-                                    onChange={(e) => handleNewHospitalChange('lat', e.target.value)}
-                                    placeholder="e.g. 6.92714"
-                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Longitude</label>
-                                <input
-                                    value={newHospital.lng}
-                                    onChange={(e) => handleNewHospitalChange('lng', e.target.value)}
-                                    placeholder="e.g. 79.86120"
-                                    className="p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all"
-                                />
-                            </div>
-                            <div className="flex items-center gap-3 md:col-span-2 pt-1">
-                                <button
-                                    type="button"
-                                    onClick={handleFetchLocation}
-                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold uppercase tracking-widest transition-all active:scale-95 shadow-sm shadow-teal-500/20"
-                                >
-                                    <MapPin size={14} /> Use Current Location
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-widest transition-all active:scale-95 shadow-sm shadow-emerald-500/20"
-                                >
-                                    Add Hospital
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setNewHospital({ name: '', address: '', contact: '', lat: '', lng: '' })}
-                                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
-                                >
-                                    Reset
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    </form>
 
-                    {/* Hospital List */}
-                    <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-3xl shadow-sm p-8">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-6 bg-teal-500 rounded-full"></div>
-                                <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-[0.2em]">Registered Hospitals</h3>
-                            </div>
-                        </div>
+                    <div>
+                        <h4 className="text-sm font-bold mb-2">Saved Hospitals (MongoDB)</h4>
                         {hospitals.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-14 gap-3 text-slate-400">
-                                <MapPin size={32} className="opacity-30" />
-                                <p className="text-sm font-medium italic">No hospitals registered in the network.</p>
-                            </div>
+                            <p className="text-slate-500 italic">No hospitals saved in database.</p>
                         ) : (
                             <ul className="space-y-3">
                                 {hospitals.map(h => (
-                                    <li key={h._id} className="p-4 bg-[var(--bg-subtle)] border border-[var(--border)] rounded-2xl flex justify-between items-center transition-all hover:shadow-md">
+                                    <li key={h._id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl flex justify-between items-center transition-all hover:shadow-md">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center font-bold text-lg shrink-0 border border-teal-500/20">
+                                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center font-bold text-lg">
                                                 🏥
                                             </div>
                                             <div>
-                                                <div className="font-black text-[var(--text-primary)] leading-tight">{h.name}</div>
+                                                <div className="font-bold text-slate-900 dark:text-white leading-tight">{h.name}</div>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-[var(--text-secondary)]">
+                                                    <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
                                                         <MapPin size={10} className="text-teal-500" /> {h.address || 'No Address Listed'}
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-[var(--text-secondary)]">
+                                                    <div className="flex items-center gap-1 text-[10px] font-medium text-slate-500">
                                                         <Phone size={10} className="text-teal-500" /> {h.contact || 'No Contact Listed'}
                                                     </div>
                                                 </div>
-                                                <div className="text-[9px] font-mono font-black text-teal-600/60 dark:text-teal-500/60 mt-1 uppercase tracking-tighter">
-                                                    Node: {h.lat?.toFixed ? h.lat.toFixed(5) : h.lat}, {h.lng?.toFixed ? h.lng.toFixed(5) : h.lng}
-                                                </div>
+                                                <div className="text-[9px] font-mono text-slate-400 mt-1 uppercase tracking-tighter">Node: {h.lat.toFixed ? h.lat.toFixed(5) : h.lat}, {h.lng.toFixed ? h.lng.toFixed(5) : h.lng}</div>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => handleRemoveHospital(h._id)}
-                                            className="px-4 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/30 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all active:scale-95 shrink-0"
+                                            className="px-4 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/30 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all active:scale-95"
                                         >
                                             Decommission
                                         </button>

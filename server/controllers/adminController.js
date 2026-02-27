@@ -3,7 +3,6 @@ const {
   listPendingDoctors,
   updateUserStatus,
   createUser: serviceCreateUser,
-  updateUser: serviceUpdateUser,
   getAllUsers: serviceGetAllUsers,
   toggleUserStatus: serviceToggleUserStatus,
   deleteUser: serviceDeleteUser,
@@ -106,15 +105,6 @@ const createMeetingLink = async (req, res, next) => {
   }
 };
 
-const patchUpdateUser = async (req, res, next) => {
-  try {
-    const result = await serviceUpdateUser(req.params.id, req.body);
-    return res.status(result.status).json({ success: true, data: result.data });
-  } catch (error) {
-    next(error);
-  }
-};
-
 
 module.exports = {
   getPendingDoctors,
@@ -124,8 +114,8 @@ module.exports = {
   toggleUserStatus,
   deleteUser,
   getStats,
-  getAppointments,
-  createMeetingLink,
-  patchUpdateUser
+  getAppointments
+  ,
+  createMeetingLink
 };
 
