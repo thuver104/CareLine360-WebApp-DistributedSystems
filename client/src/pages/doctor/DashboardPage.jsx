@@ -24,6 +24,13 @@ import {
   Video,
   Trash2,
   ExternalLink,
+  MapPin,
+  AlertCircle,
+  FileText,
+  Droplet,
+  Weight,
+  Ruler,
+  ShieldAlert,
 } from "lucide-react";
 import {
   getDoctorDashboard,
@@ -36,6 +43,7 @@ import {
   getDoctorMeetings,
   triggerMeetingReminder,
   sendTestEmail,
+  getDoctorPatientDetail,
 } from "../../api/doctorApi";
 import StatCard from "../../components/ui/StatCard";
 import ActivityFeed from "../../components/dashboard/ActivityFeed";
@@ -476,6 +484,308 @@ function ApptDateRangePicker({ dateFrom, dateTo, onChange }) {
   );
 }
 
+// ── Patient Detail Modal ─────────────────────────────────────────────────────
+function PatientDetailModal({ patientId, onClose }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!patientId) return;
+    setLoading(true);
+    getDoctorPatientDetail(patientId)
+      .then((res) => setData(res.data))
+      .catch(() => setError("Failed to load patient details."))
+      .finally(() => setLoading(false));
+  }, [patientId]);
+
+  const calcAge = (dob) => {
+    if (!dob) return "—";
+    const diff = Date.now() - new Date(dob).getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)) + " yrs";
+  };
+
+  const fmtDate = (d) =>
+    d
+      ? new Date(d).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "—";
+
+  const p = data?.patient;
+  const appts = data?.appointments || [];
+  const records = data?.records || [];
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 16 }}
+        transition={{ duration: 0.2 }}
+        className="w-full max-w-2xl max-h-[88vh] overflow-y-auto glass-card rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10"
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-sm rounded-t-2xl">
+          <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <User className="h-4 w-4 text-teal-500" /> Patient Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          >
+            <X className="h-4 w-4 text-gray-400" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-500 text-sm py-8 justify-center">
+              <AlertCircle className="h-4 w-4" /> {error}
+            </div>
+          )}
+
+          {!loading && !error && p && (
+            <>
+              {/* Identity row */}
+              <div className="flex items-center gap-4">
+                {p.avatarUrl ? (
+                  <img
+                    src={p.avatarUrl}
+                    alt={p.fullName}
+                    className="w-16 h-16 rounded-full object-cover ring-2 ring-teal-400"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-xl font-bold">
+                    {getInitials(p.fullName)}
+                  </div>
+                )}
+                <div>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
+                    {p.fullName}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {p.patientId || "—"}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {p.gender && (
+                      <span className="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-xs font-medium capitalize">
+                        {p.gender}
+                      </span>
+                    )}
+                    {p.bloodGroup && (
+                      <span className="px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-xs font-medium flex items-center gap-1">
+                        <Droplet className="h-3 w-3" /> {p.bloodGroup}
+                      </span>
+                    )}
+                    {p.dob && (
+                      <span className="text-xs text-gray-400">
+                        {calcAge(p.dob)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Info grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Contact */}
+                <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    Contact
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span className="truncate">{p.userId?.email || "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>{p.userId?.phone || "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>DOB: {fmtDate(p.dob)}</span>
+                  </div>
+                  {p.nic && (
+                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <FileText className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                      <span>NIC: {p.nic}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Physical */}
+                <div className="rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    Physical
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Ruler className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>Height: {p.heightCm ? p.heightCm + " cm" : "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Weight className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>Weight: {p.weightKg ? p.weightKg + " kg" : "—"}</span>
+                  </div>
+                  {p.address && (p.address.city || p.address.district) && (
+                    <div className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0 mt-0.5" />
+                      <span>
+                        {[p.address.line1, p.address.city, p.address.district]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Allergies */}
+                {p.allergies?.length > 0 && (
+                  <div className="rounded-xl border border-orange-100 dark:border-orange-900/30 bg-orange-50 dark:bg-orange-900/10 p-4">
+                    <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-2 flex items-center gap-1">
+                      <ShieldAlert className="h-3.5 w-3.5" /> Allergies
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.allergies.map((a) => (
+                        <span
+                          key={a}
+                          className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-xs font-medium"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Chronic Conditions */}
+                {p.chronicConditions?.length > 0 && (
+                  <div className="rounded-xl border border-purple-100 dark:border-purple-900/30 bg-purple-50 dark:bg-purple-900/10 p-4">
+                    <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide mb-2 flex items-center gap-1">
+                      <Activity className="h-3.5 w-3.5" /> Chronic Conditions
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.chronicConditions.map((c) => (
+                        <span
+                          key={c}
+                          className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-medium"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Emergency Contact */}
+                {p.emergencyContact?.name && (
+                  <div className="sm:col-span-2 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Emergency Contact
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                      {p.emergencyContact.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {p.emergencyContact.relationship} ·{" "}
+                      {p.emergencyContact.phone}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Appointments */}
+              <div>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-teal-500" />{" "}
+                  Appointments ({appts.length})
+                </p>
+                {appts.length === 0 ? (
+                  <p className="text-xs text-gray-400">
+                    No appointments found.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {appts.slice(0, 10).map((a) => (
+                      <div
+                        key={a._id}
+                        className="flex items-center justify-between text-xs bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-2.5 border border-gray-100 dark:border-white/10"
+                      >
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">
+                          {fmtDate(a.date)} {a.time && `· ${a.time}`}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                            a.status === "confirmed"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : a.status === "pending"
+                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                : a.status === "cancelled"
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400"
+                          }`}
+                        >
+                          {a.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Medical Records */}
+              <div>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-teal-500" /> Medical
+                  Records ({records.length})
+                </p>
+                {records.length === 0 ? (
+                  <p className="text-xs text-gray-400">
+                    No medical records found.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {records.slice(0, 8).map((r) => (
+                      <div
+                        key={r._id}
+                        className="text-xs bg-gray-50 dark:bg-white/5 rounded-xl px-4 py-3 border border-gray-100 dark:border-white/10"
+                      >
+                        <p className="font-medium text-gray-800 dark:text-gray-100 truncate">
+                          {r.chiefComplaint || r.diagnosis || "Record"}
+                        </p>
+                        {r.diagnosis && r.chiefComplaint && (
+                          <p className="text-gray-400 truncate mt-0.5">
+                            {r.diagnosis}
+                          </p>
+                        )}
+                        <p className="text-gray-400 mt-0.5">
+                          {fmtDate(r.createdAt)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </div>,
+    document.body,
+  );
+}
+
 // ── Search overlay ────────────────────────────────────────────────────────────
 function PatientSearchOverlay({ onClose, onSelectPatient }) {
   const [query, setQuery] = useState("");
@@ -611,6 +921,7 @@ export default function DashboardPage({
     pages: 1,
     total: 0,
   });
+  const [selectedSearchPatient, setSelectedSearchPatient] = useState(null);
   const [chatAppt, setChatAppt] = useState(null);
   const [recordModal, setRecordModal] = useState(null);
   const [prescripModal, setPrescripModal] = useState(null);
@@ -1119,10 +1430,19 @@ export default function DashboardPage({
         <PatientSearchOverlay
           onClose={onSearchClose}
           onSelectPatient={(p) => {
-            setSection("My Patients");
+            setSelectedSearchPatient(p._id);
           }}
         />
       )}
+
+      <AnimatePresence>
+        {selectedSearchPatient && (
+          <PatientDetailModal
+            patientId={selectedSearchPatient}
+            onClose={() => setSelectedSearchPatient(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Countdown Overlay ─────────────────────────────────────────────── */}
       <AnimatePresence>
