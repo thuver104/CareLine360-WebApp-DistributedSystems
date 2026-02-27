@@ -31,7 +31,7 @@ export default function EmergencySOSFloating() {
       const latitude = pos.coords.latitude;
       const longitude = pos.coords.longitude;
 
-      await api.post("/emergencies", {
+      await api.post("/patients", {
         description: "SOS emergency triggered from patient app",
         latitude,
         longitude,

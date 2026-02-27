@@ -13,6 +13,7 @@ const {
   resetPassword,
 } = require("../controllers/authController");
 
+const { reactivateAccount } = require("../controllers/patientController");
 
 const router = express.Router();
 
@@ -110,6 +111,11 @@ router.post(
       .matches(/[^A-Za-z0-9]/),
   ],
   resetPassword
+);
+
+router.post(
+  "/reactivate",
+  reactivateAccount
 );
 
 

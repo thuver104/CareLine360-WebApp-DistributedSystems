@@ -4,6 +4,9 @@ const MedicalRecord = require("../models/MedicalRecord");
 const Prescription = require("../models/Prescription");
 const Doctor = require("../models/Doctor");
 const Hospital = require("../models/Hospital");
+const bcrypt = require("bcryptjs");
+const EmergencyCase = require("../models/EmergencyCase");
+
 const { calcPatientProfileStrength } = require("../services/profileStrength");
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -259,6 +262,28 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
+const removeAvatar = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const patient = await Patient.findOneAndUpdate(
+      {
+        userId,
+        $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+      },
+      { $set: { avatarUrl: null } },
+      { new: true }
+    );
+
+    if (!patient) return res.status(404).json({ message: "Profile not found" });
+
+    return res.json({ message: "Avatar removed", avatarUrl: null });
+  } catch (e) {
+    console.error("REMOVE AVATAR ERROR ❌", e);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 const deactivateMyAccount = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -288,6 +313,39 @@ const deactivateMyAccount = async (req, res) => {
     return res.json({ message: "Account deactivated successfully" });
   } catch (e) {
     console.error("DEACTIVATE ERROR:", e);
+    return res.status(500).json({ message: e.message || "Server error" });
+  }
+};
+
+const reactivateAccount = async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "identifier and password required" });
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: identifier.toLowerCase() }, { phone: identifier }],
+    });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+
+    user.isActive = true;
+    user.status = "ACTIVE";
+    await user.save();
+
+    await Patient.findOneAndUpdate(
+      { userId: user._id },
+      { $set: { isDeleted: false } }
+    );
+
+    return res.json({ message: "Account reactivated successfully" });
+  } catch (e) {
+    console.error("REACTIVATE ERROR:", e);
     return res.status(500).json({ message: e.message || "Server error" });
   }
 };
@@ -474,17 +532,27 @@ const getHospitalDetailsForPatient = async (req, res) => {
   }
 };
 
-const createEmergency = async (req, res, next) => {
-    try {
-        const emergency = await emergencyService.createEmergency({
-            ...req.body,
-            patient: req.user.id,   // 👈 take patient from token
-        });
+const createEmergency = async (req, res) => {
+  try {
+    const { description, latitude, longitude } = req.body;
 
-        res.status(201).json({ success: true, data: emergency });
-    } catch (error) {
-        next(error);
+    if (!description || latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ message: "description, latitude, longitude required" });
     }
+
+    const emergency = await EmergencyCase.create({
+      patient: req.user.userId,   // ✅ correct (not req.user.id)
+      description,
+      latitude,
+      longitude,
+      status: "PENDING",
+    });
+
+    return res.status(201).json({ success: true, data: emergency });
+  } catch (e) {
+    console.error("CREATE EMERGENCY ERROR:", e);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
 
@@ -492,7 +560,9 @@ module.exports = {
   getMyProfile, 
   updateMyProfile , 
   uploadAvatar , 
+  removeAvatar,
   deactivateMyAccount, 
+  reactivateAccount,
   medicalRecord,
   explainMedicalText,
   getMyMedicalRecords,

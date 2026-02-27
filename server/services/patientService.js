@@ -1,7 +1,7 @@
 const Patient = require("../models/Patient");
 const User = require("../models/User");
+const EmergencyCase = require("../models/EmergencyCase");
 
-// If you store docs in another collection, import it here later:
 // const Document = require("../models/Document");
 
 const hasValue = (v) => {

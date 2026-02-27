@@ -87,11 +87,21 @@ export default function Profile() {
 };
 
 
-  const removeAvatar = () => {
+  const removeAvatar = async () => {
+  try {
+    await api.delete("/patients/me/avatar"); // ✅ new backend route
+
     setAvatar("");
     setAvatarFile(null);
     localStorage.removeItem("patientAvatar");
-  };
+
+    setMsgType("success");
+    setMsg("✅ Profile photo removed");
+  } catch (err) {
+    setMsgType("error");
+    setMsg(err.response?.data?.message || "Failed to remove avatar");
+  }
+};
 
   // load profile
   useEffect(() => {
