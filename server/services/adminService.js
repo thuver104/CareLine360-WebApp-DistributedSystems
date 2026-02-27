@@ -466,16 +466,17 @@ const createMeetingLink = async (appointmentId) => {
 
     // Send notifications to both patient and doctor in background
     const notifyUser = (user, type) => {
+      if (!user) return; // guard: user may be undefined/null
       const meetingMessage = `Your meeting is Confirm by Admin of CareLine 360. Link: ${meetingUrl}`;
 
-      if (user.email) {
+      if (user?.email) {
         const emailHtml = type === 'patient' ? patientEmailHtml : doctorEmailHtml;
         sendEmail({
           to: user.email,
           subject: emailSubject,
           html: emailHtml
         }).catch(err => console.error(`${type} Meeting Email Error:`, err));
-      } else if (user.phone) {
+      } else if (user?.phone) {
         sendSMS({ contact: user.phone, message: meetingMessage });
       }
     };
