@@ -6,6 +6,7 @@ import { hasToken } from "./auth/authStorage";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
+import PatientLayout from "./layouts/PatientLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import AppointmentLayout from "./layouts/AppointmentLayout";
 
@@ -79,18 +80,20 @@ export default function App() {
 
         {/* ================= PATIENT ROUTES ================= */}
         <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/profile" element={<Profile />} />
-          <Route path="/patient/documents" element={<Documents />} />
-          <Route path="/patient/navbar" element={<PatientNavbar />} />
-          <Route path="/patient/messages" element={<AiChat />} />
-          <Route path="/patient/medical-history" element={<PatientMedicalHistory />} />
-          <Route path="/patient/directory" element={<Directory />} />
+          <Route element={<PatientLayout />}>
+            <Route path="/patient/dashboard" element={<PatientDashboard />} />
+            <Route path="/patient/profile" element={<Profile />} />
+            <Route path="/patient/documents" element={<Documents />} />
+            <Route path="/patient/navbar" element={<PatientNavbar />} />
+            <Route path="/patient/messages" element={<AiChat />} />
+            <Route path="/patient/medical-history" element={<PatientMedicalHistory />} />
+            <Route path="/patient/directory" element={<Directory />} />
+          </Route>
         </Route>
 
         {/* ================= DOCTOR ROUTES ================= */}
         <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
-          {/* Profile setup - No sidebar */}
+          {/* Profile setup — no sidebar */}
           <Route path="/doctor/setup" element={<DoctorProfileSetup />} />
 
           {/* Dashboard with sidebar */}
