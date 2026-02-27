@@ -1,18 +1,33 @@
 import { Plus, Calendar, Download, Filter } from "lucide-react";
 
-const ACTIONS = [
-  { icon: Plus,     label: "Add Medical Record",    primary: true  },
-  { icon: Calendar, label: "Set Availability",      primary: false },
-  { icon: Download, label: "Generate Prescription", primary: false },
-  { icon: Filter,   label: "Filter Appointments",   primary: false },
-];
+/**
+ * QuickActionBar
+ *
+ * Props:
+ *   onAddRecord      – () => void  → opens MedicalRecordModal
+ *   onSetAvailability – () => void → switches to Availability tab
+ *   onGenPrescription – () => void → opens PrescriptionModal
+ *   onFilterAppts    – () => void → switches to Appointments tab or opens filter
+ */
+export default function QuickActionBar({
+  onAddRecord,
+  onSetAvailability,
+  onGenPrescription,
+  onFilterAppts,
+}) {
+  const ACTIONS = [
+    { icon: Plus,     label: "Add Medical Record",    primary: true,  onClick: onAddRecord },
+    { icon: Calendar, label: "Set Availability",      primary: false, onClick: onSetAvailability },
+    { icon: Download, label: "Generate Prescription", primary: false, onClick: onGenPrescription },
+    { icon: Filter,   label: "Filter Appointments",   primary: false, onClick: onFilterAppts },
+  ];
 
-export default function QuickActionBar() {
   return (
     <div className="flex flex-wrap gap-3">
-      {ACTIONS.map(({ icon: Icon, label, primary }) => (
+      {ACTIONS.map(({ icon: Icon, label, primary, onClick }) => (
         <button
           key={label}
+          onClick={onClick}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 ${
             primary
               ? "bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/25"

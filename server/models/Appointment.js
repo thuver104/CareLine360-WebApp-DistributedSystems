@@ -22,7 +22,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     consultationType: {
       type: String,
-      enum: ["in-person", "video", "phone"],
+      enum: ["in-person", "video", "phone", "physical"], // "physical" kept from doctor-module
       required: [true, "Consultation type is required"],
     },
     symptoms: {

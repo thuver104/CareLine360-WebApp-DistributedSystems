@@ -1,11 +1,17 @@
 const express = require("express");
-const router = express.Router();
-const validateRequest = require("../middleware/validateRequest");
-const { sendMessageRules, getMessagesRules, markReadRules } = require("../validators/chatValidator");
-const { sendMessage, getMessages, markAsRead } = require("../controllers/chatController");
+const { authMiddleware, roleMiddleware } = require("../middleware/auth");
+const { getMessages, getUnreadCount, getChatInbox } = require("../controllers/chatController");
 
-router.post("/", sendMessageRules, validateRequest, sendMessage);
-router.get("/:appointmentId", getMessagesRules, validateRequest, getMessages);
-router.patch("/:appointmentId/read", markReadRules, validateRequest, markAsRead);
+const router = express.Router();
+const chatAuth = [authMiddleware, roleMiddleware(["doctor", "patient"])];
+
+// Chat inbox (list of chats with last message)
+router.get("/inbox", chatAuth, getChatInbox);
+
+// Unread count (MUST be before /:appointmentId to avoid route conflict)
+router.get("/unread/count", chatAuth, getUnreadCount);
+
+// Message history for a specific appointment
+router.get("/:appointmentId", chatAuth, getMessages);
 
 module.exports = router;
