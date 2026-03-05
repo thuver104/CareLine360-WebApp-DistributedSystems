@@ -1,10 +1,9 @@
 {
   "info": {
-    "_postman_id": "36cbbbc4-d3f5-4a92-a5f4-cd288560cdeb",
+    "_postman_id": "c668ce18-22fd-4bbe-9cda-d2849255d667",
     "name": "CareLine360-APIDocs",
     "description": "Postman collection for Admin module CRUD and emergency management endpoints with role-based access.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "43278843"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -12,6 +11,7 @@
       "item": [
         {
           "name": "Get All Users",
+          "id": "a433625f-7a40-45ce-9ceb-7a6c91642ead",
           "request": {
             "auth": {
               "type": "bearer",
@@ -40,6 +40,7 @@
         },
         {
           "name": "Create User",
+          "id": "6b6d19e5-f977-466c-97c6-ca4b4de0d0d2",
           "request": {
             "auth": {
               "type": "bearer",
@@ -72,6 +73,7 @@
         },
         {
           "name": "Update User Status",
+          "id": "bb8e7b2b-c662-4fb1-a508-bf6e2261238b",
           "request": {
             "auth": {
               "type": "bearer",
@@ -111,6 +113,7 @@
         },
         {
           "name": "Delete User",
+          "id": "a974898c-4b98-4aa2-b918-bf349a1d478c",
           "request": {
             "auth": {
               "type": "bearer",
@@ -145,6 +148,7 @@
         },
         {
           "name": "Get Stats",
+          "id": "e09a3446-7cc7-4961-baca-9e44463eeaee",
           "request": {
             "auth": {
               "type": "bearer",
@@ -173,6 +177,7 @@
         },
         {
           "name": "Get All Emergencies",
+          "id": "226f59cf-993f-451b-baeb-53c32f15d834",
           "request": {
             "auth": {
               "type": "bearer",
@@ -201,6 +206,7 @@
         },
         {
           "name": "Get Emergency By ID",
+          "id": "bcfdb8cf-f7e8-4a87-b900-8cf64ba00398",
           "request": {
             "auth": {
               "type": "bearer",
@@ -235,6 +241,7 @@
         },
         {
           "name": "Update Emergency Status",
+          "id": "f6f65950-f81f-4224-8236-5ab92049a390",
           "request": {
             "auth": {
               "type": "bearer",
@@ -274,6 +281,7 @@
         },
         {
           "name": "Get Nearest Hospital",
+          "id": "0ea5733f-c85a-453b-825f-c811c6aa1d2c",
           "request": {
             "auth": {
               "type": "bearer",
@@ -307,13 +315,15 @@
           },
           "response": []
         }
-      ]
+      ],
+      "id": "704e1dba-e07f-47ab-8b0c-9c466ff7ac1e"
     },
     {
       "name": "patientModule",
       "item": [
         {
           "name": "patientLogin",
+          "id": "2059d416-3054-4068-8ce8-b1731ad60fb1",
           "request": {
             "auth": {
               "type": "bearer",
@@ -351,6 +361,7 @@
         },
         {
           "name": "GetPatientProfile",
+          "id": "9bd87eae-ef72-408f-b763-5214ed61ba09",
           "request": {
             "auth": {
               "type": "bearer",
@@ -379,6 +390,7 @@
         },
         {
           "name": "UpdateProfile",
+          "id": "342fe7a8-7969-4d06-b098-cd38fdd6565e",
           "request": {
             "auth": {
               "type": "bearer",
@@ -416,6 +428,7 @@
         },
         {
           "name": "DeleteAvatar",
+          "id": "11b5a964-1225-4071-8fcc-03ed4af3d572",
           "request": {
             "auth": {
               "type": "bearer",
@@ -445,6 +458,7 @@
         },
         {
           "name": "UploadAvatar",
+          "id": "36d9471e-08cd-46f6-b7ff-d835764fc734",
           "request": {
             "auth": {
               "type": "bearer",
@@ -464,8 +478,9 @@
                 {
                   "key": "avatar",
                   "type": "file",
-                  "uuid": "1e0dcabd-be13-42b9-bcbe-63fd3c680213",
-                  "src": "/C:/Users/ASUS/Downloads/🎀.jpg"
+                  "src": [
+                    "/C:/Users/ASUS/Downloads/🎀.jpg"
+                  ]
                 }
               ]
             },
@@ -485,6 +500,7 @@
         },
         {
           "name": "RegisterPatient",
+          "id": "f5414bc0-9a86-44fa-936c-42f3c75137e9",
           "request": {
             "auth": {
               "type": "bearer",
@@ -522,6 +538,7 @@
         },
         {
           "name": "DeactivatePatient",
+          "id": "30590b3b-db65-49c6-801b-4ba3397a9cf5",
           "request": {
             "auth": {
               "type": "bearer",
@@ -551,6 +568,7 @@
         },
         {
           "name": "ReactivatePatient",
+          "id": "5934c916-caab-43e1-93c8-9fdaf245c6ff",
           "request": {
             "auth": {
               "type": "bearer",
@@ -588,6 +606,7 @@
         },
         {
           "name": "AiExplain",
+          "id": "46800083-f59c-4b80-b350-4099f43fb85b",
           "request": {
             "auth": {
               "type": "bearer",
@@ -626,6 +645,7 @@
         },
         {
           "name": "MedicalRecords",
+          "id": "ecd417b7-b64d-4d10-a5ec-b417ebe74058",
           "request": {
             "auth": {
               "type": "bearer",
@@ -655,6 +675,7 @@
         },
         {
           "name": "GetPrescription",
+          "id": "8abfaec4-0b5a-42ea-8dff-4a0264cafe2f",
           "request": {
             "auth": {
               "type": "bearer",
@@ -684,6 +705,7 @@
         },
         {
           "name": "GetAllDoctors",
+          "id": "48bb6271-c870-418c-892b-91301a4e3d6e",
           "request": {
             "auth": {
               "type": "bearer",
@@ -712,6 +734,7 @@
         },
         {
           "name": "GetAllHospitals",
+          "id": "150956dd-3e6d-43c1-bb6d-064fb6c725b4",
           "request": {
             "auth": {
               "type": "bearer",
@@ -740,6 +763,7 @@
         },
         {
           "name": "CreateEmergency",
+          "id": "ec99784a-79fd-4b3c-9d5c-81d98e7c9f17",
           "request": {
             "auth": {
               "type": "bearer",
@@ -776,6 +800,7 @@
         },
         {
           "name": "GetDocDetails",
+          "id": "2165719b-150b-4419-a2e0-0533b2d41c18",
           "request": {
             "auth": {
               "type": "bearer",
@@ -805,6 +830,7 @@
         },
         {
           "name": "GetHosDetails",
+          "id": "218e34bc-8c88-48e3-93b6-7c732223d2a7",
           "request": {
             "auth": {
               "type": "bearer",
@@ -832,10 +858,592 @@
           },
           "response": []
         }
-      ]
+      ],
+      "id": "b761f77a-66d4-4975-9004-e3a9ede869ea"
+    },
+    {
+      "name": "appointmentModule",
+      "item": [
+        {
+          "name": "1. Authentication",
+          "item": [
+            {
+              "name": "1.1 Login as Patient",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.environment.set('patientToken', res.accessToken);",
+                      "pm.environment.set('patientId', res.user.id);",
+                      "console.log('Patient ID:', res.user.id);"
+                    ],
+                    "type": "text/javascript",
+                    "id": "d3392d19-ec95-4c4a-98f4-d29267eb4803"
+                  }
+                }
+              ],
+              "id": "74b431dd-c9e6-433e-ba12-810e9e47a550",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifier\": \"{{patientIdentifier}}\",\n  \"password\": \"{{patientPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "1.2 Login as Doctor",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.environment.set('doctorToken', res.accessToken);",
+                      "pm.environment.set('doctorId', res.user.id);",
+                      "console.log('Doctor ID:', res.user.id);"
+                    ],
+                    "type": "text/javascript",
+                    "id": "bda74798-0a8b-49a6-b47c-189addbd8851"
+                  }
+                }
+              ],
+              "id": "661a8a7c-f5f0-49df-9636-bf20433ff75f",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifier\": \"{{doctorIdentifier}}\",\n  \"password\": \"{{doctorPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "c4db45cc-e66c-4e24-a262-a93659ea6413"
+        },
+        {
+          "name": "2. Appointments",
+          "item": [
+            {
+              "name": "2.1 Create Appointment (Patient)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                      "pm.environment.set('appointmentId', res.data._id);",
+                      "console.log('Appointment ID:', res.data._id);"
+                    ],
+                    "type": "text/javascript",
+                    "id": "c338b99f-e287-4252-b1b0-5cb1c26dbb99"
+                  }
+                }
+              ],
+              "id": "27e3febc-ed7c-4d13-866f-b37d437d7734",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patientToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"doctor\": \"{{doctorId}}\",\n  \"date\": \"2026-03-15\",\n  \"time\": \"10:00 AM\",\n  \"consultationType\": \"in-person\",\n  \"symptoms\": \"Headache and fever for 3 days\",\n  \"notes\": \"Allergic to penicillin\",\n  \"priority\": \"medium\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.2 Get All Appointments",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "2f262628-cb38-4c8f-aea2-c2103fcb5cd8"
+                  }
+                }
+              ],
+              "id": "d549d9e2-1bbe-419c-b298-db9b62312bd9",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patientToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments?page=1&limit=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.3 Get Appointment by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "427cda2f-b0f8-4334-a169-4c1ffdd81113"
+                  }
+                }
+              ],
+              "id": "3765184a-12a9-46e6-9489-350a92f6a61a",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patientToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments",
+                    "{{appointmentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.4 Update Appointment (pending only)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "0e58472c-d434-41ed-ab67-c0d65c2130ce"
+                  }
+                }
+              ],
+              "id": "301b2c49-67ac-4f74-850d-e64609e031da",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patientToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"2026-03-20\",\n  \"time\": \"2:00 PM\",\n  \"consultationType\": \"video\",\n  \"priority\": \"high\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments",
+                    "{{appointmentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.5 Confirm Appointment (Doctor)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "f4929965-d346-40ad-8c3e-27dd01354e5c"
+                  }
+                }
+              ],
+              "id": "3431d728-2128-40c5-94dd-447809ba90e8",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{doctorToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"confirmed\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments",
+                    "{{appointmentId}}",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.6 Reschedule Appointment (confirmed only)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "41bd5b1e-03f1-4950-b5d2-d2d43cefaaaf"
+                  }
+                }
+              ],
+              "id": "4ad876a3-4a40-4b6e-b2d8-819831ff2009",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patientToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"2026-03-25\",\n  \"time\": \"11:00 AM\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/reschedule",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments",
+                    "{{appointmentId}}",
+                    "reschedule"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2.7 Complete Appointment (Doctor)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "5bffb009-13da-4274-bdd6-6eac5bea6211"
+                  }
+                }
+              ],
+              "id": "98257993-372f-4d7f-9e90-a073847c2e3b",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{doctorToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "appointments",
+                    "{{appointmentId}}",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "67775f64-0898-450c-b8b8-10b5b7922497"
+        },
+        {
+          "name": "3. Payments",
+          "item": [
+            {
+              "name": "3.1 Create Payment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const res = pm.response.json();",
+                      "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                      "pm.environment.set('paymentId', res.data._id);",
+                      "console.log('Payment ID:', res.data._id);"
+                    ],
+                    "type": "text/javascript",
+                    "id": "929912c5-7cca-41a1-aac6-e55bf13b1d0f"
+                  }
+                }
+              ],
+              "id": "2744db8f-50f8-4c16-8829-4f9f5ec651a0",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointment\": \"{{appointmentId}}\",\n  \"patient\": \"{{patientId}}\",\n  \"amount\": 150.00,\n  \"currency\": \"USD\",\n  \"method\": \"card\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/payments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3.2 Get Payment by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "b0e6b0a1-b434-41dd-92fa-d93b7881d310"
+                  }
+                }
+              ],
+              "id": "0a619e97-f53d-43b4-a4e5-5abb1b095673",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/payments/{{paymentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments",
+                    "{{paymentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3.3 Get Payment by Appointment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "bb613d89-cb3e-4a5b-b30f-a3d0f248dac6"
+                  }
+                }
+              ],
+              "id": "446baafe-1464-4f20-86de-5dd43603bbd7",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/payments/appointment/{{appointmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments",
+                    "appointment",
+                    "{{appointmentId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3.4 Verify Payment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                    ],
+                    "type": "text/javascript",
+                    "id": "40f3779e-667f-4632-ade1-538be7a8435f"
+                  }
+                }
+              ],
+              "id": "d004b1a0-2787-4153-a026-c9adcff49ec5",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/payments/{{paymentId}}/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "payments",
+                    "{{paymentId}}",
+                    "verify"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "id": "abd44bdb-d78b-4b10-bf65-918b3ec10e98"
+        },
+        {
+          "name": "New Request",
+          "id": "8440ca88-1a82-4805-b604-5bb2c0a08d1f",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "f894f5d2-a012-40fa-b9c3-db566083972b"
     },
     {
       "name": "LoginRBAc",
+      "id": "8112bafd-11a7-44fa-b17f-b60e03517244",
       "request": {
         "method": "POST",
         "header": [],
