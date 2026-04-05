@@ -79,9 +79,9 @@ export default function AppointmentsTable({
             No appointments scheduled for today.
           </p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[1080px] text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-white/10 text-left">
+              <tr className="text-left bg-black/10 dark:bg-white/[0.03]">
                 {[
                   "Patient",
                   ...(showDate ? ["Date"] : []),
@@ -93,7 +93,7 @@ export default function AppointmentsTable({
                 ].map((h) => (
                   <th
                     key={h}
-                    className="pb-3 pr-4 text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-500"
+                    className="py-3 px-3 first:rounded-l-lg last:rounded-r-lg text-[10px] font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-500"
                   >
                     {h}
                   </th>
@@ -118,10 +118,10 @@ export default function AppointmentsTable({
                 return (
                   <tr
                     key={apt._id}
-                    className="group border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    className="group align-top border-b border-gray-100 dark:border-white/5 last:border-0 hover:bg-black/5 dark:hover:bg-white/[0.04] transition-colors"
                   >
                     {/* Patient */}
-                    <td className="py-3.5 pr-4">
+                    <td className="py-3.5 px-3">
                       <div className="flex items-center gap-2.5">
                         {/* Avatar: photo if available, else initials */}
                         {avatarUrl ? (
@@ -150,7 +150,7 @@ export default function AppointmentsTable({
 
                     {/* Date */}
                     {showDate && (
-                      <td className="py-3.5 pr-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                         {apt.date
                           ? new Date(apt.date).toLocaleDateString("en-GB", {
                               day: "2-digit",
@@ -162,17 +162,17 @@ export default function AppointmentsTable({
                     )}
 
                     {/* Time */}
-                    <td className="py-3.5 pr-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                    <td className="py-3.5 px-3 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                       {apt.time || "—"}
                     </td>
 
                     {/* Type */}
-                    <td className="py-3.5 pr-4 text-sm text-gray-600 dark:text-gray-300 capitalize">
+                    <td className="py-3.5 px-3 text-sm text-gray-600 dark:text-gray-300 capitalize">
                       {apt.consultationType || apt.type || "—"}
                     </td>
 
                     {/* Priority */}
-                    <td className="py-3.5 pr-4">
+                    <td className="py-3.5 px-3">
                       {apt.priority && (
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold capitalize ${PRIORITY_BADGE[apt.priority] || PRIORITY_BADGE.low}`}
@@ -183,7 +183,7 @@ export default function AppointmentsTable({
                     </td>
 
                     {/* Status */}
-                    <td className="py-3.5 pr-4">
+                    <td className="py-3.5 px-3">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold capitalize ${STATUS_BADGE[apt.status] || ""}`}
                       >
@@ -192,83 +192,88 @@ export default function AppointmentsTable({
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* View patient past records — always available */}
-                        <ActionIcon
-                          icon={<ClipboardList className="h-5 w-5" />}
-                          label="Records"
-                          color="amber"
-                          onClick={() => onViewRecords?.(apt)}
-                        />
+                    <td className="py-3.5 px-3">
+                      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+                        <div className="grid grid-cols-3 gap-2">
+                          {/* View patient past records — always available */}
+                          <ActionIcon
+                            icon={<ClipboardList className="h-5 w-5" />}
+                            label="Records"
+                            color="amber"
+                            onClick={() => onViewRecords?.(apt)}
+                          />
 
-                        {apt.status === "pending" && (
-                          <>
-                            <ActionIcon
-                              icon={<CheckCircle className="h-5 w-5" />}
-                              label="Confirm"
-                              color="teal"
-                              onClick={() => onConfirm?.(apt._id)}
-                            />
-                            <ActionIcon
-                              icon={<XCircle className="h-5 w-5" />}
-                              label="Cancel"
-                              color="rose"
-                              onClick={() => onCancel?.(apt._id)}
-                            />
-                          </>
-                        )}
-                        {apt.status === "confirmed" && (
-                          <>
-                            <ActionIcon
-                              icon={<CircleCheck className="h-5 w-5" />}
-                              label="Complete"
-                              color="emerald"
-                              onClick={() => onComplete?.(apt._id)}
-                            />
-                            <ActionIcon
-                              icon={<FileText className="h-5 w-5" />}
-                              label="Record"
-                              color="blue"
-                              onClick={() => onAddRecord?.(apt)}
-                            />
-                            <ActionIcon
-                              icon={<Pill className="h-5 w-5" />}
-                              label="Prescribe"
-                              color="violet"
-                              onClick={() => onPrescription?.(apt)}
-                            />
-                            <ActionIcon
-                              icon={<MessageSquare className="h-5 w-5" />}
-                              label="Chat"
-                              color="gray"
-                              onClick={() => onChat?.(apt)}
-                            />
-                          </>
-                        )}
-                        {apt.status === "completed" && (
-                          <>
-                            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
-                              <CircleCheck className="h-4 w-4" /> Done
-                            </span>
+                          {apt.status === "pending" && (
+                            <>
+                              <ActionIcon
+                                icon={<CheckCircle className="h-5 w-5" />}
+                                label="Confirm"
+                                color="teal"
+                                onClick={() => onConfirm?.(apt._id)}
+                              />
+                              <ActionIcon
+                                icon={<XCircle className="h-5 w-5" />}
+                                label="Cancel"
+                                color="rose"
+                                onClick={() => onCancel?.(apt._id)}
+                              />
+                            </>
+                          )}
+                          {apt.status === "confirmed" && (
+                            <>
+                              <ActionIcon
+                                icon={<CircleCheck className="h-5 w-5" />}
+                                label="Complete"
+                                color="emerald"
+                                onClick={() => onComplete?.(apt._id)}
+                              />
+                              <ActionIcon
+                                icon={<FileText className="h-5 w-5" />}
+                                label="Record"
+                                color="blue"
+                                onClick={() => onAddRecord?.(apt)}
+                              />
+                              <ActionIcon
+                                icon={<Pill className="h-5 w-5" />}
+                                label="Prescribe"
+                                color="violet"
+                                onClick={() => onPrescription?.(apt)}
+                              />
+                              <ActionIcon
+                                icon={<MessageSquare className="h-5 w-5" />}
+                                label="Chat"
+                                color="gray"
+                                onClick={() => onChat?.(apt)}
+                              />
+                            </>
+                          )}
+                          {apt.status === "completed" && (
+                            <>
+                              <button
+                                disabled
+                                className="inline-flex h-10 w-[112px] items-center justify-center gap-1.5 rounded-md border border-emerald-400/30 bg-emerald-500/10 text-xs font-semibold text-emerald-500 dark:text-emerald-300 cursor-default"
+                              >
+                                <CircleCheck className="h-4 w-4" /> Done
+                              </button>
+                              <ActionIcon
+                                icon={<Trash2 className="h-5 w-5" />}
+                                label="Delete"
+                                color="danger"
+                                onClick={() => onDelete?.(apt._id)}
+                              />
+                            </>
+                          )}
+
+                          {/* Delete — for non-completed appointments */}
+                          {apt.status !== "completed" && (
                             <ActionIcon
                               icon={<Trash2 className="h-5 w-5" />}
                               label="Delete"
                               color="danger"
                               onClick={() => onDelete?.(apt._id)}
                             />
-                          </>
-                        )}
-
-                        {/* Delete — for non-completed appointments */}
-                        {apt.status !== "completed" && (
-                          <ActionIcon
-                            icon={<Trash2 className="h-5 w-5" />}
-                            label="Delete"
-                            color="danger"
-                            onClick={() => onDelete?.(apt._id)}
-                          />
-                        )}
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -283,52 +288,41 @@ export default function AppointmentsTable({
 }
 
 const COLOR_CLASSES = {
-  teal: "bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/25 hover:shadow-md hover:shadow-teal-500/20",
-  rose: "bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25 hover:shadow-md hover:shadow-rose-500/20",
-  blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 hover:shadow-md hover:shadow-blue-500/20",
+  teal: "border border-teal-400/35 bg-teal-500/10 text-teal-500 dark:text-teal-300 hover:bg-teal-500/20",
+  rose: "border border-rose-400/35 bg-rose-500/10 text-rose-500 dark:text-rose-300 hover:bg-rose-500/20",
+  blue: "border border-blue-400/35 bg-blue-500/10 text-blue-500 dark:text-blue-300 hover:bg-blue-500/20",
   violet:
-    "bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/25 hover:shadow-md hover:shadow-violet-500/20",
+    "border border-violet-400/35 bg-violet-500/10 text-violet-500 dark:text-violet-300 hover:bg-violet-500/20",
   amber:
-    "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 hover:shadow-md hover:shadow-amber-500/20",
+    "border border-amber-400/35 bg-amber-500/10 text-amber-500 dark:text-amber-300 hover:bg-amber-500/20",
   emerald:
-    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 hover:shadow-md hover:shadow-emerald-500/20",
-  gray: "bg-gray-500/10 text-gray-600 dark:text-gray-400 hover:bg-gray-500/25 hover:shadow-md hover:shadow-gray-500/10",
+    "border border-emerald-400/35 bg-emerald-500/10 text-emerald-500 dark:text-emerald-300 hover:bg-emerald-500/20",
+  gray: "border border-slate-400/35 bg-slate-500/10 text-slate-400 dark:text-slate-300 hover:bg-slate-500/20",
   danger:
-    "bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/25 border border-rose-300/40 dark:border-rose-500/30 hover:shadow-md hover:shadow-rose-500/20",
+    "border border-rose-400/35 bg-rose-500/10 text-rose-500 dark:text-rose-300 hover:bg-rose-500/20",
 };
 
 /**
- * Animated action icon button — shows label text on hover (slide-expand).
+ * Static action button — always displays icon and label without animations.
  */
 function ActionIcon({ icon, label, color, onClick }) {
   return (
     <button
-      title={label}
       onClick={onClick}
       className={`
-        group/btn
-        inline-flex items-center gap-0
-        px-2.5 py-2 rounded-xl
-        overflow-hidden
-        transition-all duration-200 ease-out
-        active:scale-95
+        inline-flex h-10 w-[112px] items-center justify-center gap-1.5
+        rounded-md
+        text-xs font-semibold
+        cursor-pointer
+        transition-colors
         ${COLOR_CLASSES[color] || COLOR_CLASSES.gray}
       `}
     >
-      {/* Icon — always visible */}
-      <span className="shrink-0 flex items-center">{icon}</span>
+      {/* Icon */}
+      <span className="flex items-center shrink-0">{icon}</span>
 
-      {/* Label — slides in on hover */}
-      <span
-        className="
-          text-[11px] font-semibold whitespace-nowrap
-          max-w-0 opacity-0 overflow-hidden
-          group-hover/btn:max-w-[72px] group-hover/btn:opacity-100 group-hover/btn:ml-1.5
-          transition-all duration-200 ease-out
-        "
-      >
-        {label}
-      </span>
+      {/* Label — always visible */}
+      <span className="whitespace-nowrap">{label}</span>
     </button>
   );
 }

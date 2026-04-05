@@ -1,6 +1,11 @@
 const express = require("express");
 const { authMiddleware, roleMiddleware } = require("../middleware/auth");
-const { getMessages, getUnreadCount, getChatInbox } = require("../controllers/chatController");
+const {
+  getMessages,
+  getUnreadCount,
+  getChatInbox,
+  markChatAsRead,
+} = require("../controllers/chatController");
 
 const router = express.Router();
 const chatAuth = [authMiddleware, roleMiddleware(["doctor", "patient"])];
@@ -13,5 +18,8 @@ router.get("/unread/count", chatAuth, getUnreadCount);
 
 // Message history for a specific appointment
 router.get("/:appointmentId", chatAuth, getMessages);
+
+// Mark messages as read
+router.patch("/:appointmentId/read", chatAuth, markChatAsRead);
 
 module.exports = router;

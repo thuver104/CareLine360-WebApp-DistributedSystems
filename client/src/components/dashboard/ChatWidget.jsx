@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { getSocket } from "../../socket/socketClient";
+import {
+  getSocket,
+  joinChatRoom,
+  leaveChatRoom,
+  sendChatMessage,
+  emitTyping,
+  emitStopTyping,
+} from "../../socket/socketClient";
 import { getChatHistory } from "../../api/doctorApi";
 
 /**
@@ -29,46 +36,88 @@ export default function ChatWidget({ appointment, onClose }) {
   useEffect(() => {
     if (!appointmentId) return;
 
+    console.log("🔌 ChatWidget: Initializing, appointmentId=", appointmentId);
     const socket = getSocket();
+    if (!socket) {
+      console.error("❌ ChatWidget: Socket not initialized");
+      setError("Socket connection failed");
+      return;
+    }
 
     // Load history via REST first
     getChatHistory(appointmentId)
       .then((r) => {
+        console.log(
+          "✅ ChatWidget: Loaded",
+          r.data.messages?.length || 0,
+          "messages",
+        );
         setMessages(r.data.messages || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("❌ ChatWidget: Failed to load history:", err);
+        setLoading(false);
+      });
 
-    // Join the room
-    socket.emit("join_room", { appointmentId });
+    // Join the room using helper function (waits for connection if needed)
+    console.log("📥 ChatWidget: Calling joinChatRoom");
+    joinChatRoom(appointmentId);
 
     // ── Socket event listeners ───────────────────────────────────────────────
 
     const onRoomJoined = ({ messages: serverMessages } = {}) => {
       // Room join confirmed — enable send button
+      console.log("🎯 ChatWidget: Room joined confirmation received");
       setConnected(true);
-      if (serverMessages?.length) setMessages(serverMessages);
+      if (serverMessages?.length) {
+        console.log(
+          "📨 ChatWidget: Updating messages from room_joined event:",
+          serverMessages.length,
+          "messages",
+        );
+        setMessages(serverMessages);
+      }
     };
 
     const onReceiveMessage = (msg) => {
+      console.log("🔔 ChatWidget: New message received via socket event:", {
+        _id: msg._id,
+        sender: msg.senderName || msg.sender,
+        appointmentId: msg.appointmentId,
+        text: msg.text?.substring(0, 50),
+      });
       setMessages((prev) => {
         // Avoid duplicates
-        if (prev.some((m) => m._id === msg._id)) return prev;
+        if (prev.some((m) => m._id === msg._id)) {
+          console.log("⚠️ ChatWidget: Duplicate message detected, skipping");
+          return prev;
+        }
+        console.log("✅ ChatWidget: Adding new message to state");
         return [...prev, msg];
       });
     };
 
-    const onUserTyping = ({ userId, isTyping: typing }) => {
-      if (userId !== myUserId) setIsTyping(typing);
+    const onUserTyping = ({ userId, isTyping: typing, senderRole }) => {
+      if (userId !== myUserId) {
+        console.log(
+          "✏️ ChatWidget: Other user typing:",
+          typing ? "start" : "stop",
+          `(${senderRole})`,
+        );
+        setIsTyping(typing);
+      }
     };
 
     const onMessagesRead = () => {
+      console.log("👁️ ChatWidget: Messages marked as read");
       setMessages((prev) =>
         prev.map((m) => (m.senderId === myUserId ? { ...m, isRead: true } : m)),
       );
     };
 
     const onError = ({ message }) => {
+      console.error("❌ ChatWidget: Socket error event:", message);
       setError(message);
     };
 
@@ -77,20 +126,34 @@ export default function ChatWidget({ appointment, onClose }) {
     socket.on("new_message", onReceiveMessage); // server emits "new_message"
     socket.on("user_typing", onUserTyping);
     socket.on("messages_read", onMessagesRead);
+    socket.on("send_error", onError);
     socket.on("error", onError);
-    socket.on("connect", () => setConnected(true));
-    socket.on("disconnect", () => setConnected(false));
+
+    const onConnect = () => {
+      console.log("🔗 ChatWidget: Socket connected (connect event)");
+      setConnected(true);
+      // Rejoin room after reconnection
+      console.log("📥 ChatWidget: Rejoining room after connection");
+      joinChatRoom(appointmentId);
+    };
+    const onDisconnect = () => {
+      console.log("🔗 ChatWidget: Socket disconnected (disconnect event)");
+      setConnected(false);
+    };
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
 
     return () => {
-      socket.emit("leave_room", { appointmentId });
+      leaveChatRoom(appointmentId);
       socket.off("room_joined", onRoomJoined);
       socket.off("receive_message", onReceiveMessage);
       socket.off("new_message", onReceiveMessage);
       socket.off("user_typing", onUserTyping);
       socket.off("messages_read", onMessagesRead);
+      socket.off("send_error", onError);
       socket.off("error", onError);
-      socket.off("connect");
-      socket.off("disconnect");
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
     };
   }, [appointmentId, myUserId]);
 
@@ -101,19 +164,29 @@ export default function ChatWidget({ appointment, onClose }) {
 
   // ── Send message ───────────────────────────────────────────────────────────
   const handleSend = useCallback(() => {
-    if (!text.trim() || sending) return;
+    if (!text.trim() || sending || !connected) {
+      console.warn("⚠️ ChatWidget: Cannot send message. Check:", {
+        hasText: text.trim().length > 0,
+        sending,
+        connected,
+      });
+      return;
+    }
 
-    const socket = getSocket();
+    console.log("📤 ChatWidget: Sending message, length:", text.trim().length);
     setSending(true);
 
+    // Send message using helper function
+    sendChatMessage(appointmentId, text.trim());
+
     // Stop typing indicator
-    socket.emit("typing", { appointmentId, isTyping: false });
+    emitStopTyping(appointmentId);
     clearTimeout(typingTimeout.current);
 
-    socket.emit("send_message", { appointmentId, message: text.trim() });
     setText("");
     setSending(false);
-  }, [text, sending, appointmentId]);
+    console.log("✅ ChatWidget: Message sent (optimistic), cleared input");
+  }, [text, sending, appointmentId, connected]);
 
   const handleKey = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -126,13 +199,15 @@ export default function ChatWidget({ appointment, onClose }) {
   const handleTextChange = (e) => {
     setText(e.target.value);
 
-    const socket = getSocket();
-    socket.emit("typing", { appointmentId, isTyping: true });
+    // Emit typing indicator using helper function
+    console.log("✏️ ChatWidget: Emitting typing indicator");
+    emitTyping(appointmentId);
 
     // Stop typing after 1.5s of no input
     clearTimeout(typingTimeout.current);
     typingTimeout.current = setTimeout(() => {
-      socket.emit("typing", { appointmentId, isTyping: false });
+      console.log("✏️ ChatWidget: Emitting stop typing after timeout");
+      emitStopTyping(appointmentId);
     }, 1500);
   };
 
