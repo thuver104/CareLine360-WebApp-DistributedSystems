@@ -12,7 +12,12 @@ export function UserProvider({ children }) {
     const fetchUsers = async () => {
       try {
         const res = await getUsers();
-        const allUsers = res.data.data;
+        const payload = res?.data?.data;
+        const allUsers = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.users)
+            ? payload.users
+            : [];
         setUsers(allUsers);
         const defaultPatient = allUsers.find((u) => u.role === "patient");
         if (defaultPatient) setCurrentUser(defaultPatient);

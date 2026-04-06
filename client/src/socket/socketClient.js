@@ -5,6 +5,7 @@ const SOCKET_URL = (
 ).replace("/api", "");
 
 let socket = null;
+let isConnecting = false;
 
 /**
  * Connect to the Socket.io server using the stored JWT access token.
@@ -13,6 +14,10 @@ let socket = null;
 export const connectSocket = () => {
   if (socket?.connected) {
     console.log("🔌 Socket already connected:", socket.id);
+    return socket;
+  }
+
+  if (isConnecting) {
     return socket;
   }
 
@@ -30,19 +35,23 @@ export const connectSocket = () => {
   );
   console.log("🔌 Socket URL:", SOCKET_URL);
 
+  isConnecting = true;
+
   socket = io(SOCKET_URL, {
     auth: { token },
-    transports: ["websocket", "polling"],
+    // Let socket.io negotiate transport and gracefully fall back when needed.
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
   });
 
   socket.on("connect", () => {
+    isConnecting = false;
     console.log("✅ Socket connected successfully:", socket.id);
   });
 
   socket.on("connect_error", (err) => {
+    isConnecting = false;
     console.error("❌ Socket connection error:", err.message, err);
   });
 
@@ -64,6 +73,7 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
+    isConnecting = false;
     console.log("🔌 Socket manually disconnected");
   }
 };

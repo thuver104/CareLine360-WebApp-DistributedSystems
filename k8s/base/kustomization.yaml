@@ -6,6 +6,8 @@ resources:
   - configmap/app-config.yaml
   - secrets/app-secrets.example.yaml
   - services/auth-service.yaml
+  - services/admin-service.yaml
+  - services/emergency-service.yaml
   - services/patient-service.yaml
   - services/doctor-service.yaml
   - services/appointment-service.yaml

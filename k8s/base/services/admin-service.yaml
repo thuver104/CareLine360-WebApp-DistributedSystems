@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+  namespace: careline360
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-service
+  template:
+    metadata:
+      labels:
+        app: admin-service
+    spec:
+      containers:
+        - name: admin-service
+          image: careline360/admin-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5005
+          envFrom:
+            - configMapRef:
+                name: careline360-config
+            - secretRef:
+                name: careline360-secrets
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5005
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5005
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+  namespace: careline360
+spec:
+  selector:
+    app: admin-service
+  ports:
+    - port: 5005
+      targetPort: 5005
+      protocol: TCP

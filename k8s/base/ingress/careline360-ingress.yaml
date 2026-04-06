@@ -31,6 +31,27 @@ spec:
                 name: patient-service
                 port:
                   number: 5002
+          - path: /api/admin(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: admin-service
+                port:
+                  number: 5005
+          - path: /api/emergency(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: emergency-service
+                port:
+                  number: 5006
+          - path: /api/hospitals(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: emergency-service
+                port:
+                  number: 5006
           - path: /api/doctor(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
