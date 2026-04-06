@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getAppointmentById } from "../api/appointmentApi";
-import { getPaymentByAppointment, createPayment, verifyPayment } from "../api/paymentApi";
+import { getPaymentByAppointment, createCheckoutSession, verifyPayment } from "../api/paymentApi";
 import PaymentSummary from "../components/payments/PaymentSummary";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { useToast } from "../context/ToastContext";
@@ -40,15 +40,35 @@ export default function PaymentPage() {
   const handlePay = async () => {
     setProcessing(true);
     try {
-      const createRes = await createPayment({
+      const sessionRes = await createCheckoutSession({
         appointment: id,
         patient: appointment.patient._id,
         amount: 50,
-        method: "card",
+        method: "payhere",
       });
-      const created = createRes.data.data;
+      const session = sessionRes.data.data;
 
-      const verifyRes = await verifyPayment(created._id);
+      if (session.mode === "payhere" && session.checkoutUrl && session.fields) {
+        // Submit a hidden form to PayHere sandbox checkout.
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = session.checkoutUrl;
+
+        Object.entries(session.fields).forEach(([key, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = String(value ?? "");
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+
+      // Sandbox fallback keeps current behavior for demo environments.
+      const verifyRes = await verifyPayment(session.payment._id);
       setPayment(verifyRes.data.data);
       setSuccess(true);
       toast.success("Payment completed successfully");

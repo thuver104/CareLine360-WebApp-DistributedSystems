@@ -1,0 +1,9 @@
+GitHub Repository Link:
+https://github.com/thuver104/CareLine360-WebApp-DistributedSystems
+
+YouTube Demo / Presentation Link:
+https://www.youtube.com/watch?v=REPLACE_WITH_YOUR_GROUP_VIDEO_ID
+
+Notes:
+- Ensure the YouTube video duration is <= 12 minutes.
+- Each member should present their contribution (max 3 minutes per member).

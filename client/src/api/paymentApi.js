@@ -2,6 +2,8 @@ import api from "./axios";
 
 export const createPayment = (data) => api.post("/payments", data);
 
+export const createCheckoutSession = (data) => api.post("/payments/checkout-session", data);
+
 export const getPaymentById = (id) => api.get(`/payments/${id}`);
 
 export const getPaymentByAppointment = (appointmentId) =>

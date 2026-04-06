@@ -1,0 +1,317 @@
+version: '3.8'
+
+services:
+  # ==================== MongoDB Databases ====================
+  # Each microservice has its own database instance
+  
+  mongo-auth:
+    image: mongo:7
+    container_name: careline-mongo-auth
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-auth-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_auth_db
+    networks:
+      - careline-network
+
+  mongo-patient:
+    image: mongo:7
+    container_name: careline-mongo-patient
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-patient-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_patient_db
+    networks:
+      - careline-network
+
+  mongo-doctor:
+    image: mongo:7
+    container_name: careline-mongo-doctor
+    restart: unless-stopped
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo-doctor-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_doctor_db
+    networks:
+      - careline-network
+
+  mongo-appointment:
+    image: mongo:7
+    container_name: careline-mongo-appointment
+    restart: unless-stopped
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo-appointment-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_appointment_db
+    networks:
+      - careline-network
+
+  mongo-emergency:
+    image: mongo:7
+    container_name: careline-mongo-emergency
+    restart: unless-stopped
+    ports:
+      - "27021:27017"
+    volumes:
+      - mongo-emergency-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_emergency_db
+    networks:
+      - careline-network
+
+  mongo-notification:
+    image: mongo:7
+    container_name: careline-mongo-notification
+    restart: unless-stopped
+    ports:
+      - "27022:27017"
+    volumes:
+      - mongo-notification-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=careline_notification_db
+    networks:
+      - careline-network
+
+  # ==================== RabbitMQ Message Broker ====================
+  
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: careline-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"      # AMQP protocol port
+      - "15672:15672"    # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
+    networks:
+      - careline-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==================== Microservices ====================
+  # Uncomment each service as you complete its implementation
+  
+  # auth-service:
+  #   build:
+  #     context: ./services/auth-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-auth-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     - PORT=3001
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-auth:27017/careline_auth_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+  #     - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+  #     - SERVICE_NAME=auth-service
+  #   depends_on:
+  #     - mongo-auth
+  #     - rabbitmq
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/auth-service:/app
+  #     - /app/node_modules
+  
+  # patient-service:
+  #   build:
+  #     context: ./services/patient-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-patient-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - PORT=3002
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-patient:27017/careline_patient_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+  #     - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+  #     - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+  #     - GEMINI_API_KEY=${GEMINI_API_KEY}
+  #     - SERVICE_NAME=patient-service
+  #   depends_on:
+  #     - mongo-patient
+  #     - rabbitmq
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/patient-service:/app
+  #     - /app/node_modules
+  
+  # doctor-service:
+  #   build:
+  #     context: ./services/doctor-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-doctor-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3003:3003"
+  #   environment:
+  #     - PORT=3003
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-doctor:27017/careline_doctor_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+  #     - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+  #     - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+  #     - SERVICE_NAME=doctor-service
+  #   depends_on:
+  #     - mongo-doctor
+  #     - rabbitmq
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/doctor-service:/app
+  #     - /app/node_modules
+  
+  # appointment-service:
+  #   build:
+  #     context: ./services/appointment-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-appointment-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3004:3004"
+  #   environment:
+  #     - PORT=3004
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-appointment:27017/careline_appointment_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - CLIENT_URL=${CLIENT_URL}
+  #     - PATIENT_SERVICE_URL=http://patient-service:3002
+  #     - DOCTOR_SERVICE_URL=http://doctor-service:3003
+  #     - SERVICE_NAME=appointment-service
+  #   depends_on:
+  #     - mongo-appointment
+  #     - rabbitmq
+  #     - patient-service
+  #     - doctor-service
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/appointment-service:/app
+  #     - /app/node_modules
+  
+  # emergency-service:
+  #   build:
+  #     context: ./services/emergency-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-emergency-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3005:3005"
+  #   environment:
+  #     - PORT=3005
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-emergency:27017/careline_emergency_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - SERVICE_NAME=emergency-service
+  #   depends_on:
+  #     - mongo-emergency
+  #     - rabbitmq
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/emergency-service:/app
+  #     - /app/node_modules
+  
+  # notification-service:
+  #   build:
+  #     context: ./services/notification-service
+  #     dockerfile: Dockerfile
+  #   container_name: careline-notification-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3006:3006"
+  #   environment:
+  #     - PORT=3006
+  #     - NODE_ENV=development
+  #     - MONGO_URI=mongodb://mongo-notification:27017/careline_notification_db
+  #     - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+  #     - SMTP_HOST=${SMTP_HOST}
+  #     - SMTP_PORT=${SMTP_PORT}
+  #     - SMTP_USER=${SMTP_USER}
+  #     - SMTP_PASS=${SMTP_PASS}
+  #     - EMAIL_FROM=${EMAIL_FROM}
+  #     - SMSLENZ_USER_ID=${SMSLENZ_USER_ID}
+  #     - SMSLENZ_API_KEY=${SMSLENZ_API_KEY}
+  #     - SERVICE_NAME=notification-service
+  #   depends_on:
+  #     - mongo-notification
+  #     - rabbitmq
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/notification-service:/app
+  #     - /app/node_modules
+  
+  # api-gateway:
+  #   build:
+  #     context: ./services/api-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: careline-api-gateway
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - PORT=3000
+  #     - NODE_ENV=development
+  #     - AUTH_SERVICE_URL=http://auth-service:3001
+  #     - PATIENT_SERVICE_URL=http://patient-service:3002
+  #     - DOCTOR_SERVICE_URL=http://doctor-service:3003
+  #     - APPOINTMENT_SERVICE_URL=http://appointment-service:3004
+  #     - EMERGENCY_SERVICE_URL=http://emergency-service:3005
+  #     - CLIENT_URL=${CLIENT_URL}
+  #     - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+  #     - SERVICE_NAME=api-gateway
+  #   depends_on:
+  #     - auth-service
+  #     - patient-service
+  #     - doctor-service
+  #     - appointment-service
+  #     - emergency-service
+  #   networks:
+  #     - careline-network
+  #   volumes:
+  #     - ./services/api-gateway:/app
+  #     - /app/node_modules
+
+# ==================== Networks ====================
+
+networks:
+  careline-network:
+    driver: bridge
+
+# ==================== Volumes ====================
+
+volumes:
+  mongo-auth-data:
+  mongo-patient-data:
+  mongo-doctor-data:
+  mongo-appointment-data:
+  mongo-emergency-data:
+  mongo-notification-data:
+  rabbitmq-data:
+  rabbitmq-logs:

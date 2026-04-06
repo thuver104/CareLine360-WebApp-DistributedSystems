@@ -1,0 +1,47 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: careline360-ingress
+  namespace: careline360
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: careline360.local
+      http:
+        paths:
+          - path: /api/auth(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 3001
+          - path: /api/users(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 3001
+          - path: /api/patient(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: patient-service
+                port:
+                  number: 5002
+          - path: /api/doctor(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: doctor-service
+                port:
+                  number: 5003
+          - path: /api/v1/appointments(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: appointment-service
+                port:
+                  number: 5004

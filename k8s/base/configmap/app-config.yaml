@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: careline360-config
+  namespace: careline360
+data:
+  NODE_ENV: "production"
+  CLIENT_URL: "http://localhost:5173"
+  JITSI_DOMAIN: "meet.jit.si"
+  JITSI_PREFIX: "CareLine360"
+  PAYMENT_GATEWAY_MODE: "sandbox"
+  PAYHERE_RETURN_URL: "http://localhost:5173/payment/success"
+  PAYHERE_CANCEL_URL: "http://localhost:5173/payment/cancel"
+  PAYHERE_NOTIFY_URL: "http://localhost:1111/api/payments/payhere/notify"

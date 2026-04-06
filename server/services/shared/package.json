@@ -1,0 +1,32 @@
+{
+  "name": "@careline360/shared",
+  "version": "1.0.0",
+  "description": "CareLine360 Shared Infrastructure - Logging, Tracing, Health, Metrics, RabbitMQ Retry",
+  "main": "index.js",
+  "keywords": [
+    "careline360",
+    "shared",
+    "observability",
+    "logging",
+    "tracing",
+    "health",
+    "metrics",
+    "rabbitmq",
+    "retry",
+    "dlq"
+  ],
+  "author": "CareLine360 Team",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "axios": "^1.6.2",
+    "mongoose": "^7.5.0",
+    "prom-client": "^15.1.0",
+    "uuid": "^9.0.0",
+    "winston": "^3.10.0",
+    "winston-daily-rotate-file": "^4.7.1"
+  },
+  "peerDependencies": {
+    "express": "^4.18.0"
+  }
+}

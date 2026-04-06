@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: careline360
+  labels:
+    app.kubernetes.io/part-of: careline360

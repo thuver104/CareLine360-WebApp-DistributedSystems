@@ -1,0 +1,106 @@
+# Docker Compose snippet for patient-service
+# Add this to your main docker-compose.yml
+
+version: '3.8'
+
+services:
+  # ===== Patient Service =====
+  patient-service:
+    build:
+      context: ./server/services/patient-service
+      dockerfile: Dockerfile
+    container_name: careline-patient-service
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - MONGODB_URI=mongodb://admin:admin123@mongodb_patient:27017/careline_patient_db?authSource=admin
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - DOCTOR_SERVICE_URL=http://doctor-service:5003
+    depends_on:
+      mongodb_patient:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - careline-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===== MongoDB for Patient Service =====
+  mongodb_patient:
+    image: mongo:7.0
+    container_name: careline-mongodb-patient
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+      - MONGO_INITDB_DATABASE=careline_patient_db
+    volumes:
+      - mongodb_patient_data:/data/db
+      - mongodb_patient_config:/data/configdb
+    networks:
+      - careline-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===== RabbitMQ (shared) =====
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: careline-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
+      - RABBITMQ_DEFAULT_VHOST=/
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - careline-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  careline-network:
+    driver: bridge
+
+volumes:
+  mongodb_patient_data:
+  mongodb_patient_config:
+  rabbitmq_data:

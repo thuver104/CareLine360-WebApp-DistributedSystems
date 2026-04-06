@@ -45,10 +45,39 @@ const failPayment = async (req, res, next) => {
   }
 };
 
+const createCheckoutSession = async (req, res, next) => {
+  try {
+    const result = await paymentService.createCheckoutSession(req.body);
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const gatewayNotify = async (req, res, next) => {
+  try {
+    const orderId = req.body.order_id;
+    const statusCode = req.body.status_code;
+    const gatewayPaymentId = req.body.payment_id;
+
+    const payment = await paymentService.processGatewayNotification({
+      orderId,
+      statusCode,
+      gatewayPaymentId,
+    });
+
+    res.json({ success: true, data: payment });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createPayment,
   getPaymentById,
   getPaymentByAppointment,
   verifyPayment,
   failPayment,
+  createCheckoutSession,
+  gatewayNotify,
 };
