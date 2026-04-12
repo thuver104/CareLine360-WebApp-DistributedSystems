@@ -43,15 +43,24 @@ const Dashboard = () => {
 
     if (!stats) return <div className="p-8 text-center text-red-500">Failed to load data. Please check if the server is running.</div>;
 
+    const totalUsers = stats?.totalUsers ?? 0;
+    const totalEmergencies = stats?.totalEmergencies ?? stats?.totalAppointments ?? 0;
+    const resolvedEmergencies = stats?.resolvedEmergencies ?? stats?.completedAppointments ?? 0;
+    const avgResponseTime = stats?.avgResponseTime ?? 0;
+    const pending = stats?.emergencyStatusBreakdown?.PENDING ?? stats?.pendingAppointments ?? 0;
+    const dispatched = stats?.emergencyStatusBreakdown?.DISPATCHED ?? 0;
+    const arrived = stats?.emergencyStatusBreakdown?.ARRIVED ?? 0;
+    const resolved = stats?.emergencyStatusBreakdown?.RESOLVED ?? resolvedEmergencies;
+
     const chartData = {
         labels: ['Pending', 'Dispatched', 'Arrived', 'Resolved'],
         datasets: [
             {
                 data: [
-                    stats.emergencyStatusBreakdown.PENDING,
-                    stats.emergencyStatusBreakdown.DISPATCHED,
-                    stats.emergencyStatusBreakdown.ARRIVED,
-                    stats.emergencyStatusBreakdown.RESOLVED,
+                    pending,
+                    dispatched,
+                    arrived,
+                    resolved,
                 ],
                 backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#10b981'],
                 borderWidth: 0,
@@ -69,28 +78,28 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Total Users"
-                    value={stats.totalUsers}
+                    value={totalUsers}
                     icon={<Users size={24} />}
                     color="bg-blue-500"
                     delay={0}
                 />
                 <StatCard
                     title="Active Emergencies"
-                    value={stats.totalEmergencies - stats.resolvedEmergencies}
+                    value={Math.max(totalEmergencies - resolvedEmergencies, 0)}
                     icon={<AlertCircle size={24} />}
                     color="bg-amber-500"
                     delay={100}
                 />
                 <StatCard
                     title="Avg Response Time"
-                    value={`${stats.avgResponseTime} min`}
+                    value={`${avgResponseTime} min`}
                     icon={<Clock size={24} />}
                     color="bg-indigo-500"
                     delay={200}
                 />
                 <StatCard
                     title="Resolved Cases"
-                    value={stats.resolvedEmergencies}
+                    value={resolvedEmergencies}
                     icon={<CheckCircle2 size={24} />}
                     color="bg-emerald-500"
                     delay={300}
@@ -113,7 +122,7 @@ const Dashboard = () => {
                                 <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                                 <p className="font-medium">Resolution Rate</p>
                             </div>
-                            <p className="font-bold">{Math.round((stats.resolvedEmergencies / stats.totalEmergencies) * 100) || 0}%</p>
+                            <p className="font-bold">{totalEmergencies > 0 ? Math.round((resolvedEmergencies / totalEmergencies) * 100) : 0}%</p>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                             <div className="flex items-center gap-3">

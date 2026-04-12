@@ -31,6 +31,54 @@ const patchUserStatus = async (req, res, next) => {
   }
 };
 
+const toggleUserStatus = async (req, res, next) => {
+  try {
+    const user = await adminService.toggleUserStatus(req.params.id);
+    res.json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const createUser = async (req, res, next) => {
+  try {
+    const user = await adminService.createUser(req.body);
+    res.status(201).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  try {
+    const user = await adminService.updateUser(req.params.id, req.body);
+    res.json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const user = await adminService.deleteUser(req.params.id);
+    res.json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const resetUserPassword = async (req, res, next) => {
+  try {
+    const result = await adminService.resetUserPassword(
+      req.params.id,
+      req.body?.password || req.body?.newPassword
+    );
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getStats = async (req, res, next) => {
   try {
     const stats = await adminService.getStats();
@@ -44,5 +92,10 @@ module.exports = {
   getUsers,
   getPendingDoctors,
   patchUserStatus,
+  toggleUserStatus,
+  createUser,
+  updateUser,
+  deleteUser,
+  resetUserPassword,
   getStats,
 };

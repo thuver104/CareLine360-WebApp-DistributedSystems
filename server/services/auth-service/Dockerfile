@@ -1,16 +1,18 @@
 FROM node:18-alpine
 
 # Set working directory
-WORKDIR /app
+WORKDIR /app/auth-service
 
 # Copy package files
-COPY package*.json ./
+COPY auth-service/package*.json ./
 
 # Install dependencies
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+RUN ln -s /app/auth-service/node_modules /app/node_modules
 
-# Copy service files
-COPY . .
+# Copy service and shared files
+COPY auth-service/ ./
+COPY shared /app/shared
 
 # Expose port
 EXPOSE 3001

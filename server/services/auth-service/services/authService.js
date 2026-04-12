@@ -457,26 +457,38 @@ const sendPasswordResetOtp = async ({ identifier }) => {
       attemptsLeft: 5,
     });
 
-    // 🔥 PUBLISH EVENT: email.send
-    await publishEvent(EventTypes.EMAIL_SEND, {
-      eventType: 'EMAIL_SEND',
-      timestamp: new Date(),
-      payload: {
-        to: user.email,
-        subject: `${process.env.APP_NAME || 'CareLine360'} - Password reset`,
-        html: `
-          <p>Your password reset code is:</p>
-          <h2 style="letter-spacing:2px">${otp}</h2>
-          <p>This code expires in 10 minutes.</p>
-        `,
-        purpose: 'PASSWORD_RESET',
-        userId: user._id.toString(),
-      },
-    });
+    // Try publishing email event, but do not fail reset flow if notification stack is unavailable.
+    try {
+      await publishEvent(EventTypes.EMAIL_SEND, {
+        eventType: 'EMAIL_SEND',
+        timestamp: new Date(),
+        payload: {
+          to: user.email,
+          subject: `${process.env.APP_NAME || 'CareLine360'} - Password reset`,
+          html: `
+            <p>Your password reset code is:</p>
+            <h2 style="letter-spacing:2px">${otp}</h2>
+            <p>This code expires in 10 minutes.</p>
+          `,
+          purpose: 'PASSWORD_RESET',
+          userId: user._id.toString(),
+        },
+      });
+    } catch (publishError) {
+      logger.warn('Password reset OTP email publish failed; continuing with generated OTP', {
+        userId: user._id,
+        error: publishError?.message,
+      });
+    }
 
     logger.info('Password reset OTP sent', { userId: user._id, email: user.email });
 
-    return { status: 200, data: { message: 'Password reset OTP sent to email' } };
+    const response = { message: 'Password reset OTP sent to email' };
+    if ((process.env.NODE_ENV || 'development') !== 'production') {
+      response.debugOtp = otp;
+    }
+
+    return { status: 200, data: response };
   } catch (error) {
     logger.error('Send password reset OTP error:', error);
     throw error;

@@ -18,7 +18,8 @@ const authenticate = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const jwtSecret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+      const decoded = jwt.verify(token, jwtSecret);
       
       // Attach user info to request
       req.user = {
@@ -61,7 +62,10 @@ const authorize = (...roles) => {
       });
     }
     
-    if (!roles.includes(req.user.role)) {
+    const normalizedRoles = roles.map((role) => String(role).toLowerCase());
+    const userRole = String(req.user.role || '').toLowerCase();
+
+    if (!normalizedRoles.includes(userRole)) {
       return res.status(403).json({
         error: 'Access denied. Insufficient permissions.',
         requiredRoles: roles,
@@ -87,7 +91,8 @@ const optionalAuth = (req, res, next) => {
   const token = authHeader.split(' ')[1];
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = {
       userId: decoded.userId || decoded.id,
       email: decoded.email,

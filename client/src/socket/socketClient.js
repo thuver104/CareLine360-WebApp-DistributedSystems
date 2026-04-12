@@ -1,8 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:1111"
-).replace("/api", "");
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
 
 let socket = null;
 let isConnecting = false;
@@ -12,6 +10,10 @@ let isConnecting = false;
  * Safe to call multiple times — won't create duplicate connections.
  */
 export const connectSocket = () => {
+  if (!SOCKET_URL) {
+    return null;
+  }
+
   if (socket?.connected) {
     console.log("🔌 Socket already connected:", socket.id);
     return socket;

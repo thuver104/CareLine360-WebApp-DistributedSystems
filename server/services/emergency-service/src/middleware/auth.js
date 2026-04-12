@@ -11,11 +11,20 @@ const authMiddleware = async (req, res, next) => {
     const token = header.split(" ")[1];
     const decoded = verifyAccessToken(token);
 
-    const user = await User.findById(decoded.userId);
-    if (!user) return res.status(401).json({ message: "User not found" });
-    if (!user.isActive) return res.status(403).json({ message: "Account is deactivated" });
+    const user = decoded.userId ? await User.findById(decoded.userId) : null;
+    if (user && user.isActive === false) {
+      return res.status(403).json({ message: "Account is deactivated" });
+    }
 
-    req.user = { userId: user._id, role: user.role };
+    req.user = {
+      userId: decoded.userId,
+      role: (decoded.role || user?.role || '').toLowerCase(),
+    };
+
+    if (!req.user.userId || !req.user.role) {
+      return res.status(401).json({ message: "Invalid/Expired token" });
+    }
+
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid/Expired token" });
@@ -23,7 +32,9 @@ const authMiddleware = async (req, res, next) => {
 };
 
 const roleMiddleware = (allowedRoles = []) => (req, res, next) => {
-  if (!req.user?.role || !allowedRoles.includes(req.user.role)) {
+  const normalizedAllowed = allowedRoles.map((role) => String(role).toLowerCase());
+  const role = String(req.user?.role || '').toLowerCase();
+  if (!role || !normalizedAllowed.includes(role)) {
     return res.status(403).json({ message: "Forbidden: role not allowed" });
   }
   next();

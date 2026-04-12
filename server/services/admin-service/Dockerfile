@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 
 COPY src ./src
+COPY scripts ./scripts
 
 EXPOSE 5005
 
