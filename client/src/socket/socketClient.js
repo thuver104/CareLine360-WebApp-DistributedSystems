@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
-// Strip /api suffix — socket.io connects to the root, not the API path
-const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:1111").replace(/\/api\/?$/, "");
+// Socket is opt-in; keep disabled unless a dedicated backend URL is provided.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL?.trim() || "";
 
 let socket = null;
 
@@ -10,6 +10,13 @@ let socket = null;
  * Safe to call multiple times — won't create duplicate connections.
  */
 export const connectSocket = () => {
+  if (!SOCKET_URL) {
+    console.info(
+      "Socket backend not configured. Set VITE_SOCKET_URL to enable realtime features.",
+    );
+    return null;
+  }
+
   if (socket?.connected) {
     console.log("🔌 Socket already connected:", socket.id);
     return socket;

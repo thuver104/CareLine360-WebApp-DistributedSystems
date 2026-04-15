@@ -1,33 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: admin-service
+  name: api-gateway
   namespace: careline360
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: admin-service
+      app: api-gateway
   template:
     metadata:
       labels:
-        app: admin-service
+        app: api-gateway
     spec:
       containers:
-        - name: admin-service
-          image: careline360/admin-service:latest
+        - name: api-gateway
+          image: careline360/api-gateway:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 5005
+            - containerPort: 1111
           envFrom:
             - configMapRef:
                 name: careline360-config
             - secretRef:
                 name: careline360-secrets
+          env:
+            - name: AUTH_SERVICE_URL
+              value: http://auth-service:3001
+            - name: PATIENT_SERVICE_URL
+              value: http://patient-service:5002
+            - name: DOCTOR_SERVICE_URL
+              value: http://doctor-service:5003
+            - name: APPOINTMENT_SERVICE_URL
+              value: http://appointment-service:5004
+            - name: ADMIN_SERVICE_URL
+              value: http://admin-service:5005
+            - name: EMERGENCY_SERVICE_URL
+              value: http://emergency-service:5006
           readinessProbe:
             httpGet:
               path: /health
-              port: 5005
+              port: 1111
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -35,7 +48,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 5005
+              port: 1111
             initialDelaySeconds: 30
             periodSeconds: 20
             timeoutSeconds: 5
@@ -44,12 +57,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: admin-service
+  name: api-gateway
   namespace: careline360
 spec:
+  type: NodePort
   selector:
-    app: admin-service
+    app: api-gateway
   ports:
-    - port: 5005
-      targetPort: 5005
+    - port: 1111
+      targetPort: 1111
+      nodePort: 31111
       protocol: TCP

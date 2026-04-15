@@ -61,12 +61,7 @@ Manual alternative:
 - cd client
 - npm run dev
 
-8. Kubernetes deployment
-- kubectl apply -f k8s/base/namespace.yaml
-- kubectl apply -f k8s/base/configmap/app-config.yaml
-- kubectl apply -f k8s/base/secrets/app-secrets.example.yaml
-- kubectl apply -f k8s/base/services/
-- kubectl apply -f k8s/base/ingress/
+
 
 9. Verify deployment
 - kubectl get pods -n careline360
@@ -76,3 +71,26 @@ Manual alternative:
 10. Submission packaging
 - Include: source code, submission.txt, readme.txt, members.txt, report.pdf
 - Zip name format: GroupID_DS-Assignment.zip
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- No need to run8. Kubernetes deployment
+- kubectl apply -f k8s/base/namespace.yaml
+- kubectl apply -f k8s/base/configmap/app-config.yaml
+- kubectl apply -f k8s/base/secrets/app-secrets.example.yaml
+- kubectl apply -f k8s/base/services/
+- kubectl apply -f k8s/base/ingress/
