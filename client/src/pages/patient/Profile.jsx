@@ -34,30 +34,24 @@ export default function Profile() {
   const [editMode, setEditMode] = useState(false);
 
   const [msg, setMsg] = useState("");
-  const [msgType, setMsgType] = useState(""); // "success" | "error" | ""
+  const [msgType, setMsgType] = useState("");
   const [errors, setErrors] = useState({});
 
-  // ✅ Avatar (frontend-only)
   const [avatar, setAvatar] = useState(
-    () => localStorage.getItem("patientAvatar") || "",
+    () => localStorage.getItem("patientAvatar") || ""
   );
   const [avatarFile, setAvatarFile] = useState(null);
 
-  // identity from login (localStorage)
   const [identity, setIdentity] = useState(() => getLoginIdentity());
 
-  // profile form data (patient fields)
   const [form, setForm] = useState({
     fullName: "",
     email: "",
-
     dob: "",
     gender: "",
     nic: "",
-
     address: { district: "", city: "", line1: "" },
     emergencyContact: { name: "", phone: "", relationship: "" },
-
     bloodGroup: "",
     allergies: "",
     chronicConditions: "",
@@ -65,13 +59,12 @@ export default function Profile() {
     weightKg: "",
   });
 
-  // ✅ Avatar picker
   const onPickAvatar = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // preview instantly
     setAvatar(URL.createObjectURL(file));
+    setAvatarFile(file);
 
     try {
       const fd = new FormData();
@@ -79,7 +72,8 @@ export default function Profile() {
 
       const res = await api.patch("/patients/me/avatar", fd);
 
-      setAvatar(res.data.avatarUrl); // final Cloudinary URL
+      setAvatar(res.data.avatarUrl);
+      localStorage.setItem("patientAvatar", res.data.avatarUrl);
       setMsgType("success");
       setMsg("✅ Profile photo updated");
     } catch (err) {
@@ -88,13 +82,22 @@ export default function Profile() {
     }
   };
 
-  const removeAvatar = () => {
-    setAvatar("");
-    setAvatarFile(null);
-    localStorage.removeItem("patientAvatar");
+  const removeAvatar = async () => {
+    try {
+      await api.delete("/patients/me/avatar");
+
+      setAvatar("");
+      setAvatarFile(null);
+      localStorage.removeItem("patientAvatar");
+
+      setMsgType("success");
+      setMsg("✅ Profile photo removed");
+    } catch (err) {
+      setMsgType("error");
+      setMsg(err.response?.data?.message || "Failed to remove avatar");
+    }
   };
 
-  // load profile
   useEffect(() => {
     const run = async () => {
       try {
@@ -109,28 +112,24 @@ export default function Profile() {
 
         const res = await api.get("/patients/me");
         const p = res.data;
-        setAvatar(p.avatarUrl || "");
+        setAvatar(p.avatarUrl || localStorage.getItem("patientAvatar") || "");
 
         setForm({
           fullName: p.fullName || login.name || "",
           email: p.email || login.email || "",
-
           dob: p.dob ? new Date(p.dob).toISOString().slice(0, 10) : "",
           gender: p.gender || "",
           nic: p.nic || "",
-
           address: {
             district: p.address?.district || "",
             city: p.address?.city || "",
             line1: p.address?.line1 || "",
           },
-
           emergencyContact: {
             name: p.emergencyContact?.name || "",
             phone: p.emergencyContact?.phone || "",
             relationship: p.emergencyContact?.relationship || "",
           },
-
           bloodGroup: p.bloodGroup || "",
           allergies: (p.allergies || []).join(", "),
           chronicConditions: (p.chronicConditions || []).join(", "),
@@ -202,11 +201,11 @@ export default function Profile() {
 
   const inputClass = (key) => {
     const base =
-      "w-full h-10 rounded-xl border bg-gray-50 px-3 text-sm text-gray-800 placeholder-gray-400 " +
-      "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition";
+      "w-full h-11 rounded-xl border bg-white/80 px-3 text-sm text-gray-800 placeholder-gray-400 " +
+      "focus:outline-none focus:ring-2 focus:ring-[#178d95]/20 focus:border-[#178d95] shadow-sm transition";
     return errors[key]
-      ? base + " border-red-300 focus:ring-red-300"
-      : base + " border-gray-200";
+      ? base + " border-red-300 focus:ring-red-300/30 focus:border-red-400"
+      : base + " border-[#dbe7ea] hover:border-[#178d95]/40";
   };
 
   const validate = () => {
@@ -248,6 +247,7 @@ export default function Profile() {
       if (Number.isNaN(h) || h < 30 || h > 250)
         e.heightCm = "Height must be 30–250 cm";
     }
+
     if (form.weightKg !== "") {
       const w = Number(form.weightKg);
       if (Number.isNaN(w) || w < 2 || w > 300)
@@ -275,10 +275,8 @@ export default function Profile() {
         dob: form.dob || undefined,
         gender: form.gender || undefined,
         nic: form.nic || undefined,
-
         address: form.address,
         emergencyContact: form.emergencyContact,
-
         bloodGroup: form.bloodGroup || undefined,
         allergies: form.allergies
           ? form.allergies
@@ -312,24 +310,35 @@ export default function Profile() {
     msgType === "success"
       ? "bg-green-50 text-green-800 ring-1 ring-green-100"
       : msgType === "error"
-        ? "bg-red-50 text-red-800 ring-1 ring-red-100"
-        : "bg-blue-50 text-blue-800 ring-1 ring-blue-100";
+      ? "bg-red-50 text-red-800 ring-1 ring-red-100"
+      : "bg-blue-50 text-blue-800 ring-1 ring-blue-100";
 
   const ErrorText = ({ k }) =>
     errors[k] ? <p className="text-xs text-red-600 mt-1">{errors[k]}</p> : null;
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6 relative">
+        <div className="absolute top-0 left-0 w-full h-[350px] bg-gradient-to-r from-[#dff6f6] via-[#eff8f8] to-[#d9f1f2] blur-3xl opacity-70 -z-10" />
+        <PatientNavbar />
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-white/90 backdrop-blur-xl rounded-[28px] border border-white/60 shadow-sm p-8 text-gray-600">
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const deactivateAccount = async () => {
     const confirm = window.confirm(
-      "Are you sure you want to deactivate your account?\n\nYou will not be able to access the system until reactivated.",
+      "Are you sure you want to deactivate your account?\n\nYou will not be able to access the system until reactivated."
     );
 
     if (!confirm) return;
 
     try {
       await api.patch("/patients/me/deactivate");
-
       localStorage.clear();
       alert("Your account has been deactivated.");
       window.location.href = "/login";
@@ -340,22 +349,24 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6 relative">
+      <div className="absolute top-0 left-0 w-full h-[350px] bg-gradient-to-r from-[#dff6f6] via-[#eff8f8] to-[#d9f1f2] blur-3xl opacity-70 -z-10" />
+
       <PatientNavbar />
+
       <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">My Profile</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-semibold text-[#0f172a]">My Profile</h1>
+            <p className="text-sm text-[#6b7280] mt-1">
               View your details. Click <b>Edit Profile</b> to update.
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <a
               href="/patient/dashboard"
-              className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition shadow-sm"
+              className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[#dbe7ea] bg-white text-sm font-medium text-gray-700 hover:bg-[#f8fafc] hover:border-[#178d95]/30 active:scale-[0.98] transition shadow-sm"
             >
               ← Back
             </a>
@@ -367,7 +378,7 @@ export default function Profile() {
                   setMsgType("");
                   setEditMode(true);
                 }}
-                className="h-10 px-5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 active:scale-[0.98] transition shadow-sm"
+                className="h-10 px-5 rounded-xl bg-[#178d95] text-white text-sm font-semibold hover:bg-[#126f76] active:scale-[0.98] transition shadow-sm"
               >
                 Edit Profile
               </button>
@@ -379,7 +390,7 @@ export default function Profile() {
                   setErrors({});
                   setEditMode(false);
                 }}
-                className="h-10 px-5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition shadow-sm"
+                className="h-10 px-5 rounded-xl border border-[#178d95] bg-white text-[#178d95] text-sm font-medium hover:bg-[#178d95]/5 active:scale-[0.98] transition shadow-sm"
               >
                 Cancel
               </button>
@@ -391,10 +402,9 @@ export default function Profile() {
           <div className={`mb-4 p-3 rounded-xl text-sm ${msgClass}`}>{msg}</div>
         )}
 
-        {/* ✅ Avatar card */}
-        <div className="bg-white rounded-2xl p-6 ring-1 ring-gray-100 shadow-sm mb-5">
-          <div className="flex items-center gap-5">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 ring-1 ring-gray-200 flex items-center justify-center">
+        <div className="bg-white/90 backdrop-blur-xl rounded-[28px] p-6 border border-white/60 shadow-sm mb-5">
+          <div className="flex items-center gap-5 flex-wrap">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden bg-[#f8fafc] border border-[#dbe7ea] flex items-center justify-center shadow-sm">
               {avatar ? (
                 <img
                   src={avatar || form.avatarUrl}
@@ -407,15 +417,15 @@ export default function Profile() {
             </div>
 
             <div className="flex-1">
-              <div className="text-sm text-gray-500">Profile Photo</div>
-              <div className="text-base font-semibold text-gray-900 mt-1">
+              <div className="text-sm text-[#6b7280]">Profile Photo</div>
+              <div className="text-base font-semibold text-[#0f172a] mt-1">
                 {form.fullName || "Patient"}
               </div>
-              <div className="text-sm text-gray-600">{form.email || "—"}</div>
+              <div className="text-sm text-[#64748b]">{form.email || "—"}</div>
 
               {editMode && (
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <label className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium cursor-pointer hover:opacity-95 transition">
+                  <label className="px-4 py-2 rounded-xl bg-[#178d95] text-white text-sm font-medium cursor-pointer hover:bg-[#126f76] transition hover:-translate-y-1 duration-300">
                     Upload Photo
                     <input
                       type="file"
@@ -428,14 +438,14 @@ export default function Profile() {
                   {avatar && (
                     <button
                       type="button"
-                      className="px-4 py-2 rounded-xl bg-gray-100 text-gray-900 text-sm font-medium hover:bg-gray-200 transition"
+                      className="px-4 py-2 rounded-xl bg-white border border-[#dbe7ea] text-gray-700 text-sm font-medium hover:bg-[#f8fafc] transition hover:-translate-y-1 duration-300"
                       onClick={removeAvatar}
                     >
                       Remove
                     </button>
                   )}
 
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-[#6b7280]">
                     JPG/PNG/WebP • Max 2MB
                   </div>
                 </div>
@@ -444,7 +454,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* VIEW MODE */}
         {!editMode && (
           <div className="grid md:grid-cols-2 gap-4">
             <ProfileCard label="Full Name" value={profilePreview.name} />
@@ -460,19 +469,12 @@ export default function Profile() {
               value={profilePreview.emergency}
               span
             />
-            <ProfileCard
-              label="Blood Group"
-              value={profilePreview.bloodGroup}
-            />
+            <ProfileCard label="Blood Group" value={profilePreview.bloodGroup} />
             <ProfileCard
               label="Height / Weight"
               value={`${profilePreview.height} • ${profilePreview.weight}`}
             />
-            <ProfileCard
-              label="Allergies"
-              value={profilePreview.allergies}
-              span
-            />
+            <ProfileCard label="Allergies" value={profilePreview.allergies} span />
             <ProfileCard
               label="Chronic Conditions"
               value={profilePreview.conditions}
@@ -481,15 +483,14 @@ export default function Profile() {
           </div>
         )}
 
-        {/* EDIT MODE */}
         {editMode && (
           <form
             onSubmit={onSave}
-            className="bg-white rounded-2xl p-6 ring-1 ring-gray-100 shadow-sm space-y-5"
+            className="bg-white/90 backdrop-blur-xl rounded-[28px] p-6 border border-white/60 shadow-sm space-y-5"
           >
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Full Name
                 </label>
                 <input
@@ -501,19 +502,18 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Email{" "}
-                  <span className="normal-case font-normal">(readonly)</span>
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
+                  Email <span className="normal-case font-normal">(readonly)</span>
                 </label>
                 <input
-                  className="h-10 w-full rounded-xl border border-gray-200 bg-gray-100 px-3 text-sm text-gray-500 cursor-not-allowed"
+                  className="h-11 w-full rounded-xl border border-[#dbe7ea] bg-[#f8fafc] px-3 text-sm text-gray-500 cursor-not-allowed"
                   value={form.email}
                   readOnly
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   DOB
                 </label>
                 <input
@@ -526,7 +526,7 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Gender
                 </label>
                 <select
@@ -543,7 +543,7 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   NIC
                 </label>
                 <input
@@ -557,19 +557,18 @@ export default function Profile() {
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   District
                 </label>
                 <input
                   className={inputClass("address.district")}
                   value={form.address.district}
-                  onChange={(e) =>
-                    updateNested("address.district", e.target.value)
-                  }
+                  onChange={(e) => updateNested("address.district", e.target.value)}
                 />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   City
                 </label>
                 <input
@@ -578,23 +577,22 @@ export default function Profile() {
                   onChange={(e) => updateNested("address.city", e.target.value)}
                 />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Address Line
                 </label>
                 <input
                   className={inputClass("address.line1")}
                   value={form.address.line1}
-                  onChange={(e) =>
-                    updateNested("address.line1", e.target.value)
-                  }
+                  onChange={(e) => updateNested("address.line1", e.target.value)}
                 />
               </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Emergency Name
                 </label>
                 <input
@@ -605,8 +603,9 @@ export default function Profile() {
                   }
                 />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Emergency Phone
                 </label>
                 <input
@@ -618,18 +617,16 @@ export default function Profile() {
                 />
                 <ErrorText k="emergencyContact.phone" />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Relationship
                 </label>
                 <input
                   className={inputClass("emergencyContact.relationship")}
                   value={form.emergencyContact.relationship}
                   onChange={(e) =>
-                    updateNested(
-                      "emergencyContact.relationship",
-                      e.target.value,
-                    )
+                    updateNested("emergencyContact.relationship", e.target.value)
                   }
                 />
               </div>
@@ -637,7 +634,7 @@ export default function Profile() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Blood Group
                 </label>
                 <input
@@ -649,7 +646,7 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Height (cm)
                 </label>
                 <input
@@ -661,7 +658,7 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Weight (kg)
                 </label>
                 <input
@@ -673,11 +670,8 @@ export default function Profile() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Allergies{" "}
-                  <span className="normal-case font-normal">
-                    (comma separated)
-                  </span>
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
+                  Allergies <span className="normal-case font-normal">(comma separated)</span>
                 </label>
                 <input
                   className={inputClass("allergies")}
@@ -688,30 +682,27 @@ export default function Profile() {
               </div>
 
               <div className="md:col-span-2 flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                <label className="text-xs font-semibold text-[#64748b] uppercase tracking-wide">
                   Chronic Conditions{" "}
-                  <span className="normal-case font-normal">
-                    (comma separated)
-                  </span>
+                  <span className="normal-case font-normal">(comma separated)</span>
                 </label>
                 <input
                   className={inputClass("chronicConditions")}
                   value={form.chronicConditions}
-                  onChange={(e) =>
-                    setField("chronicConditions", e.target.value)
-                  }
+                  onChange={(e) => setField("chronicConditions", e.target.value)}
                   placeholder="Diabetes, Asthma…"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 flex-wrap">
               <button
                 type="submit"
-                className="h-10 px-6 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 active:scale-[0.98] transition shadow-sm"
+                className="h-10 px-6 rounded-xl bg-[#178d95] text-white text-sm font-semibold hover:bg-[#126f76] active:scale-[0.98] transition shadow-sm"
               >
                 Save Changes
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -720,32 +711,32 @@ export default function Profile() {
                   setErrors({});
                   setEditMode(false);
                 }}
-                className="h-10 px-5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition shadow-sm"
+                className="h-10 px-5 rounded-xl border border-[#178d95] bg-white text-[#178d95] text-sm font-medium hover:bg-[#178d95]/5 active:scale-[0.98] transition shadow-sm"
               >
                 Cancel
               </button>
             </div>
           </form>
         )}
-      </div>
-      {/* Danger Zone */}
-      <div className="mt-10 bg-red-50 rounded-2xl p-6 ring-1 ring-red-100">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <div className="text-sm font-semibold text-red-700">
-              Deactivate Account
-            </div>
-            <div className="text-xs text-red-600 mt-1">
-              This will disable your account and prevent login access.
-            </div>
-          </div>
 
-          <button
-            onClick={deactivateAccount}
-            className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm hover:opacity-95 transition"
-          >
-            Deactivate
-          </button>
+        <div className="mt-10 bg-red-50 rounded-2xl p-6 ring-1 ring-red-100">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <div className="text-sm font-semibold text-red-700">
+                Deactivate Account
+              </div>
+              <div className="text-xs text-red-600 mt-1">
+                This will disable your account and prevent login access.
+              </div>
+            </div>
+
+            <button
+              onClick={deactivateAccount}
+              className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm hover:bg-red-600 transition"
+            >
+              Deactivate
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -756,14 +747,14 @@ function ProfileCard({ label, value, span }) {
   return (
     <div
       className={
-        "bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm " +
+        "bg-white/90 backdrop-blur-xl rounded-2xl px-5 py-4 border border-white/60 shadow-sm " +
         (span ? "md:col-span-2" : "")
       }
     >
-      <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+      <div className="text-xs font-semibold text-[#64748b] uppercase tracking-wide mb-1">
         {label}
       </div>
-      <div className="text-sm font-semibold text-gray-900 leading-snug">
+      <div className="text-sm font-semibold text-[#0f172a] leading-snug">
         {value || "—"}
       </div>
     </div>

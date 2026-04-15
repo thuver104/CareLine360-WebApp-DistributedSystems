@@ -86,10 +86,11 @@ app.get('/health/live', (req, res) => {
 });
 
 app.get('/health/ready', async (req, res) => {
+  const cloudinaryConfigured = !!process.env.CLOUDINARY_CLOUD_NAME;
   const checks = {
     mongodb: mongoose.connection.readyState === 1,
     rabbitmq: !!getChannel(),
-    cloudinary: !!cloudinary.config().cloud_name
+    cloudinary: !cloudinaryConfigured || !!cloudinary.config().cloud_name
   };
 
   const allHealthy = Object.values(checks).every(Boolean);

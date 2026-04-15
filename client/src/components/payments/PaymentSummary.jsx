@@ -4,31 +4,31 @@ export default function PaymentSummary({ payment }) {
   if (!payment) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 p-4">
-      <h3 className="font-semibold mb-3">Payment Details</h3>
+    <div className="glass-card rounded-2xl p-4">
+      <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Payment Details</h3>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">Amount:</span>
-          <span className="font-medium">${payment.amount?.toFixed(2)} {payment.currency}</span>
+          <span className="text-gray-600 dark:text-gray-400">Amount:</span>
+          <span className="font-medium text-gray-900 dark:text-white">LKR {payment.amount?.toLocaleString("en-LK", { minimumFractionDigits: 2 })}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">Method:</span>
-          <span className="capitalize">{payment.method}</span>
+          <span className="text-gray-600 dark:text-gray-400">Method:</span>
+          <span className="capitalize text-gray-900 dark:text-white">{payment.method}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">Status:</span>
+          <span className="text-gray-600 dark:text-gray-400">Status:</span>
           <PaymentBadge status={payment.status} />
         </div>
         {payment.transactionRef && (
           <div className="flex justify-between">
-            <span className="text-gray-600">Ref:</span>
-            <span className="font-mono text-xs">{payment.transactionRef}</span>
+            <span className="text-gray-600 dark:text-gray-400">Ref:</span>
+            <span className="font-mono text-xs text-gray-700 dark:text-gray-300">{payment.transactionRef}</span>
           </div>
         )}
         {payment.verifiedAt && (
           <div className="flex justify-between">
-            <span className="text-gray-600">Verified:</span>
-            <span>{new Date(payment.verifiedAt).toLocaleString()}</span>
+            <span className="text-gray-600 dark:text-gray-400">Verified:</span>
+            <span className="text-gray-700 dark:text-gray-300">{new Date(payment.verifiedAt).toLocaleString()}</span>
           </div>
         )}
       </div>

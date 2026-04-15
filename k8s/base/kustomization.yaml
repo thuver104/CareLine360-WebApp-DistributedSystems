@@ -5,6 +5,8 @@ resources:
   - namespace.yaml
   - configmap/app-config.yaml
   - secrets/app-secrets.example.yaml
+  - services/mongodb.yaml
+  - services/rabbitmq.yaml
   - services/auth-service.yaml
   - services/admin-service.yaml
   - services/emergency-service.yaml

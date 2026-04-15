@@ -9,7 +9,7 @@ const ThinkingDots = ({ dotSize = 4 }) => {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="rounded-full bg-black"
+          className="rounded-full bg-[#178d95]"
           style={{ width: s, height: s }}
           animate={{ y: [0, -6, 0] }}
           transition={{
@@ -124,7 +124,7 @@ export default function AiExplainPanel({ initialText = "" }) {
         </h2>
 
         <select
-          className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+          className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
           disabled={loading}
@@ -136,7 +136,7 @@ export default function AiExplainPanel({ initialText = "" }) {
       </div>
 
       <textarea
-        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 min-h-[140px] text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition resize-y"
+        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 min-h-[140px] text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 transition resize-y"
         placeholder="Paste prescription text, diagnosis, medicine names, ICD code…"
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -147,14 +147,14 @@ export default function AiExplainPanel({ initialText = "" }) {
         <button
           onClick={onExplain}
           disabled={loading}
-          className="h-10 px-6 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 active:scale-[0.98] disabled:opacity-50 transition shadow-sm"
+          className="h-10 px-6 rounded-xl bg-[#178d95] text-white text-sm font-semibold hover:bg-[#126b73] active:scale-[0.98] disabled:opacity-50 transition shadow-sm hover:shadow-md hover:-translate-y-1 duration-300"
         >
           {loading ? "Explaining…" : "Explain"}
         </button>
 
         <button
           onClick={onClear}
-          className="h-10 px-5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] disabled:opacity-50 transition shadow-sm"
+          className="h-10 px-5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-teal-50 hover:border-teal-300 active:scale-[0.98] disabled:opacity-50 transition shadow-sm hover:shadow-md hover:-translate-y-1 duration-300"
           disabled={loading}
         >
           Clear
@@ -175,9 +175,9 @@ export default function AiExplainPanel({ initialText = "" }) {
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 inline-flex items-center gap-3 bg-gray-50 border rounded-2xl px-4 py-3"
+          className="mt-4 inline-flex items-center gap-3 bg-gray-50 border border-teal-300 rounded-2xl px-4 py-3"
         >
-          <span className="text-sm text-black">AI is thinking</span>
+          <span className="text-sm text-[#178d95]">AI is thinking</span>
           <ThinkingDots />
         </motion.div>
       )}

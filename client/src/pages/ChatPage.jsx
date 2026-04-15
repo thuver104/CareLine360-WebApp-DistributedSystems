@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { getMessages, markAsRead } from "../api/chatApi";
+import { getAppointmentById } from "../api/appointmentApi";
+import { displayName } from "../utils/displayName";
+import { getInitials } from "../utils/colors";
 import {
   getSocket,
   joinChatRoom,
@@ -17,11 +21,32 @@ export default function ChatPage() {
   const { id } = useParams();
   const { currentUser } = useUser();
   const [messages, setMessages] = useState([]);
+  const [appointment, setAppointment] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [typingUserRole, setTypingUserRole] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [doctorName, setDoctorName] = useState("Doctor");
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+
+  const currentUserRole = localStorage.getItem("role") || currentUser?.role || "patient";
+
+  // Fetch appointment to get other-party info and doctor name
+  useEffect(() => {
+    if (!id) return;
+    getAppointmentById(id)
+      .then((res) => {
+        const apt = res.data.data;
+        setAppointment(apt);
+        // Prefer fullName from Doctor profile model, fallback to User model
+        if (apt?.doctorProfile?.fullName) {
+          setDoctorName(apt.doctorProfile.fullName);
+        } else if (apt?.doctor) {
+          setDoctorName(displayName(apt.doctor));
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch appointment:", err));
+  }, [id]);
 
   // Initialize socket connection and set up listeners
   useEffect(() => {
@@ -39,17 +64,10 @@ export default function ChatPage() {
       socket.connected,
     );
 
-    // Check if already connected
     if (socket.connected) {
-      console.log("✅ ChatPage: Socket already connected");
       setConnected(true);
-    } else {
-      console.log(
-        "⚠️ ChatPage: Socket not yet connected, waiting for connect event",
-      );
     }
 
-    // Connection status
     const onConnect = () => {
       console.log("✅ ChatPage: connect event received");
       setConnected(true);
@@ -60,46 +78,40 @@ export default function ChatPage() {
       console.log("❌ ChatPage: Socket disconnected");
     };
 
-    // New message received
     const handleNewMessage = (message) => {
       console.log("✅ ChatPage: Received new_message:", message);
       setMessages((prev) => {
-        // Avoid duplicates
         if (prev.some((m) => m._id === message._id)) return prev;
+        // Replace optimistic message with server-confirmed one
+        const idx = prev.findIndex((m) => m._optimistic && m.message === message.message);
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = message;
+          return updated;
+        }
         return [...prev, message];
       });
-      if (currentUser) {
-        markAsRead(id, currentUser._id)
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        markAsRead(id, userId)
           .then(() => console.log("✅ Messages marked as read"))
           .catch((err) => console.warn("⚠️ Failed to mark as read:", err));
       }
     };
 
-    // Room joined confirmation
     const handleRoomJoined = ({ appointmentId }) => {
-      console.log(
-        "✅ ChatPage: room_joined event received for:",
-        appointmentId,
-      );
+      console.log("✅ ChatPage: room_joined event received for:", appointmentId);
       setConnected(true);
     };
 
-    // User typing indicator
-    const handleUserTyping = ({
-      userId,
-      role,
-      isTyping: typing,
-      senderRole,
-    }) => {
+    const handleUserTyping = ({ userId, role, isTyping: typing, senderRole }) => {
       console.log("ChatPage: User typing:", userId, role, typing);
-      // Don't show typing indicator for self
       if (userId !== currentUser?._id) {
         setIsTyping(typing);
         setTypingUserRole(senderRole || role);
       }
     };
 
-    // Error handler
     const handleError = (error) => {
       console.error("ChatPage: Socket error:", error);
     };
@@ -125,20 +137,6 @@ export default function ChatPage() {
   useEffect(() => {
     if (!id) return;
 
-    // Ensure socket is initialized
-    let socket = socketRef.current;
-    if (!socket) {
-      const s = getSocket();
-      if (s) {
-        socketRef.current = s;
-        socket = s;
-      } else {
-        console.error("Socket failed to initialize");
-        return;
-      }
-    }
-
-    // Fetch messages
     getMessages(id)
       .then((res) => {
         setMessages(res.data.messages || res.data.data || []);
@@ -148,7 +146,6 @@ export default function ChatPage() {
       })
       .catch((err) => console.error("Failed to fetch messages:", err));
 
-    // Join room (waits for connection if needed)
     joinChatRoom(id);
 
     return () => {
@@ -157,19 +154,30 @@ export default function ChatPage() {
   }, [id, currentUser]);
 
   const handleSend = (text) => {
-    if (!currentUser || !connected || !text.trim()) {
+    if (!connected || !text.trim()) {
       console.warn(
-        "Cannot send: currentUser=",
-        !!currentUser,
-        "connected=",
+        "Cannot send: connected=",
         connected,
         "text=",
         !!text.trim(),
       );
       return;
     }
+    const role = localStorage.getItem("role") || currentUser?.role || "patient";
+    const userId = localStorage.getItem("userId");
+
+    // Optimistic: show message immediately
+    const optimisticMsg = {
+      _id: `temp-${Date.now()}`,
+      senderId: userId,
+      senderRole: role,
+      message: text.trim(),
+      createdAt: new Date().toISOString(),
+      _optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     sendChatMessage(id, text.trim());
-    // Stop typing indicator
     emitStopTyping(id);
     clearTimeout(typingTimeoutRef.current);
   };
@@ -177,63 +185,96 @@ export default function ChatPage() {
   const handleTyping = useCallback(() => {
     if (!id) return;
     emitTyping(id);
-
-    // Stop typing after 1.5s of no input
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       emitStopTyping(id);
     }, 1500);
   }, [id]);
 
+  const otherPerson = appointment
+    ? currentUser?.role === "patient"
+      ? appointment.doctor
+      : appointment.patient
+    : null;
+
   return (
-    <div>
+    <div className="animate-fade-in max-w-3xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Consultation Chat
-          </h1>
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${connected ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
+          <Link
+            to={`/appointments/${id}`}
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-[#0d9488] dark:hover:text-teal-400 transition"
           >
-            {connected ? "Connected" : "Disconnected"}
-          </span>
+            <ArrowLeft className="w-4 h-4" /> Back to Appointment
+          </Link>
         </div>
-        <Link
-          to={`/appointments/${id}`}
-          className="text-sm text-gray-500 hover:text-blue-600 flex items-center space-x-1"
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full ${
+            connected
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+              : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+          }`}
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          <span>Back to Appointment</span>
-        </Link>
+          {connected ? "Connected" : "Disconnected"}
+        </span>
       </div>
 
+      {/* Chat container */}
       <div
-        className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 overflow-hidden flex flex-col"
-        style={{ height: "calc(100vh - 220px)" }}
+        className="glass-card rounded-2xl overflow-hidden flex flex-col"
+        style={{ height: "calc(100vh - 200px)" }}
       >
+        {/* Chat header */}
+        <div className="bg-gradient-to-r from-[#0d9488] to-[#0891b2] px-5 py-3.5 flex items-center gap-3 shrink-0">
+          {otherPerson ? (
+            <>
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
+                {getInitials(displayName(otherPerson))}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  {currentUser?.role === "patient"
+                    ? `Dr. ${displayName(otherPerson)}`
+                    : displayName(otherPerson)}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] text-white/60">Online</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-semibold text-white">Consultation Chat</p>
+            </div>
+          )}
+        </div>
+
+        {/* Info bar */}
+        <div className="px-4 py-1.5 bg-white dark:bg-[var(--glass-bg)] border-b border-gray-100 dark:border-white/5">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">
+            Messages are real-time via Socket.io
+          </span>
+        </div>
+
+        {/* Messages */}
         <ChatWindow
           messages={messages}
           isTyping={isTyping}
           typingUserRole={typingUserRole}
+          currentUserRole={currentUserRole}
+          doctorName={doctorName}
         />
+
+        {/* Input */}
         <ChatInput
           onSend={handleSend}
           onTyping={handleTyping}
-          disabled={!currentUser}
-          isTyping={isTyping}
-          typingUserRole={typingUserRole}
+          disabled={!connected}
         />
       </div>
     </div>

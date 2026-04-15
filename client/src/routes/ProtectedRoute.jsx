@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { getRole, hasToken } from "../auth/authStorage";
+import { useAuth } from "../context/AuthContext";
 import { getDoctorProfile } from "../api/doctorApi";
 
 // These are pages within the doctor layout that the doctor can legitimately
@@ -9,8 +9,9 @@ const DASHBOARD_PATHS = ["/doctor/dashboard", "/doctor/profile"];
 
 export default function ProtectedRoute({ allowedRoles = [] }) {
   const location = useLocation();
-  const token = hasToken();
-  const role = getRole();
+  const { user, loading: authLoading } = useAuth();
+  const token = !!user;
+  const role = user?.role;
 
   const [profileChecked, setProfileChecked] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -67,6 +68,15 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
 
   // ── Guards ──────────────────────────────────────────────────────────────────
 
+  // While auth is being restored, don't redirect — show a spinner.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   // Not logged in
   if (!token)
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -75,7 +85,7 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
   if (!allowedRoles.includes(role)) return <Navigate to="/" replace />;
 
   // Show a spinner only during the very first profile check (avoids flash)
-  if (role === "doctor" && !profileChecked) {
+  if (role === "doctor" && (!profileChecked || authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />

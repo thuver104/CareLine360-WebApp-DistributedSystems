@@ -1,5 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
 /* Entry CSS for the app — re-export admin stylesheet so main.jsx import resolves */
 @import './indexAdmin.css';
+@import "tailwindcss";
 
 /* Tailwind v4: use .dark class on <html> instead of @media prefers-color-scheme */
 @custom-variant dark (&:where(.dark, .dark *));

@@ -1,25 +1,17 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
+// Strip /api suffix — socket.io connects to the root, not the API path
+const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:1111").replace(/\/api\/?$/, "");
 
 let socket = null;
-let isConnecting = false;
 
 /**
  * Connect to the Socket.io server using the stored JWT access token.
  * Safe to call multiple times — won't create duplicate connections.
  */
 export const connectSocket = () => {
-  if (!SOCKET_URL) {
-    return null;
-  }
-
   if (socket?.connected) {
     console.log("🔌 Socket already connected:", socket.id);
-    return socket;
-  }
-
-  if (isConnecting) {
     return socket;
   }
 
@@ -37,23 +29,19 @@ export const connectSocket = () => {
   );
   console.log("🔌 Socket URL:", SOCKET_URL);
 
-  isConnecting = true;
-
   socket = io(SOCKET_URL, {
     auth: { token },
-    // Let socket.io negotiate transport and gracefully fall back when needed.
+    transports: ["websocket", "polling"],
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
   });
 
   socket.on("connect", () => {
-    isConnecting = false;
     console.log("✅ Socket connected successfully:", socket.id);
   });
 
   socket.on("connect_error", (err) => {
-    isConnecting = false;
     console.error("❌ Socket connection error:", err.message, err);
   });
 
@@ -75,7 +63,6 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
-    isConnecting = false;
     console.log("🔌 Socket manually disconnected");
   }
 };

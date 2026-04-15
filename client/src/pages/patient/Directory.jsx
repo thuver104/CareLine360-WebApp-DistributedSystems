@@ -57,7 +57,7 @@ function Tag({ children }) {
 const Spinner = ({ size = 38, text = "Loading data..." }) => (
   <div className="flex flex-col items-center justify-center py-12 min-h-[60vh] gap-4">
     <div
-      className="rounded-full border-4 border-gray-200 border-t-black animate-spin"
+      className="rounded-full border-4 border-teal-100 border-t-[#178d95] animate-spin"
       style={{ width: size, height: size }}
       aria-label="Loading"
     />
@@ -217,7 +217,7 @@ export default function Directory() {
           </div>
           <a
             href="/patient/dashboard"
-            className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95"
+            className="px-4 py-2 rounded-full bg-[#178d95] text-white text-sm shadow hover:bg-[#126b73] transition active:scale-[0.98] hover:shadow-sm hover:-translate-y-1 duration-300"
           >
             Back
           </a>
@@ -241,8 +241,8 @@ export default function Directory() {
                   className={
                     "flex-1 px-4 py-2 rounded-full text-sm border transition " +
                     (tab === "hospitals"
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")
+                      ? "bg-[#178d95] text-white border-[#178d95]"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-teal-50 hover:border-teal-300 transition transform hover:-translate-y-1")
                   }
                 >
                   Hospitals
@@ -252,8 +252,8 @@ export default function Directory() {
                   className={
                     "flex-1 px-4 py-2 rounded-full text-sm border transition " +
                     (tab === "doctors"
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")
+                      ? "bg-[#178d95] text-white border-[#178d95]"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-teal-50 hover:border-teal-300 transition transform hover:-translate-y-1")
                   }
                 >
                   Doctors
@@ -262,7 +262,7 @@ export default function Directory() {
 
               <div className="mt-4">
                 <input
-                  className="w-full h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+                  className="w-full h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:bg-teal-50 hover:border-teal-300 transition"
                   placeholder={
                     tab === "hospitals"
                       ? "Search hospitals…"
@@ -290,8 +290,8 @@ export default function Directory() {
                         className={
                           "w-full text-left p-4 rounded-3xl border transition " +
                           (isActive
-                            ? "border-gray-900 bg-gray-900 text-white"
-                            : "border-gray-100 hover:shadow-sm bg-white")
+                            ? "border-[#178d95] bg-[#178d95] text-white"
+                            : "border-gray-100 hover:shadow-sm bg-white transition transform hover:-translate-y-1")
                         }
                       >
                         <div className="text-sm font-semibold">
@@ -330,7 +330,7 @@ export default function Directory() {
                         className={
                           "w-full text-left p-4 rounded-3xl border transition " +
                           (isActive
-                            ? "border-gray-900 bg-gray-900 text-white"
+                            ? "border-[#178d95] bg-[#178d95] text-white"
                             : "border-gray-100 hover:shadow-sm bg-white")
                         }
                       >
@@ -410,8 +410,8 @@ export default function Directory() {
                         className={
                           "text-xs px-3 py-1 rounded-full border " +
                           (tab === "hospitals"
-                            ? "bg-gray-50 border-gray-200 text-gray-700"
-                            : "bg-blue-50 border-blue-100 text-blue-700")
+                            ? "bg-teal-50 border-teal-200 text-teal-700"
+                            : "bg-teal-50 border-teal-100 text-teal-700")
                         }
                       >
                         {tab === "hospitals" ? "Hospital" : "Doctor"}
@@ -441,7 +441,7 @@ export default function Directory() {
                               target="_blank"
                               rel="noreferrer"
                               href={`https://www.google.com/maps?q=${active.lat},${active.lng}`}
-                              className="inline-flex px-4 py-2 rounded-2xl bg-black text-white text-sm hover:opacity-95"
+                              className="inline-flex px-4 py-2 rounded-2xl bg-[#178d95] text-white text-sm hover:bg-[#126b73] transition active:scale-[0.98] hover:shadow-sm hover:-translate-y-1 duration-300"
                             >
                               Open in Maps
                             </a>
@@ -537,7 +537,7 @@ export default function Directory() {
                         <div className="mt-6">
                           <a
                             href={`/appointments/book?doctorId=${active?._id}`}
-                            className="inline-flex px-4 py-2 rounded-2xl bg-black text-white text-sm hover:opacity-95"
+                            className="inline-flex px-4 py-2 rounded-2xl bg-[#178d95] text-white text-sm hover:opacity-95"
                           >
                             Book Appointment
                           </a>

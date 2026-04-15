@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api/axios";
 import { motion } from "framer-motion";
+import PatientNavbar from "./components/PatientNavbar";
 
 export default function Documents() {
   const [docs, setDocs] = useState([]);
@@ -185,7 +186,7 @@ export default function Documents() {
   const Spinner = ({ size = 28 }) => (
     <div className="flex flex-col items-center justify-center py-12">
       <div
-        className="rounded-full border-3 border-gray-200 border-t-black animate-spin"
+        className="rounded-full border-3 border-teal-100 border-t-[#178d95] animate-spin"
         style={{ width: size, height: size }}
         aria-label="Loading"
       />
@@ -200,110 +201,7 @@ export default function Documents() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
       {/* ✅ NAV BAR (copied style from dashboard) */}
-      <div className="sticky top-0 z-10 backdrop-blur bg-white">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            <div className="w-9 h-9 rounded-full bg-gray-600/10 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-black" />
-            </div>
-            <span className="font-semibold text-gray-900">CareLine360</span>
-          </motion.div>
-
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            {navItems.map((item) => {
-              const isActive = activePath === item.href;
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    "relative py-1 transition-colors " +
-                    (isActive
-                      ? "text-gray-900 font-medium"
-                      : "hover:text-gray-900")
-                  }
-                >
-                  {item.label}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-underline"
-                      className="absolute left-0 right-0 -bottom-2 h-[2px] bg-gray-900 rounded-full"
-                    />
-                  )}
-                </a>
-              );
-            })}
-          </div>
-
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            <button className="w-9 h-9 rounded-full bg-white shadow-xl grid place-items-center transition-transform hover:scale-[1.03] active:scale-[0.98]">
-              <span className="text-lg">🔔</span>
-            </button>
-
-            <a
-              href="/patient/profile"
-              className="w-10 h-10 rounded-full overflow-hidden shadow-xl transition-transform hover:scale-[1.05] active:scale-[0.98] border border-gray-200"
-              title="Profile"
-            >
-              {me?.avatarUrl ? (
-                <img
-                  src={me.avatarUrl}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // if URL broken, fallback to icon (no crash)
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm">
-                  👤
-                </div>
-              )}
-            </a>
-
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow-xl hover:opacity-95 transition active:scale-[0.98]"
-            >
-              Logout
-            </button>
-          </motion.div>
-        </div>
-
-        {/* Mobile nav */}
-        <div className="md:hidden border-t bg-white/60">
-          <div className="max-w-6xl mx-auto px-5 py-2 flex gap-2 overflow-x-auto">
-            {navItems.map((item) => {
-              const isActive = activePath === item.href;
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    "whitespace-nowrap px-3 py-2 rounded-full text-sm border transition " +
-                    (isActive
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-700 border-gray-200 active:scale-[0.98]")
-                  }
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <PatientNavbar/>
 
       {/* PAGE CONTENT */}
       <div className="max-w-5xl mx-auto p-6">
@@ -316,7 +214,7 @@ export default function Documents() {
           </div>
           <a
             href="/patient/dashboard"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 bg-[#178d95] text-sm font-medium text-white hover:bg-[#126b73] active:scale-[0.98] transition shadow-sm hover:shadow-md hover:-translate-y-1 duration-300"
           >
             ← Back
           </a>
@@ -334,7 +232,7 @@ export default function Documents() {
                 Category
               </label>
               <select
-                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -352,7 +250,7 @@ export default function Documents() {
                 <span className="normal-case font-normal">(optional)</span>
               </label>
               <input
-                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Blood Test - Feb"
@@ -363,7 +261,7 @@ export default function Documents() {
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 File
               </label>
-              <label className="flex items-center h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition shadow-sm overflow-hidden">
+              <label className="flex items-center h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-500 cursor-pointer hover:border-teal-300 hover:bg-teal-50 transition shadow-sm overflow-hidden">
                 <span className="truncate">
                   {file ? file.name : "Choose file…"}
                 </span>
@@ -384,7 +282,7 @@ export default function Documents() {
           <div className="mt-5">
             <button
               onClick={upload}
-              className="px-6 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 active:scale-[0.98] transition shadow-sm"
+              className="px-6 py-2.5 rounded-xl bg-[#178d95] text-white text-sm font-semibold hover:bg-[#126b73] active:scale-[0.98] transition shadow-sm hover:shadow-md hover:-translate-y-1 duration-300"
             >
               Upload Document
             </button>
@@ -402,7 +300,7 @@ export default function Documents() {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="h-10 w-40 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+              className="h-10 w-40 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
             >
               <option value="all">All</option>
               {categories.map((c) => (
@@ -417,7 +315,7 @@ export default function Documents() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title or filename…"
-              className="h-10 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+              className="h-10 flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
             />
 
             {/* Clear */}
@@ -426,7 +324,7 @@ export default function Documents() {
                 setSearch("");
                 setFilterCategory("all");
               }}
-              className="h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-gray-100 hover:border-gray-300 active:scale-[0.98] transition shadow-sm whitespace-nowrap"
+              className="h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-teal-50 hover:border-teal-300 active:scale-[0.98] transition shadow-sm whitespace-nowrap"
             >
               Clear
             </button>
@@ -441,7 +339,7 @@ export default function Documents() {
             </div>
             <button
               onClick={loadDocs}
-              className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-900 text-sm hover:bg-gray-200 transition"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-teal-50 hover:border-teal-300 active:scale-[0.98] transition shadow-sm whitespace-nowrap"
             >
               Refresh
             </button>
@@ -475,7 +373,7 @@ export default function Documents() {
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => handleOpen(d)}
-                      className="px-3 py-2 rounded-xl bg-blue-600 text-white text-sm hover:opacity-95 transition"
+                      className="px-3 py-2 rounded-xl bg-[#178d95] text-white text-sm hover:bg-[#126b73] transition"
                     >
                       Open
                     </button>
@@ -489,7 +387,7 @@ export default function Documents() {
 
                     <button
                       onClick={() => removePermanent(d._id)}
-                      className="px-3 py-2 rounded-xl bg-red-600 text-white text-sm hover:opacity-95 transition"
+                      className="px-3 py-2 rounded-xl bg-red-600 text-white text-sm hover:opacity-80 transition"
                     >
                       Delete Permanently
                     </button>

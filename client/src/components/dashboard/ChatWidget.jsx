@@ -31,6 +31,7 @@ export default function ChatWidget({ appointment, onClose }) {
   const myUserId = localStorage.getItem("userId");
   const appointmentId = appointment?._id;
   const patientName = appointment?.patientProfile?.fullName || "Patient";
+  const patientAvatar = appointment?.patientProfile?.avatarUrl || null;
 
   // ── Load history + join Socket.io room ────────────────────────────────────
   useEffect(() => {
@@ -42,6 +43,11 @@ export default function ChatWidget({ appointment, onClose }) {
       console.error("❌ ChatWidget: Socket not initialized");
       setError("Socket connection failed");
       return;
+    }
+
+    // If the socket is already connected, mark as connected immediately
+    if (socket.connected) {
+      setConnected(true);
     }
 
     // Load history via REST first
@@ -85,13 +91,21 @@ export default function ChatWidget({ appointment, onClose }) {
         _id: msg._id,
         sender: msg.senderName || msg.sender,
         appointmentId: msg.appointmentId,
-        text: msg.text?.substring(0, 50),
+        text: msg.message?.substring(0, 50),
       });
       setMessages((prev) => {
-        // Avoid duplicates
+        // Avoid duplicates (by real _id)
         if (prev.some((m) => m._id === msg._id)) {
           console.log("⚠️ ChatWidget: Duplicate message detected, skipping");
           return prev;
+        }
+        // Replace optimistic message with server-confirmed one
+        const hasOptimistic = prev.some((m) => m._optimistic && m.message === msg.message);
+        if (hasOptimistic) {
+          const idx = prev.findIndex((m) => m._optimistic && m.message === msg.message);
+          const updated = [...prev];
+          updated[idx] = msg;
+          return updated;
         }
         console.log("✅ ChatWidget: Adding new message to state");
         return [...prev, msg];
@@ -112,7 +126,10 @@ export default function ChatWidget({ appointment, onClose }) {
     const onMessagesRead = () => {
       console.log("👁️ ChatWidget: Messages marked as read");
       setMessages((prev) =>
-        prev.map((m) => (m.senderId === myUserId ? { ...m, isRead: true } : m)),
+        prev.map((m) => {
+          const sid = m.senderId?._id || m.senderId || m.sender;
+          return String(sid) === myUserId ? { ...m, isRead: true } : m;
+        }),
       );
     };
 
@@ -173,11 +190,24 @@ export default function ChatWidget({ appointment, onClose }) {
       return;
     }
 
-    console.log("📤 ChatWidget: Sending message, length:", text.trim().length);
+    const trimmed = text.trim();
+    console.log("📤 ChatWidget: Sending message, length:", trimmed.length);
     setSending(true);
 
+    // Optimistic: show message immediately in the UI
+    const optimisticMsg = {
+      _id: `temp-${Date.now()}`,
+      senderId: myUserId,
+      senderRole: "doctor",
+      message: trimmed,
+      createdAt: new Date().toISOString(),
+      isRead: false,
+      _optimistic: true,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     // Send message using helper function
-    sendChatMessage(appointmentId, text.trim());
+    sendChatMessage(appointmentId, trimmed);
 
     // Stop typing indicator
     emitStopTyping(appointmentId);
@@ -185,7 +215,7 @@ export default function ChatWidget({ appointment, onClose }) {
 
     setText("");
     setSending(false);
-    console.log("✅ ChatWidget: Message sent (optimistic), cleared input");
+    console.log("✅ ChatWidget: Message sent, cleared input");
   }, [text, sending, appointmentId, connected]);
 
   const handleKey = (e) => {
@@ -221,9 +251,17 @@ export default function ChatWidget({ appointment, onClose }) {
         <div className="bg-teal-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-teal-400 flex items-center justify-center text-white text-sm font-bold">
-                {patientName[0]}
-              </div>
+              {patientAvatar ? (
+                <img
+                  src={patientAvatar}
+                  alt={patientName}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-teal-400 flex items-center justify-center text-white text-sm font-bold">
+                  {patientName[0]}
+                </div>
+              )}
               <span
                 className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-teal-600 ${connected ? "bg-green-400" : "bg-gray-400"}`}
               />
@@ -268,9 +306,8 @@ export default function ChatWidget({ appointment, onClose }) {
             </div>
           ) : (
             messages.map((msg) => {
-              const isMe =
-                msg.senderId === myUserId ||
-                msg.senderId?.toString() === myUserId;
+              const senderId = msg.senderId?._id || msg.senderId || msg.sender;
+              const isMe = String(senderId) === myUserId;
               return (
                 <div
                   key={msg._id || msg.createdAt}

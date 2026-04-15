@@ -1,0 +1,313 @@
+/* ════════════════════════════════════════════════════════
+   CareLine360 – Landing Page
+   Design System: Luxury / Editorial
+   Fonts: Playfair Display + Inter
+════════════════════════════════════════════════════════ */
+
+/* ─── Paper Noise Overlay ────────────────────── */
+.landing-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* ─── Typography Base ────────────────────────── */
+.lp-serif {
+  font-family: "Playfair Display", Georgia, serif;
+}
+.lp-sans {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* ─── Overline / Label ───────────────────────── */
+.lp-overline {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #6c6863;
+}
+
+/* ─── Button: Primary (Gold Slide) ───────────── */
+.lp-btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.25rem;
+  padding: 0 2.5rem;
+  background: #1a1a1a;
+  color: #f9f8f6;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: box-shadow 0.5s ease-out;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+.lp-btn-primary .btn-gold-bg {
+  position: absolute;
+  inset: 0;
+  background: #0d9488;
+  transform: translateX(-101%);
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.lp-btn-primary:hover .btn-gold-bg {
+  transform: translateX(0);
+}
+.lp-btn-primary .btn-label {
+  position: relative;
+  z-index: 10;
+}
+.lp-btn-primary:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ─── Button: Secondary (Outline Fill) ───────── */
+.lp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.25rem;
+  padding: 0 2.5rem;
+  background: transparent;
+  color: #1a1a1a;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid #1a1a1a;
+  cursor: pointer;
+  transition: all 0.5s ease-out;
+}
+.lp-btn-secondary:hover {
+  background: #1a1a1a;
+  color: #f9f8f6;
+}
+
+/* ─── Stats Counter ──────────────────────────── */
+.lp-stat-number {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #1a1a1a;
+}
+@media (min-width: 768px) {
+  .lp-stat-number {
+    font-size: 4rem;
+  }
+}
+
+/* ─── Feature Card ───────────────────────────── */
+.lp-feature-card {
+  border-top: 1px solid #1a1a1a;
+  padding: 2rem 0;
+  transition: background 0.7s ease-out;
+}
+.lp-feature-card:hover {
+  background: rgba(249, 248, 246, 0.5);
+}
+
+/* ─── Gold accent on hover ───────────────────── */
+.lp-feature-card:hover .lp-feature-icon {
+  color: #0d9488;
+  border-color: #0d9488;
+  transition: all 0.5s ease-out;
+}
+
+/* ─── Testimonial Card ───────────────────────── */
+.lp-testimonial {
+  border-left: 3px solid #1a1a1a;
+  padding-left: 1.5rem;
+  transition: all 0.5s ease-out;
+}
+.lp-testimonial:hover {
+  border-left-color: #0d9488;
+  padding-left: 2rem;
+}
+
+/* ─── CTA Section ────────────────────────────── */
+.lp-cta-section {
+  background: #1a1a1a;
+  color: #f9f8f6;
+}
+
+/* ─── Vertical Text ──────────────────────────── */
+.lp-vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #6c6863;
+}
+
+/* ─── Hero Image Treatment ───────────────────── */
+.lp-hero-img-wrapper {
+  position: relative;
+  overflow: hidden;
+  /* Move doctor image upwards for better visual balance */
+  transform: translateY(-50px);
+  margin-bottom: -50px;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Responsive: Tablet adjustment */
+@media (max-width: 1024px) {
+  .lp-hero-img-wrapper {
+    transform: translateY(-35px);
+    margin-bottom: -35px;
+  }
+}
+
+/* Responsive: Mobile adjustment */
+@media (max-width: 768px) {
+  .lp-hero-img-wrapper {
+    transform: translateY(-25px);
+    margin-bottom: -25px;
+  }
+}
+
+/* Responsive: Small mobile adjustment */
+@media (max-width: 480px) {
+  .lp-hero-img-wrapper {
+    transform: translateY(-15px);
+    margin-bottom: -15px;
+  }
+}
+
+.lp-hero-img-wrapper img {
+  transition:
+    transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+.lp-hero-img-wrapper:hover img {
+  transform: scale(1.03);
+}
+
+/* ─── Scroll Velocity Override ───────────────── */
+.lp-scroll-velocity {
+  font-family: "Playfair Display", Georgia, serif;
+  color: rgba(26, 26, 26, 0.5);
+  -webkit-text-stroke: 1px rgba(26, 26, 26, 0.08);
+}
+
+/* ─── Drop Cap ───────────────────────────────── */
+.lp-drop-cap::first-letter {
+  float: left;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 4.5rem;
+  line-height: 0.8;
+  margin-right: 0.75rem;
+  color: #1a1a1a;
+  font-weight: 400;
+}
+
+/* ─── Smooth Scroll ──────────────────────────── */
+.lp-smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* ─── Nav Link ───────────────────────────────── */
+.lp-nav-link {
+  position: relative;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: color 0.5s ease-out;
+  cursor: pointer;
+  padding-bottom: 4px;
+}
+.lp-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: #0d9488;
+  border-radius: 1px;
+  transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.lp-nav-link:hover {
+  color: #0d9488;
+}
+.lp-nav-link:hover::after {
+  width: 100%;
+}
+.lp-nav-link--active {
+  color: #0d9488;
+  font-weight: 600;
+}
+.lp-nav-link--active::after {
+  width: 100%;
+}
+
+/* ─── FAQ accordion ──────────────────────────── */
+.lp-faq-item {
+  border-top: 1px solid rgba(26, 26, 26, 0.1);
+}
+.lp-faq-question {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.lp-faq-question:hover {
+  color: #0d9488;
+}
+.lp-faq-answer {
+  overflow: hidden;
+  transition:
+    max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.4s ease;
+}
+
+/* ─── Footer ─────────────────────────────────── */
+.lp-footer {
+  background: #1a1a1a;
+  color: #f9f8f6;
+}
+.lp-footer a {
+  color: rgba(249, 248, 246, 0.6);
+  text-decoration: none;
+  transition: color 0.5s ease-out;
+}
+.lp-footer a:hover {
+  color: #0d9488;
+}
+
+/* ─── Reduced Motion ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-img-wrapper img {
+    transition: none;
+  }
+  .lp-btn-primary .btn-gold-bg {
+    transition: none;
+  }
+  .lp-feature-card,
+  .lp-testimonial,
+  .lp-btn-secondary {
+    transition: none;
+  }
+}

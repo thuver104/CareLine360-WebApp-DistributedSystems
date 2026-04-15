@@ -1,18 +1,19 @@
 import { useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import { connectSocket, getSocket } from "../socket/socketClient";
 
 export default function useSocket() {
   const socketRef = useRef(null);
 
   if (!socketRef.current) {
-    socketRef.current = io();
+    // Use the shared authenticated socket from socketClient
+    socketRef.current = getSocket() || connectSocket();
   }
 
   useEffect(() => {
-    return () => {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    };
+    // Ensure connection exists
+    if (!socketRef.current?.connected) {
+      socketRef.current = connectSocket();
+    }
   }, []);
 
   return socketRef.current;

@@ -5,6 +5,10 @@ import { CONSULTATION_TYPES, TIME_SLOTS } from "../../utils/constants";
 import { useToast } from "../../context/ToastContext";
 import { displayName } from "../../utils/displayName";
 
+const inputClass =
+  "w-full h-10 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-3 text-sm text-gray-800 dark:text-gray-200 " +
+  "placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] transition shadow-sm";
+
 export default function BookingForm({ symptoms, priority, onBooked }) {
   const toast = useToast();
   const [doctors, setDoctors] = useState([]);
@@ -58,22 +62,22 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-100 p-6">
-      <h2 className="text-lg font-semibold mb-4">Book Appointment</h2>
+    <div className="glass-card rounded-2xl p-6">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Book Appointment</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg">{error}</div>
+        <div className="mb-4 p-3 bg-red-50 dark:bg-rose-900/30 text-red-700 dark:text-rose-300 text-sm rounded-xl">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Doctor</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Doctor</label>
           <select
             name="doctor"
             value={form.doctor}
             onChange={handleChange}
             required
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+            className={inputClass}
           >
             <option value="">Select a doctor</option>
             {doctors.map((doc) => (
@@ -86,7 +90,7 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
             <input
               type="date"
               name="date"
@@ -94,17 +98,17 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
               onChange={handleChange}
               min={today}
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
             <select
               name="time"
               value={form.time}
               onChange={handleChange}
               required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              className={inputClass}
             >
               <option value="">Select time</option>
               {TIME_SLOTS.map((slot) => (
@@ -115,12 +119,12 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Type</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Consultation Type</label>
           <select
             name="consultationType"
             value={form.consultationType}
             onChange={handleChange}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+            className={inputClass}
           >
             {CONSULTATION_TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -129,20 +133,20 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Additional Notes</label>
           <textarea
             name="notes"
             value={form.notes}
             onChange={handleChange}
             rows={2}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0d9488]/20 focus:border-[#0d9488] transition shadow-sm"
           />
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-sm shadow-blue-200"
+          className="w-full py-2.5 px-4 bg-[#0d9488] text-white text-sm font-medium rounded-xl hover:bg-[#0b7c72] active:scale-[0.98] disabled:opacity-50 transition shadow-sm"
         >
           {submitting ? "Booking..." : "Book Appointment"}
         </button>

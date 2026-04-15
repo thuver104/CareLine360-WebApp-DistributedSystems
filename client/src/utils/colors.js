@@ -73,3 +73,10 @@ export const PRIORITY_BADGE = {
   high:   "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   urgent: "bg-rose-100   text-rose-700   dark:bg-rose-900/40   dark:text-rose-300",
 };
+
+/** Payment status badge classes */
+export const PAYMENT_BADGE = {
+  pending:  "bg-amber-100   text-amber-800   dark:bg-amber-900/40  dark:text-amber-300",
+  verified: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
+  failed:   "bg-rose-100    text-rose-800    dark:bg-rose-900/40    dark:text-rose-300",
+};

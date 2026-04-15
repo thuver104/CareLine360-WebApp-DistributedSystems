@@ -2,8 +2,6 @@ import api from "./axios";
 
 export const createPayment = (data) => api.post("/payments", data);
 
-export const createCheckoutSession = (data) => api.post("/payments/checkout-session", data);
-
 export const getPaymentById = (id) => api.get(`/payments/${id}`);
 
 export const getPaymentByAppointment = (appointmentId) =>
@@ -12,3 +10,6 @@ export const getPaymentByAppointment = (appointmentId) =>
 export const verifyPayment = (id) => api.patch(`/payments/${id}/verify`);
 
 export const failPayment = (id) => api.patch(`/payments/${id}/fail`);
+
+export const downloadReceipt = (id) =>
+  api.get(`/payments/${id}/receipt`, { responseType: "blob" });

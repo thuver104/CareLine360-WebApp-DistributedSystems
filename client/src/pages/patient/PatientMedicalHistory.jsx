@@ -38,7 +38,7 @@ function badgeForVisitType(type) {
   if (t === "emergency") return "bg-red-50 text-red-700 border-red-100";
   if (t === "follow-up")
     return "bg-yellow-50 text-yellow-800 border-yellow-100";
-  return "bg-blue-50 text-blue-700 border-blue-100";
+  return "bg-teal-50 text-teal-700 border-teal-100";
 }
 
 function normalizeList(data) {
@@ -300,10 +300,10 @@ export default function PatientMedicalHistory() {
 
         <div className="flex items-center justify-between gap-3 mb-5">
           <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-semibold text-gray-900">
               Medical History
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-[#178d95] mt-1">
               {me?.fullName
                 ? `Patient: ${me.fullName}`
                 : "Your visits, diagnosis, and prescriptions"}
@@ -314,14 +314,14 @@ export default function PatientMedicalHistory() {
             <button
               onClick={openPdfPreview}
               disabled={!selected || pdfLoading}
-              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95 disabled:opacity-50"
+              className="px-4 py-2 rounded-full bg-[#178d95] text-white text-sm shadow hover:bg-[#126b73] disabled:opacity-50 transition hover:shadow-sm hover:-translate-y-1 duration-300"
             >
               {pdfLoading ? "Preparing..." : "Preview PDF"}
             </button>
 
             <a
               href="/patient/dashboard"
-              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow hover:opacity-95"
+              className="px-4 py-2 rounded-full bg-[#178d95] text-white text-sm shadow hover:bg-[#126b73] disabled:opacity-50 transition hover:shadow-sm hover:-translate-y-1 duration-300"
             >
               Back
             </a>
@@ -339,13 +339,13 @@ export default function PatientMedicalHistory() {
           >
             <div className="flex gap-3">
               <input
-                className="flex-1 h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+                className="flex-1 h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
                 placeholder="Search diagnosis, symptoms, notes…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
               <select
-                className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-300 transition"
+                className="h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#178d95] focus:border-[#178d95] shadow-sm hover:border-teal-300 hover:bg-teal-50 transition"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
               >
@@ -374,8 +374,8 @@ export default function PatientMedicalHistory() {
                       className={
                         "w-full text-left p-4 rounded-3xl border transition " +
                         (isActive
-                          ? "border-gray-900 bg-gray-900 text-white"
-                          : "border-gray-100 hover:shadow-sm bg-white")
+                          ? "border-[#178d95] bg-[#178d95] text-white"
+                          : "border-gray-200 hover:shadow-sm bg-white hover:bg-gray-50 transition transform hover:-translate-y-1")
                       }
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -664,14 +664,14 @@ export default function PatientMedicalHistory() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={downloadFromPreview}
-                  className="px-4 py-2 rounded-xl bg-black text-white text-sm hover:opacity-95"
+                  className="px-4 py-2 rounded-xl bg-[#178d95] text-white text-sm hover:bg-[#126b73] transition"
                 >
                   Download
                 </button>
 
                 <button
                   onClick={() => setPdfOpen(false)}
-                  className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
+                  className="px-4 py-2 rounded-xl border border-teal-200 text-sm hover:bg-teal-50 hover:border-teal-300 transition"
                 >
                   Close
                 </button>
@@ -719,7 +719,7 @@ function Mini({ label, value }) {
 function Vital({ label, value, unit }) {
   const empty = value === undefined || value === null || value === "";
   return (
-    <div className="p-3 rounded-2xl bg-white border border-gray-100">
+    <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100">
       <div className="text-xs text-gray-500">{label}</div>
       <div className="text-sm font-semibold text-gray-900 mt-1">
         {empty ? "—" : value}

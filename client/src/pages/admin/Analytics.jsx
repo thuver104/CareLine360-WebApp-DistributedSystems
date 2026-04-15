@@ -84,18 +84,12 @@ const Analytics = () => {
       </div>
     );
 
-  const monthlyHistory = Array.isArray(stats.monthlyHistory)
-    ? stats.monthlyHistory
-    : [];
-
-  const responderCount = stats.totalResponders ?? 0;
-
   const roleData = {
     labels: ["Patients", "Doctors", "Responders"],
     datasets: [
       {
         label: "Users by Role",
-        data: [stats.totalPatients || 0, stats.totalDoctors || 0, responderCount],
+        data: [stats.totalPatients, stats.totalDoctors, stats.totalResponders],
         backgroundColor: ["#14b8a6", "#3b82f6", "#8b5cf6"],
         borderColor: "transparent",
         hoverOffset: 15,
@@ -104,11 +98,11 @@ const Analytics = () => {
   };
 
   const responseTimeData = {
-    labels: monthlyHistory.map((m) => m.name),
+    labels: stats.monthlyHistory.map((m) => m.name),
     datasets: [
       {
         label: "Emergency Cases Surge",
-        data: monthlyHistory.map((m) => m.count),
+        data: stats.monthlyHistory.map((m) => m.count),
         fill: true,
         borderColor: "#0d9488",
         backgroundColor: "rgba(13, 148, 136, 0.1)",

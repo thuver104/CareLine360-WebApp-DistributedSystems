@@ -44,7 +44,6 @@ const Dashboard = () => {
   const { isDark } = useTheme();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchStats();
@@ -54,14 +53,8 @@ const Dashboard = () => {
     try {
       const response = await api.get("/admin/stats");
       setStats(response.data.data);
-      setErrorMessage("");
     } catch (error) {
-      const message =
-        error?.response?.status === 401 || error?.response?.status === 403
-          ? "Session expired or unauthorized. Please sign in again."
-          : "Failed to load dashboard statistics. Please verify service connectivity.";
-      setErrorMessage(message);
-      toast.error(message);
+      toast.error("Failed to load dashboard stats");
       console.error(error);
     } finally {
       setLoading(false);
@@ -81,35 +74,19 @@ const Dashboard = () => {
   if (!stats)
     return (
       <div className="p-8 text-center text-red-600 bg-red-500/10 border border-red-500/20 rounded-[24px] font-black uppercase tracking-widest text-xs">
-        {errorMessage ||
-          "Failed to load dashboard statistics. Please verify service connectivity."}
+        Failed to synchronize with medical database. Please verify connection.
       </div>
     );
-
-  const totalUsers = stats?.totalUsers ?? 0;
-  const totalPatients = stats?.totalPatients ?? 0;
-  const totalDoctors = stats?.totalDoctors ?? 0;
-  const totalCases = stats?.totalEmergencies ?? stats?.totalAppointments ?? 0;
-  const resolvedCases =
-    stats?.resolvedEmergencies ?? stats?.completedAppointments ?? 0;
-  const pendingCases =
-    stats?.emergencyStatusBreakdown?.PENDING ?? stats?.pendingAppointments ?? 0;
-  const dispatchedCases = stats?.emergencyStatusBreakdown?.DISPATCHED ?? 0;
-  const arrivedCases = stats?.emergencyStatusBreakdown?.ARRIVED ?? 0;
-  const avgResponseTime = stats?.avgResponseTime ?? 0;
-  const successRate =
-    stats?.successRate ??
-    (totalCases > 0 ? Math.round((resolvedCases / totalCases) * 100) : 0);
 
   const chartData = {
     labels: ["Pending", "Dispatched", "Arrived", "Resolved"],
     datasets: [
       {
         data: [
-          pendingCases,
-          dispatchedCases,
-          arrivedCases,
-          resolvedCases,
+          stats.emergencyStatusBreakdown.PENDING,
+          stats.emergencyStatusBreakdown.DISPATCHED,
+          stats.emergencyStatusBreakdown.ARRIVED,
+          stats.emergencyStatusBreakdown.RESOLVED,
         ],
         backgroundColor: ["#f59e0b", "#3b82f6", "#8b5cf6", "#10b981"],
         borderWidth: 0,
@@ -140,7 +117,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Members"
-          value={totalUsers}
+          value={stats.totalUsers}
           icon={
             <Users size={24} className="text-blue-600 dark:text-blue-400" />
           }
@@ -149,7 +126,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Active Alerts"
-          value={Math.max(totalCases - resolvedCases, 0)}
+          value={stats.totalEmergencies - stats.resolvedEmergencies}
           icon={
             <AlertCircle
               size={24}
@@ -161,7 +138,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Avg Response"
-          value={`${avgResponseTime} min`}
+          value={`${stats.avgResponseTime} min`}
           icon={
             <Clock size={24} className="text-indigo-600 dark:text-indigo-400" />
           }
@@ -170,7 +147,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Resolved Cases"
-          value={resolvedCases}
+          value={stats.resolvedEmergencies}
           icon={
             <CheckCircle2
               size={24}
@@ -190,7 +167,7 @@ const Dashboard = () => {
                 Total Patients
               </p>
               <h3 className="text-3xl font-bold mt-1">
-                {totalPatients}
+                {stats?.totalPatients || 0}
               </h3>
             </div>
             <Users className="text-blue-200/50" size={32} />
@@ -204,7 +181,7 @@ const Dashboard = () => {
                 Active Doctors
               </p>
               <h3 className="text-3xl font-bold mt-1">
-                {totalDoctors}
+                {stats?.totalDoctors || 0}
               </h3>
             </div>
             <Stethoscope className="text-green-200/50" size={32} />
@@ -218,7 +195,7 @@ const Dashboard = () => {
                 Total Emergencies
               </p>
               <h3 className="text-3xl font-bold mt-1">
-                {totalCases}
+                {stats?.totalEmergencies || 0}
               </h3>
             </div>
             <Activity className="text-purple-200/50" size={32} />
@@ -232,7 +209,7 @@ const Dashboard = () => {
                 Resolved Cases
               </p>
               <h3 className="text-3xl font-bold mt-1">
-                {resolvedCases}
+                {stats?.resolvedEmergencies || 0}
               </h3>
             </div>
             <CheckCircle2 className="text-orange-200/50" size={32} />
@@ -293,7 +270,9 @@ const Dashboard = () => {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black text-[var(--text-primary)]">
-                  {successRate}
+                  {Math.round(
+                    (stats.resolvedEmergencies / stats.totalEmergencies) * 100,
+                  ) || 0}
                   %
                 </p>
                 <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">
@@ -318,7 +297,7 @@ const Dashboard = () => {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black text-[var(--text-primary)]">
-                  {totalDoctors} / {totalPatients}
+                  {stats.totalDoctors || 0} / {stats.totalPatients || 0}
                 </p>
                 <p className="text-[10px] font-black text-blue-500 uppercase tracking-tighter">
                   Doctors / Patients
@@ -340,11 +319,11 @@ const Dashboard = () => {
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
                   System performance metrics indicate high throughput with{" "}
                   <span className="font-bold text-[var(--text-primary)]">
-                    {successRate}% emergency resolution
+                    {stats.successRate}% emergency resolution
                   </span>
                   . The network currently supports{" "}
                   <span className="font-bold text-[var(--text-primary)]">
-                    {totalUsers} registered entities
+                    {stats.totalUsers} registered entities
                   </span>{" "}
                   across all medical tiers.
                 </p>

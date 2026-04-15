@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:1111/api";
+const baseURL = import.meta.env.VITE_API_URL;
 
-console.log("API Base URL:", baseURL);
+console.log("API Base URL:", import.meta.env.VITE_API_URL);
 
 
 export const api = axios.create({ baseURL });
@@ -25,9 +25,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) return Promise.reject(err);
 
-      const refreshRes = await axios.post(`${baseURL}/auth/refresh`, {
-        refreshToken,
-      });
+      const refreshRes = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
       localStorage.setItem("accessToken", refreshRes.data.accessToken);
 
       original.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;

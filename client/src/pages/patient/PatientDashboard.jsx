@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api/axios";
 import { motion, AnimatePresence } from "framer-motion";
 import EmergencySOSButton from "../../components/EmergencySOSButton";
+import PatientNavbar from "./components/PatientNavbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -106,108 +107,7 @@ export default function PatientDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
       {/* Top Nav */}
-      <div className="sticky top-0 z-10 backdrop-blur bg-white">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            <div className="w-9 h-9 rounded-full bg-gray-600/10 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-black" />
-            </div>
-            <span className="font-semibold text-gray-900">CareLine360</span>
-          </motion.div>
-
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            {navItems.map((item) => {
-              const isActive = item.href === "/appointments"
-                    ? activePath.startsWith("/appointments")
-                    : activePath === item.href;
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    "relative py-1 transition-colors " +
-                    (isActive ? "text-gray-900 font-medium" : "hover:text-gray-900")
-                  }
-                >
-                  {item.label}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-underline"
-                      className="absolute left-0 right-0 -bottom-2 h-[2px] bg-gray-900 rounded-full"
-                    />
-                  )}
-                </a>
-              );
-            })}
-          </div>
-
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            <button className="w-9 h-9 rounded-full bg-white shadow-xl grid place-items-center transition-transform hover:scale-[1.03] active:scale-[0.98]">
-              <span className="text-lg">🔔</span>
-            </button>
-
-            <a
-            href="/patient/profile"
-            className="w-10 h-10 rounded-full overflow-hidden shadow-xl transition-transform hover:scale-[1.05] active:scale-[0.98] border border-gray-200"
-            title="Profile"
-            >
-            {me?.avatarUrl ? (
-                <img
-                src={me.avatarUrl}
-                alt="Profile"
-                className="w-full h-full object-cover"
-                />
-            ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm">
-                👤
-                </div>
-            )}
-            </a>
-
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-full bg-black text-white text-sm shadow-xl hover:opacity-95 transition active:scale-[0.98]"
-            >
-              Logout
-            </button>
-          </motion.div>
-        </div>
-
-        {/* Mobile nav */}
-        <div className="md:hidden border-t bg-white/60">
-          <div className="max-w-6xl mx-auto px-5 py-2 flex gap-2 overflow-x-auto">
-            {navItems.map((item) => {
-              const isActive = item.href === "/appointments"
-                    ? activePath.startsWith("/appointments")
-                    : activePath === item.href;
-              return (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    "whitespace-nowrap px-3 py-2 rounded-full text-sm border transition " +
-                    (isActive
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-700 border-gray-200 active:scale-[0.98]")
-                  }
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <PatientNavbar />
 
       {/* Page */}
       <div className="max-w-7xl mx-auto px-5 py-6">
@@ -257,7 +157,7 @@ export default function PatientDashboard() {
                   </motion.p>
 
                   <motion.div
-                    className="mt-4 text-sm text-gray-600"
+                    className="mt-4 text-sm text-[#178d95]"
                     variants={fadeUp}
                     initial="hidden"
                     animate="visible"
@@ -270,7 +170,7 @@ export default function PatientDashboard() {
                     <span className="font-medium">{me?.role || "patient"}</span>{" "}
                     <span className="mx-2">•</span>
                     <span className="text-gray-500">Email verified:</span>{" "}
-                    <span className={"font-medium " + (me?.isVerified ? "text-green-700" : "text-amber-700")}>
+                    <span className={"font-medium " + (me?.isVerified ? "text-red-500" : "text-amber-700")}>
                       {me?.isVerified ? "Yes" : "No"}
                     </span>
                   </motion.div>
@@ -278,20 +178,20 @@ export default function PatientDashboard() {
 
                 {/* Profile completion badge */}
                 <motion.div
-                  className="w-28 rounded-2xl bg-gray-50 border border-gray-100 p-4"
+                  className="w-28 rounded-2xl bg-teal-50 border border-teal-100 p-4"
                   variants={fadeUp}
                   initial="hidden"
                   animate="visible"
                   custom={2}
                 >
-                  <div className="text-xs text-gray-700/70">Profile completion</div>
-                  <div className="mt-1 text-3xl font-bold text-gray-800">
+                  <div className="text-xs text-cyan-700">Profile completion</div>
+                  <div className="mt-1 text-3xl font-bold text-[#178d95] flex items-baseline">
                     <ScoreNumber value={score} />%
                   </div>
 
-                  <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="mt-3 h-2 w-full bg-teal-100 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-2 bg-gray-600 rounded-full"
+                      className="h-2 bg-[#178d95] rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.max(0, Math.min(100, score))}%` }}
                       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -353,7 +253,7 @@ export default function PatientDashboard() {
               <AnimatePresence>
                 {missing.length > 0 && (
                   <motion.div
-                    className="mt-5 rounded-2xl bg-gray-50 p-4"
+                    className="mt-5 rounded-2xl bg-teal-50 p-4"
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
@@ -368,9 +268,9 @@ export default function PatientDashboard() {
                     <div className="mt-3">
                       <a
                         href="/patient/profile"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-[#178d95] hover:underline"
                       >
-                        Update profile <span>→</span>
+                        Update profile →
                       </a>
                     </div>
                   </motion.div>
@@ -399,7 +299,7 @@ export default function PatientDashboard() {
                 </div>
                 <a
                   href="/patient/messages"
-                  className="px-5 py-3 rounded-2xl bg-black font-medium text-white shadow-sm hover:opacity-95 transition active:scale-[0.98]"
+                  className="px-5 py-3 rounded-2xl bg-[#178d95] font-medium text-white shadow-sm hover:opacity-95 transition active:scale-[0.98] hover:shadow-md hover:-translate-y-1 duration-300"
                 >
                   AI Chat ↗
                 </a>
@@ -422,8 +322,8 @@ export default function PatientDashboard() {
               >
                 <div className="font-semibold text-gray-900">Appointments</div>
                 <div className="text-sm text-gray-500 mt-1">Schedule a consultation</div>
-                <div className="mt-6 text-3xl font-semibold text-gray-900">Book Now</div>
-                <div className="mt-4 text-sm text-blue-700 font-medium">Book →</div>
+                <div className="mt-6 text-3xl font-semibold text-[#178d95]">Book Now</div>
+                <div className="mt-4 text-sm text-black font-medium">Book →</div>
               </motion.a>
 
               <motion.a
@@ -435,10 +335,10 @@ export default function PatientDashboard() {
                 custom={3}
                 whileHover={{ y: -2 }}
               >
-                <div className="font-semibold text-gray-900">Documents</div>
+                <div className="font-semibold text-gray-900">My Files</div>
                 <div className="text-sm text-gray-500 mt-1">Upload & manage reports</div>
-                <div className="mt-6 text-3xl font-semibold text-gray-900">My Files</div>
-                <div className="mt-4 text-sm text-blue-700 font-medium">Open →</div>
+                <div className="mt-6 text-3xl font-semibold text-[#178d95]">Documents</div>
+                <div className="mt-4 text-sm text-black font-medium">Open →</div>
               </motion.a>
             </div>
 
@@ -452,20 +352,20 @@ export default function PatientDashboard() {
             >
               <div className="flex items-center justify-between">
                 <div className="font-semibold text-gray-900">Profile</div>
-                <a href="/patient/profile" className="text-sm text-blue-700 hover:underline">
+                <a href="/patient/profile" className="text-sm text-[#178d95] hover:underline">
                   Edit →
                 </a>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-gray-50 p-4">
+                <div className="rounded-2xl bg-teal-50 p-4">
                   <div className="text-xs text-gray-500">Patient ID</div>
                   <div className="mt-1 text-sm font-semibold text-gray-900">
                     {me?.patientId || "—"}
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-gray-50 p-4">
+                <div className="rounded-2xl bg-teal-50 p-4">
                   <div className="text-xs text-gray-500">Email</div>
                   <div className="mt-1 text-sm font-semibold text-gray-900 truncate">
                     {me?.email || "—"}
@@ -476,7 +376,7 @@ export default function PatientDashboard() {
 
             {/* AI safety card (dark) */}
             <motion.div
-              className="rounded-3xl overflow-hidden shadow-sm bg-black text-white relative"
+              className="rounded-3xl overflow-hidden shadow-sm bg-[#178d95] text-white relative"
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -499,7 +399,7 @@ export default function PatientDashboard() {
                   </a>
                   <a
                     href="/patient/documents"
-                    className="px-4 py-2 rounded-2xl bg-white text-gray-900 text-sm font-medium hover:opacity-95 transition"
+                    className="px-4 py-2 rounded-2xl bg-white text-[#178d95] text-sm font-medium hover:opacity-95 transition"
                   >
                     Upload Document
                   </a>

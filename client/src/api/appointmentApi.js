@@ -18,3 +18,11 @@ export const rescheduleAppointment = (id, date, time) =>
 
 export const cancelAppointment = (id, reason) =>
   api.patch(`/appointments/${id}/cancel`, { reason });
+
+export const getAppointmentStats = () => api.get("/appointments/stats");
+
+export const submitRating = (appointmentId, data) =>
+  api.post(`/appointments/${appointmentId}/rating`, data);
+
+export const getAppointmentRating = (appointmentId) =>
+  api.get(`/appointments/${appointmentId}/rating`);

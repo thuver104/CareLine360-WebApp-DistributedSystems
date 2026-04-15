@@ -242,7 +242,7 @@ export default function AppointmentsTable({
                               <ActionIcon
                                 icon={<MessageSquare className="h-5 w-5" />}
                                 label="Chat"
-                                color="gray"
+                                color="teal"
                                 onClick={() => onChat?.(apt)}
                               />
                             </>
