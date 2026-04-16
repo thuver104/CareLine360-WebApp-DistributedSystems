@@ -33,6 +33,20 @@ function toDateStr(y, m, d) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
+function normalizeSlots(rawSlots) {
+  if (!Array.isArray(rawSlots)) return [];
+
+  return rawSlots
+    .filter((slot) => slot && typeof slot === "object")
+    .filter((slot) => typeof slot.date === "string")
+    .map((slot) => ({
+      ...slot,
+      startTime: typeof slot.startTime === "string" ? slot.startTime : "",
+      endTime: typeof slot.endTime === "string" ? slot.endTime : "",
+      isBooked: Boolean(slot.isBooked),
+    }));
+}
+
 export default function AvailabilityCalendar() {
   const { toast } = useToast();
   const today = new Date();
@@ -53,12 +67,19 @@ export default function AvailabilityCalendar() {
 
   useEffect(() => {
     getAvailability()
-      .then((r) => setSlots(r.data.slots || []))
+      .then((r) => setSlots(normalizeSlots(r?.data?.slots)))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const slotsForDate = (dateStr) => slots.filter((s) => s.date === dateStr);
+  const slotsForDate = (dateStr) =>
+    slots.filter(
+      (s) =>
+        s &&
+        s.date === dateStr &&
+        typeof s.startTime === "string" &&
+        typeof s.endTime === "string",
+    );
 
   // ── Add ─────────────────────────────────────────────────────────────────────
   const handleAddSlot = async () => {
@@ -97,7 +118,7 @@ export default function AvailabilityCalendar() {
           endTime: addForm.endTime,
         },
       ]);
-      setSlots(r.data.slots || []);
+      setSlots(normalizeSlots(r?.data?.slots));
       toast("Slot added successfully.", "success");
     } catch (e) {
       setError(e?.response?.data?.message || "Failed to add slot");
@@ -110,7 +131,9 @@ export default function AvailabilityCalendar() {
   const handleDeleteSlot = async (slotId) => {
     try {
       const r = await deleteAvailabilitySlot(slotId);
-      setSlots(r.data.slots || slots.filter((s) => s._id !== slotId));
+      setSlots(
+        normalizeSlots(r?.data?.slots || slots.filter((s) => s._id !== slotId)),
+      );
       toast("Slot removed.", "info");
     } catch (e) {
       setError(e?.response?.data?.message || "Cannot delete slot");
@@ -139,7 +162,7 @@ export default function AvailabilityCalendar() {
     setUpdating(true);
     try {
       const r = await updateAvailabilitySlot(slotId, { startTime, endTime });
-      setSlots(r.data.slots || []);
+      setSlots(normalizeSlots(r?.data?.slots));
       setEditingSlot(null);
       toast("Slot updated successfully.", "success");
     } catch (e) {
@@ -222,7 +245,7 @@ export default function AvailabilityCalendar() {
                   today.getDate(),
                 ),
               );
-            const hasBooked = daySlots.some((s) => s.isBooked);
+            const hasBooked = daySlots.some((s) => Boolean(s?.isBooked));
 
             return (
               <button
@@ -349,9 +372,9 @@ export default function AvailabilityCalendar() {
                   No slots for this date. Add one above.
                 </p>
               ) : (
-                slotsForDate(selectedDate).map((slot) => (
+                slotsForDate(selectedDate).map((slot, index) => (
                   <div
-                    key={slot._id}
+                    key={slot._id || `${slot.date}-${slot.startTime}-${index}`}
                     className="rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden"
                   >
                     {/* Slot row */}
@@ -374,22 +397,24 @@ export default function AvailabilityCalendar() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() =>
-                              editingSlot?.slotId === slot._id
+                              editingSlot && slot?._id && editingSlot.slotId === slot._id
                                 ? setEditingSlot(null)
-                                : (setEditingSlot({
+                                : (slot?._id
+                                    ? setEditingSlot({
                                     slotId: slot._id,
                                     startTime: slot.startTime,
                                     endTime: slot.endTime,
-                                  }),
+                                  })
+                                    : null,
                                   setError(""))
                             }
                             className={`text-xs px-2.5 py-1 rounded-lg border transition-colors font-medium ${
-                              editingSlot?.slotId === slot._id
+                              editingSlot && slot?._id && editingSlot.slotId === slot._id
                                 ? "bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300"
                                 : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-100"
                             }`}
                           >
-                            {editingSlot?.slotId === slot._id
+                            {editingSlot && slot?._id && editingSlot.slotId === slot._id
                               ? "Cancel"
                               : "✏ Edit"}
                           </button>
@@ -404,7 +429,7 @@ export default function AvailabilityCalendar() {
                     </div>
 
                     {/* Inline edit panel */}
-                    {editingSlot?.slotId === slot._id && (
+                    {editingSlot && slot?._id && editingSlot.slotId === slot._id && (
                       <div className="px-4 py-3 bg-blue-50 dark:bg-blue-900/10 border-t border-blue-100 dark:border-blue-900/30 space-y-3">
                         <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
                           Edit Time

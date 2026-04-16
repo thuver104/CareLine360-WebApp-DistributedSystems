@@ -1,8 +1,6 @@
 import {
   useState,
   useEffect,
-  createContext,
-  useContext,
   cloneElement,
   isValidElement,
 } from "react";
@@ -12,10 +10,7 @@ import Topbar from "./Topbar";
 import { ToastContainer } from "../ui/Toast";
 import AIChatWidget from "../dashboard/AIChatWidget";
 import { getDoctorProfile, getDoctorDashboard } from "../../api/doctorApi";
-
-// ── Doctor context — any child can read doctor data + current section ─────────
-const DoctorContext = createContext(null);
-export const useDoctorContext = () => useContext(DoctorContext);
+import { DoctorContext } from "./DoctorContext";
 
 export default function DashboardLayout({ children }) {
   const [section, setSection] = useState("Dashboard");

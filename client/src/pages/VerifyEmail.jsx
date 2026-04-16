@@ -47,7 +47,10 @@ export default function VerifyEmail() {
         identifier,
       });
       setMsgType("success");
-      setMsg(res.data.message || "OTP sent");
+      const debugPart = res.data?.debugOtp
+        ? ` (Dev OTP: ${res.data.debugOtp})`
+        : "";
+      setMsg((res.data.message || "OTP sent") + debugPart);
     } catch (e) {
       setMsgType("error");
       setMsg(e.response?.data?.message || "Failed to send OTP");

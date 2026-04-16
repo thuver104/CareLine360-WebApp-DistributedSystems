@@ -13,6 +13,17 @@ const { publishPatientEvent } = require('../publishers/patientPublisher');
  */
 const generatePatientId = () => 'P' + Date.now();
 
+const inferNameFromEmail = (email = '') => {
+  const local = String(email || '').split('@')[0] || 'Patient';
+  const cleaned = local.replace(/[._-]+/g, ' ').trim();
+  if (!cleaned) return 'Patient';
+  return cleaned
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+};
+
 /**
  * Create patient profile from auth-service event
  */
@@ -50,11 +61,26 @@ const createPatientFromAuthEvent = async (userData) => {
 /**
  * Get patient profile by userId
  */
-const getPatientByUserId = async (userId) => {
-  const patient = await Patient.findOne({
+const getPatientByUserId = async (userId, context = {}) => {
+  const normalizedUserId = userId?.toString();
+
+  let patient = await Patient.findOne({
     userId: userId.toString(),
     isDeleted: { $ne: true }
   });
+
+  // In distributed deployments, auth->patient replication can lag or fail.
+  // Create a minimal profile on-demand so patient dashboard still works.
+  if (!patient) {
+    const fallbackEmail = context.email || '';
+    patient = await Patient.create({
+      userId: normalizedUserId,
+      patientId: generatePatientId(),
+      fullName: context.fullName || inferNameFromEmail(fallbackEmail),
+      email: fallbackEmail,
+      isDeleted: false,
+    });
+  }
 
   if (!patient) {
     return null;

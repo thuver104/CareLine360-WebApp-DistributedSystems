@@ -21,6 +21,13 @@ const EventTypes = {
   EMAIL_SEND: 'email.send',
 };
 
+const shouldExposeDebugOtp = () => {
+  if ((process.env.AUTH_EXPOSE_DEBUG_OTP || '').toLowerCase() === 'true') {
+    return true;
+  }
+  return (process.env.NODE_ENV || 'development') !== 'production';
+};
+
 /**
  * Get next patient ID from counter
  */
@@ -347,27 +354,38 @@ const sendEmailVerificationOtp = async ({ identifier }) => {
       attemptsLeft: 5,
     });
 
-    // 🔥 PUBLISH EVENT: email.send
-    // notification-service will consume and send the actual email
-    await publishEvent(EventTypes.EMAIL_SEND, {
-      eventType: 'EMAIL_SEND',
-      timestamp: new Date(),
-      payload: {
-        to: user.email,
-        subject: `${process.env.APP_NAME || 'CareLine360'} - Verify your email`,
-        html: `
-          <p>Your verification code is:</p>
-          <h2 style="letter-spacing:2px">${otp}</h2>
-          <p>This code expires in 10 minutes.</p>
-        `,
-        purpose: 'EMAIL_VERIFY',
-        userId: user._id.toString(),
-      },
-    });
+    // Try publishing email event, but do not fail verification flow if notification stack is unavailable.
+    try {
+      await publishEvent(EventTypes.EMAIL_SEND, {
+        eventType: 'EMAIL_SEND',
+        timestamp: new Date(),
+        payload: {
+          to: user.email,
+          subject: `${process.env.APP_NAME || 'CareLine360'} - Verify your email`,
+          html: `
+            <p>Your verification code is:</p>
+            <h2 style="letter-spacing:2px">${otp}</h2>
+            <p>This code expires in 10 minutes.</p>
+          `,
+          purpose: 'EMAIL_VERIFY',
+          userId: user._id.toString(),
+        },
+      });
+    } catch (publishError) {
+      logger.warn('Email verification OTP publish failed; continuing with generated OTP', {
+        userId: user._id,
+        error: publishError?.message,
+      });
+    }
 
     logger.info('Email verification OTP sent', { userId: user._id, email: user.email });
 
-    return { status: 200, data: { message: 'Verification OTP sent to email' } };
+    const response = { message: 'Verification OTP sent to email' };
+    if (shouldExposeDebugOtp()) {
+      response.debugOtp = otp;
+    }
+
+    return { status: 200, data: response };
   } catch (error) {
     logger.error('Send email verification OTP error:', error);
     throw error;
@@ -484,7 +502,7 @@ const sendPasswordResetOtp = async ({ identifier }) => {
     logger.info('Password reset OTP sent', { userId: user._id, email: user.email });
 
     const response = { message: 'Password reset OTP sent to email' };
-    if ((process.env.NODE_ENV || 'development') !== 'production') {
+    if (shouldExposeDebugOtp()) {
       response.debugOtp = otp;
     }
 

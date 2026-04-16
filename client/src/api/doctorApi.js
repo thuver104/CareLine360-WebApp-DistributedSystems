@@ -29,8 +29,45 @@ export const deleteAppointment = (appointmentId) =>
   api.delete(`/doctor/appointments/${appointmentId}`);
 
 // ── Meetings (video-call appointments) ───────────────────────────────────────
-export const getDoctorMeetings = (params) =>
-  api.get("/doctor/meetings", { params });
+export const getDoctorMeetings = async (params = {}) => {
+  try {
+    return await api.get("/doctor/meetings", { params });
+  } catch (error) {
+    // Backward-compatible fallback: doctor-service currently exposes appointments,
+    // not a dedicated meetings endpoint in some deployments.
+    if (error?.response?.status !== 404) throw error;
+
+    const apptRes = await api.get("/doctor/appointments", {
+      params: { ...params, type: "video" },
+    });
+
+    const appointments = Array.isArray(apptRes?.data?.appointments)
+      ? apptRes.data.appointments
+      : [];
+
+    const meetings = appointments.map((appt) => ({
+      ...appt,
+      time: appt?.time || appt?.startTime || "",
+      consultationType: appt?.consultationType || appt?.type || "video",
+      patient:
+        appt?.patient ||
+        {
+          fullName: appt?.patientName || "",
+          email: appt?.patientEmail || "",
+          phone: appt?.patientPhone || "",
+          avatarUrl: appt?.patientAvatar || "",
+        },
+    }));
+
+    return {
+      ...apptRes,
+      data: {
+        ...apptRes.data,
+        meetings,
+      },
+    };
+  }
+};
 export const triggerMeetingReminder = () => api.get("/doctor/trigger-reminder");
 export const sendTestEmail = () => api.post("/doctor/test-email");
 

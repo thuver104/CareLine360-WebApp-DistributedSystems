@@ -57,7 +57,7 @@ import AvailabilityCalendar from "../../components/dashboard/AvailabilityCalenda
 import ChatWidget from "../../components/dashboard/ChatWidget";
 import AnalyticsDonutChart from "../../components/dashboard/AnalyticsDonutChart";
 import AnalyticsBarChart from "../../components/dashboard/AnalyticsBarChart";
-import { useDoctorContext } from "../../components/layout/DashboardLayout";
+import { useDoctorContext } from "../../components/layout/DoctorContext";
 import { useToast } from "../../components/ui/Toast";
 import { getInitials } from "../../utils/colors";
 

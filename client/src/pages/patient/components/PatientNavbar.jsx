@@ -24,7 +24,7 @@ export default function PatientNavbar() {
 
   const loadMe = async () => {
     try {
-      const res = await api.get("/patients/me");
+      const res = await api.get("/patient/me");
       setMe(res.data || null);
     } catch {
       setMe(null);

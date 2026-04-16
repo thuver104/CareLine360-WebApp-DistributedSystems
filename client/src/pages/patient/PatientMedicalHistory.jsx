@@ -194,7 +194,7 @@ export default function PatientMedicalHistory() {
       setErr("");
       try {
         const [meRes, recRes, preRes] = await Promise.all([
-          api.get("/patients/me"),
+          api.get("/patient/me"),
           api.get("/patients/me/medical-record"),
           api.get("/patients/me/prescription"),
         ]);

@@ -70,7 +70,7 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("avatar", file);
 
-      const res = await api.patch("/patients/me/avatar", fd);
+      const res = await api.patch("/patient/me/avatar", fd);
 
       setAvatar(res.data.avatarUrl);
       localStorage.setItem("patientAvatar", res.data.avatarUrl);
@@ -84,7 +84,7 @@ export default function Profile() {
 
   const removeAvatar = async () => {
     try {
-      await api.delete("/patients/me/avatar");
+      await api.delete("/patient/me/avatar");
 
       setAvatar("");
       setAvatarFile(null);
@@ -110,7 +110,7 @@ export default function Profile() {
           email: login.email || prev.email,
         }));
 
-        const res = await api.get("/patients/me");
+        const res = await api.get("/patient/me");
         const p = res.data;
         setAvatar(p.avatarUrl || localStorage.getItem("patientAvatar") || "");
 
@@ -294,7 +294,7 @@ export default function Profile() {
         weightKg: form.weightKg === "" ? undefined : Number(form.weightKg),
       };
 
-      await api.patch("/patients/me", payload);
+      await api.patch("/patient/me", payload);
 
       setMsgType("success");
       setMsg("✅ Profile updated successfully.");
@@ -338,7 +338,7 @@ export default function Profile() {
     if (!confirm) return;
 
     try {
-      await api.patch("/patients/me/deactivate");
+      await api.patch("/patient/me/deactivate");
       localStorage.clear();
       alert("Your account has been deactivated.");
       window.location.href = "/login";

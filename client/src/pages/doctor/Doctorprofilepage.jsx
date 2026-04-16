@@ -27,7 +27,7 @@ import {
 } from "../../api/doctorApi";
 import { clearAuth } from "../../auth/authStorage";
 import { disconnectSocket } from "../../socket/socketClient";
-import { useDoctorContext } from "../../components/layout/DashboardLayout";
+import { useDoctorContext } from "../../components/layout/DoctorContext";
 import { useToast } from "../../components/ui/Toast";
 import { useBase64Image } from "../../hooks/useBase64Image";
 import { getInitials } from "../../utils/colors";

@@ -5,6 +5,7 @@ metadata:
   namespace: careline360
 data:
   NODE_ENV: "production"
+  AUTH_EXPOSE_DEBUG_OTP: "true"
   CLIENT_URL: "http://localhost:5173"
   JITSI_DOMAIN: "meet.jit.si"
   JITSI_PREFIX: "CareLine360"

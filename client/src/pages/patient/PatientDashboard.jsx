@@ -27,7 +27,7 @@ export default function PatientDashboard() {
   useEffect(() => {
     const run = async () => {
       try {
-        const res = await api.get("/patients/me");
+        const res = await api.get("/patient/me");
         setMe(res.data);
       } catch (e) {
         setMsg(e.response?.data?.message || "Failed to load dashboard");

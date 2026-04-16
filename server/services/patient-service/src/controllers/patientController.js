@@ -16,7 +16,10 @@ const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const result = await patientService.getPatientByUserId(userId);
+    const result = await patientService.getPatientByUserId(userId, {
+      email: req.user.email,
+      fullName: req.user.fullName,
+    });
 
     if (!result) {
       return res.status(404).json({

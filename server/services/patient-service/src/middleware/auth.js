@@ -6,7 +6,7 @@
 const jwt = require('jsonwebtoken');
 const Patient = require('../models/Patient');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'your-secret-key';
 
 /**
  * Verify JWT token and attach user to request
