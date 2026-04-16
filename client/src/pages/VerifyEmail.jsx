@@ -6,6 +6,17 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const postAuthWithFallback = async (path, payload) => {
+    try {
+      return await api.post(`/auth${path}`, payload);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        return api.post(`/v1/auth${path}`, payload);
+      }
+      throw error;
+    }
+  };
+
   // take from route state OR localStorage (for refresh)
   const [identifier, setIdentifier] = useState(
     location.state?.identifier || localStorage.getItem("verifyIdentifier") || ""
@@ -32,7 +43,9 @@ export default function VerifyEmail() {
 
     try {
       setLoading(true);
-      const res = await api.post("/auth/email/send-verify-otp", { identifier });
+      const res = await postAuthWithFallback("/email/send-verify-otp", {
+        identifier,
+      });
       setMsgType("success");
       setMsg(res.data.message || "OTP sent");
     } catch (e) {
@@ -60,7 +73,7 @@ export default function VerifyEmail() {
 
     try {
       setLoading(true);
-      const res = await api.post("/auth/email/verify-otp", {
+      const res = await postAuthWithFallback("/email/verify-otp", {
         identifier,
         otp: otp.trim(),
       });
