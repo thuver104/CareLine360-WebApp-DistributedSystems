@@ -1,8 +1,21 @@
 import api from "./axios";
 
+const cleanParams = (params = {}) =>
+  Object.fromEntries(
+    Object.entries(params).filter(([, value]) => {
+      if (value === undefined || value === null) return false;
+      if (typeof value === "string" && value.trim() === "") return false;
+      return true;
+    }),
+  );
+
 export const createAppointment = (data) => api.post("/appointments", data);
 
-export const getAppointments = (params) => api.get("/appointments", { params });
+export const getAppointments = (params) =>
+  api.get("/appointments", { params: cleanParams(params) });
+
+export const getMyAppointments = (params) =>
+  api.get("/appointments/me", { params: cleanParams(params) });
 
 export const getAppointmentById = (id) => api.get(`/appointments/${id}`);
 

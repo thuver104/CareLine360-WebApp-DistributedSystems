@@ -3,7 +3,12 @@ import { Link } from "react-router-dom";
 import { Calendar, Clock, CheckCircle, CalendarPlus, Filter, SlidersHorizontal } from "lucide-react";
 import { getRole } from "../auth/authStorage";
 import { useToast } from "../context/ToastContext";
-import { getAppointments, transitionStatus, getAppointmentStats } from "../api/appointmentApi";
+import {
+  getAppointments,
+  getMyAppointments,
+  transitionStatus,
+  getAppointmentStats,
+} from "../api/appointmentApi";
 import StatCard from "../components/ui/StatCard";
 import AppointmentCard from "../components/appointments/AppointmentCard";
 import RescheduleModal from "../components/appointments/RescheduleModal";
@@ -44,12 +49,15 @@ export default function ViewAppointments() {
     setLoading(true);
     try {
       const params = { ...filters };
-      if (currentUserRole === "patient") params.patient = currentUserId;
+      if (currentUserRole === "patient") delete params.patient;
       if (currentUserRole === "doctor") params.doctor = currentUserId;
       // If "All" tab is selected (empty status), fetch all statuses
       // Otherwise use the selected status filter
 
-      const res = await getAppointments(params);
+      const res =
+        currentUserRole === "patient"
+          ? await getMyAppointments(params)
+          : await getAppointments(params);
       setAppointments(res.data.appointments);
       setPagination(res.data.pagination);
     } catch (err) {
@@ -64,11 +72,16 @@ export default function ViewAppointments() {
   }, [fetchAppointments]);
 
   useEffect(() => {
+    if (currentUserRole === "patient") {
+      setStatsLoading(false);
+      return;
+    }
+
     getAppointmentStats()
       .then((res) => setStats(res.data.data))
       .catch(() => {})
       .finally(() => setStatsLoading(false));
-  }, []);
+  }, [currentUserRole]);
 
   const handleConfirm = async (appointment) => {
     try {

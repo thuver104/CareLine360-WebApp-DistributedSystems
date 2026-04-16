@@ -63,7 +63,7 @@ export default function BookAppointment() {
     setSubmitting(true);
     try {
       const data = {
-        doctor: doctorId,
+        doctorId,
         date: schedule.date,
         time: schedule.time,
         consultationType: schedule.consultationType,

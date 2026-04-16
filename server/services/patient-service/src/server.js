@@ -105,9 +105,9 @@ app.get('/health/ready', async (req, res) => {
 });
 
 // ===== Routes =====
-app.use('/api/v1/patient', patientRoutes);
 app.use('/api/v1/patient/documents', documentRoutes);
 app.use('/api/v1/patient/medical-records', medicalRecordRoutes);
+app.use('/api/v1/patient', patientRoutes);
 
 // Backward compatibility routes
 app.use('/api/patient', patientRoutes);

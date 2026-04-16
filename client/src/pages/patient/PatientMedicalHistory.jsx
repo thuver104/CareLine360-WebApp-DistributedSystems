@@ -193,18 +193,21 @@ export default function PatientMedicalHistory() {
       setLoading(true);
       setErr("");
       try {
-        const [meRes, recRes, preRes] = await Promise.all([
+        const [meRes, recRes] = await Promise.allSettled([
           api.get("/patient/me"),
-          api.get("/patients/me/medical-record"),
-          api.get("/patients/me/prescription"),
+          api.get("/v1/patient/medical-records"),
         ]);
 
-        const recList = normalizeList(recRes.data).sort(
+        if (meRes.status !== "fulfilled" || recRes.status !== "fulfilled") {
+          throw meRes.reason || recRes.reason || new Error("Failed to load medical history");
+        }
+
+        const recList = normalizeList(recRes.value.data).sort(
           (a, b) => new Date(b.visitDate) - new Date(a.visitDate),
         );
-        const preList = normalizeList(preRes.data);
+        const preList = [];
 
-        setMe(meRes.data);
+        setMe(meRes.value.data?.data || meRes.value.data);
         setRecords(recList);
         setPrescriptions(preList);
         setSelected(recList[0] || null);

@@ -17,7 +17,7 @@ export default function Documents() {
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState("");
 
-  // ✅ same as dashboard: load patient info from /patients/me
+  // Load patient info for future personalization
   const [me, setMe] = useState(null);
 
   const fileRef = useRef(null);
@@ -63,10 +63,24 @@ export default function Documents() {
   const loadDocs = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/documents", {
-        params: { category: filterCategory, q: search },
-      });
-      setDocs(res.data?.documents || []);
+      const params = {};
+      if (filterCategory !== "all") params.documentType = filterCategory;
+
+      const res = await api.get("/v1/patient/documents", { params });
+      const list = res.data?.data || [];
+      const q = search.trim().toLowerCase();
+
+      const filtered = q
+        ? list.filter((d) => {
+            const hay = [d.title, d.fileName, d.documentType]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+            return hay.includes(q);
+          })
+        : list;
+
+      setDocs(filtered);
     } catch (e) {
       setMsgType("error");
       setMsg(e.response?.data?.message || "Failed to load documents");
@@ -78,13 +92,14 @@ export default function Documents() {
   const loadMe = async () => {
     try {
       const res = await api.get("/patient/me");
-      setMe(res.data || null);
+      setMe(res.data?.data || res.data || null);
     } catch {
       setMe(null);
     }
   };
 
   useEffect(() => {
+    loadMe();
     const t = setTimeout(() => {
       loadDocs();
     }, 400);
@@ -105,11 +120,11 @@ export default function Documents() {
       setMsgType("");
 
       const fd = new FormData();
-      fd.append("document", file);
+      fd.append("file", file);
       fd.append("title", title);
-      fd.append("category", category);
+      fd.append("documentType", category);
 
-      await api.post("/documents", fd, {
+      await api.post("/v1/patient/documents", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -130,7 +145,7 @@ export default function Documents() {
 
   const remove = async (id) => {
     try {
-      await api.delete(`/documents/${id}`);
+      await api.delete(`/v1/patient/documents/${id}`);
       setMsgType("success");
       setMsg("✅ Document deleted");
       await loadDocs();
@@ -141,15 +156,8 @@ export default function Documents() {
   };
 
   const removePermanent = async (id) => {
-    try {
-      await api.delete(`/documents/${id}/permanent`);
-      setMsgType("success");
-      setMsg("✅ Document deleted permanently");
-      await loadDocs();
-    } catch (e) {
-      setMsgType("error");
-      setMsg(e.response?.data?.message || "Permanent delete failed");
-    }
+    // Current patient-service exposes a single delete endpoint.
+    await remove(id);
   };
 
   const handleOpen = (doc) => {
@@ -363,7 +371,7 @@ export default function Documents() {
                       {d.title || d.fileName || "Untitled"}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {d.category} •{" "}
+                      {d.documentType || "other"} •{" "}
                       {d.fileSize
                         ? `${(d.fileSize / 1024).toFixed(1)} KB`
                         : "—"}

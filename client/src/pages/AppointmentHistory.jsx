@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { getRole } from "../auth/authStorage";
-import { getAppointments } from "../api/appointmentApi";
+import { getAppointments, getMyAppointments } from "../api/appointmentApi";
 import AppointmentCard from "../components/appointments/AppointmentCard";
 import Pagination from "../components/ui/Pagination";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
@@ -19,13 +19,15 @@ export default function AppointmentHistory() {
     setLoading(true);
     try {
       const params = { page, limit: 10, sort: "-date" };
-      if (currentUserRole === "patient") params.patient = currentUserId;
       if (currentUserRole === "doctor") params.doctor = currentUserId;
+
+      const fetchFn =
+        currentUserRole === "patient" ? getMyAppointments : getAppointments;
 
       // Fetch completed and cancelled separately and merge
       const [completedRes, cancelledRes] = await Promise.all([
-        getAppointments({ ...params, status: "completed" }),
-        getAppointments({ ...params, status: "cancelled" }),
+        fetchFn({ ...params, status: "completed" }),
+        fetchFn({ ...params, status: "cancelled" }),
       ]);
 
       const all = [

@@ -18,6 +18,7 @@ function safeStr(v) {
 function normalizeList(data) {
   if (!data) return [];
   if (Array.isArray(data)) return data;
+  if (Array.isArray(data.doctors)) return data.doctors;
   if (Array.isArray(data.data)) return data.data;
   if (Array.isArray(data.items)) return data.items;
   if (Array.isArray(data.records)) return data.records;
@@ -85,8 +86,8 @@ export default function Directory() {
       setErr("");
       try {
         const [hRes, dRes] = await Promise.all([
-          api.get("/patients/hospital"),
-          api.get("/patients/doctor"),
+          api.get("/hospitals"),
+          api.get("/v1/doctors/public", { params: { limit: 100 } }),
         ]);
 
         const hList = normalizeList(hRes.data).sort((a, b) =>
@@ -112,32 +113,12 @@ export default function Directory() {
 
   const openHospital = async (h) => {
     setSelectedHospital(h);
-    setDetailLoading(true);
-    setErr("");
-    try {
-      const id = h?._id || h?.id;
-      const res = await api.get(`/patients/hospital/${id}`);
-      setSelectedHospital(res.data);
-    } catch (e) {
-      setErr(e?.response?.data?.message || "Failed to load hospital details");
-    } finally {
-      setDetailLoading(false);
-    }
+    setDetailLoading(false);
   };
 
   const openDoctor = async (d) => {
     setSelectedDoctor(d);
-    setDetailLoading(true);
-    setErr("");
-    try {
-      const id = d?._id || d?.id;
-      const res = await api.get(`/patients/doctor/${id}`);
-      setSelectedDoctor(res.data);
-    } catch (e) {
-      setErr(e?.response?.data?.message || "Failed to load doctor details");
-    } finally {
-      setDetailLoading(false);
-    }
+    setDetailLoading(false);
   };
 
   // ✅ Hospital schema fields: name, address, contact, lat, lng

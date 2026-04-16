@@ -39,7 +39,7 @@ export default function BookingForm({ symptoms, priority, onBooked }) {
 
     try {
       const data = {
-        doctor: form.doctor,
+        doctorId: form.doctor,
         date: form.date,
         time: form.time,
         consultationType: form.consultationType,
